@@ -59,7 +59,7 @@
 	// Parse string containing degrees, minutes and seconds
 	//
 	_self.parseDeg = function (str) {
-		_self.dbg(str);
+		_self.dbg("<b>"+str+"</b>");
 		if (!str) {
 			return 0.0;
 		}
@@ -85,12 +85,13 @@
 		start = _self.findNum(str, start);
 		end = _self.findDelim(str, start+1);
 		if (start>-1 && end>-1) {
-			var numStr = str.substring(start, end);
-			_self.dbg("-"+numStr+"-");
+			var numStr = str.substring(start, end).replace(",",".");
 			var num = _self.parseNum(numStr);
 			deg += num;
+			_self.dbg("Parsing Degrees: -"+numStr+"- gives "+num+": "+deg);
 		}
-		if (end == -1)	{
+		if (start == -1 || end == -1)	{
+			_self.dbg("-end-");
 			return deg;
 		}
 		
@@ -98,12 +99,13 @@
 		start = _self.findNum(str, end+1);
 		end = _self.findDelim(str, start+1);
 		if (start>-1 && end>-1) {
-			var numStr = str.substring(start, end);
-			_self.dbg("-"+numStr+"-");
+			var numStr = str.substring(start, end).replace(",",".");
 			var num = _self.parseNum(numStr);
 			deg += num/60.0;
+			_self.dbg("Parsing Minutes: -"+numStr+"- gives "+num+": "+deg);
 		}
-		if (end == -1)	{
+		if (start == -1 || end == -1)	{
+			_self.dbg("-end-");
 			return deg;
 		}
 		
@@ -112,9 +114,9 @@
 		end = _self.findDelim(str, start+1);
 		if (start>-1 && end>-1) {
 			var numStr = str.substring(start, end);
-			_self.dbg("-"+numStr+"-");
 			var num = _self.parseNum(numStr);
 			deg += num/3600.0;
+			_self.dbg("Parsing Seconds: -"+numStr+"- gives "+num+": "+deg);
 		}
 
 
