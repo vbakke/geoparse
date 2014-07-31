@@ -32,7 +32,7 @@
 			dir2 = dir3;
 		}
 		// If longitude is placed before latitude, swap them
-		if (dir1 == _EAST || dir1 == _WEST) {
+		if (dir1 == _EAST || dir1 == _WEST || dir2 == _NORTH || dir2 == _SOUTH) {
 			var tempDir=dir1, dir1=dir2, dir2=tempDir;
 			var tempDeg=deg1, deg1=deg2, deg2=tempDeg;
 			_self.dbg("swapping");
