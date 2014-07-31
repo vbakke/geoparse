@@ -1,0 +1,28 @@
+ToDo
+====
+- Simple conversion HTML page
+- UTM - LatLong conversion
+
+Backlog
+=======
+- Merge UTM parse into GeoParse.js
+- Formatting LatLong
+- Formatting UTM
+- Public site on vafe.net
+- Add Map on HTML page
+- Test 32V, 31V, and 31-37X
+- Improve UI of HTML page
+- Parse Multiple coordinates
+- Make multi-pos HTML
+- MultiPos: If multiple neighbouring Grid zones, display flag for converting them into the same zone
+- MultiPos: Update conversion on input change event
+- MultiPos: Update map when changed input yields different parsed coordinates
+
+- Gracefully handle zone band S (South and/or S) 
+
+Done
+====
+- UTM parse
+- UTM parse TEST
+- Directory architecture
+- Parse LatLong
