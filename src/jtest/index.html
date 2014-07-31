@@ -1,16 +1,21 @@
 <html>
 <head>
-<script src="geoparse_test.js"></script>
-<script src="geoparse.js"></script>
+<script src="..\js\geoparse.js"></script>
+<script src="..\js\utmparse.js"></script>
+<script src=".\geoparse_test.js"></script>
+<script src=".\utmparse_test.js"></script>
 </head>
 <body>
-<div id="testDiv">Hei</div>
+<div id="utmDiv">Hei</div>
+<div id="geoDiv">Hei</div>
 <div id="dbgDiv">Debug</div>
 <script type="text/javascript">
-    test = document.getElementById("testDiv");
-    
-    geoparse.setDebugDiv("dbgDiv");
-    test.innerHTML += geoparse_test.createTable();
+	utmDiv = document.getElementById("utmDiv");
+	geoDiv = document.getElementById("geoDiv");
+	
+	utmparse.setDebugDiv("dbgDiv");
+	utmDiv.innerHTML += utmparse_test.createTable();
+	geoDiv.innerHTML += geoparse_test.createTable();
 </script>
 </body>
 </html>
