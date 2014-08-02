@@ -1,0 +1,73 @@
+<html>
+<head>
+	<script src=".\js\geoconverter.js"></script>
+	<script src=".\js\geoparse.js"></script>
+	<script src=".\js\utmparse.js"></script>
+	<!--script src=".\geoparse_test.js"></script>
+	<script src=".\utmparse_test.js"></script-->
+</head>
+<body>
+<div id="testDiv">Hei</div>
+<script type="text/javascript">
+	var test = document.getElementById("testDiv");
+
+	var xy = new Array(2);
+	var latlon = new Array(2);
+	
+	var lat = 59.0;
+	var lon = 9.0;
+	var southhemi = false;
+	test.innerHTML += "<br/>Test case: " + " N " + lat + " E " + lon;
+	
+	// Compute the UTM zone.
+	var zone = Math.floor ((lon + 180.0) / 6) + 1;
+
+	zone = LatLonToUTMXY (DegToRad (lat), DegToRad (lon), zone, xy);
+	test.innerHTML += "<br/>Converted to UTM: " + zone + " " + xy[0] + "mE " + xy[1] + "mN ";
+
+	var x = xy[0];
+	var y = xy[1];
+	
+	UTMXYToLatLon (x, y, zone, southhemi, latlon);
+
+	
+	test.innerHTML += "<br/>Converted back to: " + " N " + RadToDeg (latlon[0]) + " E " + RadToDeg (latlon[1]);
+	utmparse.setDebugDiv("divDebug");
+	
+	function onClickConvertUtm() {
+		var str = document.getElementById("txtCoordinate").value;
+		var utmTry = utmparse.parseUtm(str);
+		
+		var geo = UTMXYToLatLon (x, y, zone, southhemi, latlon);
+		
+		var div = document.getElementById("divResult");
+		div.innerHTML = "UTM: " + utmTry + "<br/>" + "Geo: " + geo;
+	}
+	function onClickConvertGeo() {
+		var str = document.getElementById("txtCoordinate").value;
+		var geoTry = geoparse.parseGeo(str);
+
+		// Compute the UTM zone.
+		var zone = Math.floor ((lon + 180.0) / 6) + 1;
+
+		zone = LatLonToUTMXY (DegToRad (lat), DegToRad (lon), zone, xy);
+		
+		
+		var div = document.getElementById("divResult");
+		div.innerHTML = "Lat/Long: " + geoTry + "<br/>" + "UTM: " + zone + " " + xy[0] + "mE " + xy[1] + "mN";
+	}
+
+</script>
+	<div id="divInput">
+			Coordinate: <input id="txtCoordinate" autofocus/> <button id="btnConvertUtm" type="submit" onclick="onClickConvertUtm()">Convert UTM</button><button id="btnConvertGeo"  onclick="onClickConvertGeo()">Convert Lat/Long</button>
+	</div>
+	<div id="extraUtmHemisphere" style="display: none;">
+		This UTM coordinate does not indicate wherther it is on the norther or southern hemisphere.<br/>
+		Is it on the <select ><option value="N">North</option><option value="S">South<option></select>
+	</div>
+	<div id="divResult">
+	</div>
+	<div id="divDebug">
+	</div>
+</body>
+</html>
