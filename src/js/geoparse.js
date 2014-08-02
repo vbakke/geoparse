@@ -16,15 +16,20 @@
 
 	var _self = {};
 	_self.parseGeo = function (str) {
+		str = str.toUpperCase() + " ";
 		var parts = _geoRe.exec(str);
 
-		if (parts != null) {
-			var dir1 = parts[1];
-			var deg1 = parts[2];
-			var dir2 = parts[3];
-			var deg2 = parts[4];
-			var dir3 = parts[5];
-		}
+		// If no match, return undefined
+		if (parts == null) {
+			return undefined;
+		} 
+
+		var dir1 = parts[1];
+		var deg1 = parts[2];
+		var dir2 = parts[3];
+		var deg2 = parts[4];
+		var dir3 = parts[5];
+
 		_self.dbg("<br/>"+str);
 		// If directions are placed _after_ degrees, move them
 		if (dir1 == "") {
@@ -39,8 +44,8 @@
 		}
 		
 		// Parse the degrees string
-		latitude = _self.parseDeg(deg1);
-		longititude = _self.parseDeg(deg2);
+		var latitude = _self.parseDeg(deg1);
+		var longititude = _self.parseDeg(deg2);
 		
 		
 		// Adujst for negative signs

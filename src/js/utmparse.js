@@ -20,20 +20,24 @@
 
 	var _self = {};
 	_self.parseUtm = function (str) {
-		var parts = _utmRe.exec(str);
+		var parts = _utmRe.exec(str.toUpperCase());
 		_self.dbg("<br/><b>"+str+"</b>");
 		_self.dbg(parts);
 
-		if (parts != null) {
-			var zone  = parts[1];
-			var band  = parts[2];
-			var dir1 = parts[3];
-			var pos1  = parts[4];
-			var dir1b = parts[5];
-			var dir2 = parts[6];
-			var pos2  = parts[7];
-			var dir2b = parts[8];
-		}
+		// If no match, return undefined
+		if (parts == null) {
+			return undefined;
+		} 
+		
+		var zone  = parts[1];
+		var band  = parts[2];
+		var dir1 = parts[3];
+		var pos1  = parts[4];
+		var dir1b = parts[5];
+		var dir2 = parts[6];
+		var pos2  = parts[7];
+		var dir2b = parts[8];
+	
 		_self.dbg("-" + zone + "-" + band + "-" + dir1 + "-" + pos1 + "-" + dir1b  + "-" + dir2 + "-" + pos2 + "-" + dir2b + "-");
 		// If directions are placed _after_ position, move them forwards
 		if (dir1 == "") {
@@ -50,8 +54,8 @@
 		}
 		
 		// Parse the degrees string
-		easting = _self.parseNum(pos1);
-		northing = _self.parseNum(pos2);
+		var easting = _self.parseNum(pos1);
+		var northing = _self.parseNum(pos2);
 		
 		
 		// Adujst for negative signs
