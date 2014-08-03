@@ -1,7 +1,8 @@
 ToDo
 ====
-- Fix UTM: Handle zone band
-- Turn geoconvert into a module
+- Fix UTM: Handle zone and zone band in UTMXYToLatLon() and LatLonToUTMXY()
+- Fix UTM & Geo: Handle Deg instead of Rad
+- Turn geoconverter into a module
 
 Backlog
 =======
@@ -21,6 +22,7 @@ Backlog
 - MultiPos: Update conversion on input change event
 - MultiPos: Update map when changed input yields different parsed coordinates
 - Add heuristics for choosing UTM vs LatLong 
+- Get user's location. Use in heuristics
 
 - Gracefully handle zone band S (South and/or S) 
 - Handle MGRS coordinates

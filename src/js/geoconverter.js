@@ -406,22 +406,27 @@
     * Universal Transverse Mercator projection.
     *
     * Inputs:
-    *   lat - Latitude of the point, in radians.
-    *   lon - Longitude of the point, in radians.
+    *   latlon - Array of Latitude and Longitude of the point, in degrees.
     *   zone - UTM zone to be used for calculating values for x and y.
     *          If zone is less than 1 or greater than 60, the routine
     *          will determine the appropriate zone from the value of lon.
     *
     * Outputs:
-    *   xy - A 2-element array where the UTM x and y values will be stored.
+    *   utm - A 4-element array where the UTM zone, band, x and y values will be stored.
     *
     * Returns:
     *   The UTM zone used for calculating the values of x and y.
     *
     */
-    function LatLonToUTMXY (lat, lon, zone, xy)
+    function LatLonToUTMXY (latlon, zone, xy)
     {
-        MapLatLonToXY (lat, lon, UTMCentralMeridian (zone), xy);
+		var latRad = DegToRad(latlon[0]);
+		var lonRad = DegToRad(latlon[1]);
+
+        // Compute the UTM zone.
+        zone = Math.floor ((latlon[1] + 180.0) / 6) + 1;
+
+        MapLatLonToXY (latRad, lonRad, UTMCentralMeridian (zone), xy);
 
         /* Adjust easting and northing for UTM system. */
         xy[0] = xy[0] * UTMScaleFactor + 500000.0;
