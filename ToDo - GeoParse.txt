@@ -1,7 +1,5 @@
 ToDo
 ====
-- Fix UTM: Handle zone and zone band in UTMXYToLatLon() and LatLonToUTMXY()
-- Fix UTM & Geo: Handle Deg instead of Rad
 - Turn geoconverter into a module
 
 Backlog
@@ -31,6 +29,8 @@ Backlog
 
 Done
 ====
+- Fix UTM: Handle zone and zone band in UTMXYToLatLon() and LatLonToUTMXY()
+- Fix UTM & Geo: Handle Deg instead of Rad
 - UTM - LatLong conversion
 - Simple conversion HTML page
 - UTM parse

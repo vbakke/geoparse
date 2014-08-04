@@ -418,23 +418,28 @@
     *   The UTM zone used for calculating the values of x and y.
     *
     */
-    function LatLonToUTMXY (latlon, zone, xy)
+    function LatLonToUTM (latlon, utm)
     {
 		var latRad = DegToRad(latlon[0]);
 		var lonRad = DegToRad(latlon[1]);
 
         // Compute the UTM zone.
-        zone = Math.floor ((latlon[1] + 180.0) / 6) + 1;
+        var zone = Math.floor ((latlon[1] + 180.0) / 6) + 1;
+		var xy = Array(2);
 
         MapLatLonToXY (latRad, lonRad, UTMCentralMeridian (zone), xy);
 
         /* Adjust easting and northing for UTM system. */
-        xy[0] = xy[0] * UTMScaleFactor + 500000.0;
-        xy[1] = xy[1] * UTMScaleFactor;
-        if (xy[1] < 0.0)
-            xy[1] = xy[1] + 10000000.0;
+		utm[0] = zone;
+		utm[1] = "N";
+        utm[2] = xy[0] * UTMScaleFactor + 500000.0;
+        utm[3] = xy[1] * UTMScaleFactor;
+        if (utm[3] < 0.0) {
+            utm[3] = utm[3] + 10000000.0;
+			utm[1] = "S";
+		}
 
-        return zone;
+        return utm;
     }
     
     
@@ -460,8 +465,13 @@
     *	The function does not return a value.
     *
     */
-    function UTMXYToLatLon (x, y, zone, southhemi, latlon)
+    function UTMToLatLon (utm, latlon)
     {
+		var zone = utm[0];
+		var southhemi = (utm[1] == "S") ? true : false;
+		var x = utm[2];
+		var y = utm[3];
+		
         var cmeridian;
         	
         x -= 500000.0;
@@ -469,14 +479,18 @@
         	
         /* If in southern hemisphere, adjust y accordingly. */
         if (southhemi)
-        y -= 10000000.0;
+			y -= 10000000.0;
         		
         y /= UTMScaleFactor;
         
         cmeridian = UTMCentralMeridian (zone);
         MapXYToLatLon (x, y, cmeridian, latlon);
-        	
-        return;
+        
+		// Convert back to degrees
+		latlon[0] = RadToDeg(latlon[0]);
+		latlon[1] = RadToDeg(latlon[1]);
+		
+        return latlon;
     }
     
 

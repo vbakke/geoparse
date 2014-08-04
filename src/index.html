@@ -5,30 +5,30 @@
 	<script src=".\js\utmparse.js"></script>
 	<!--script src=".\geoparse_test.js"></script>
 	<script src=".\utmparse_test.js"></script-->
+</head>
+<body>
+	<div id="divTest">Test
+	</div>
 <script type="text/javascript">
-	var test = document.getElementById("testDiv");
+	var test = document.getElementById("divTest");
 
-	var xy = new Array(2);
+	var utm = new Array(4);
 	var latlon = new Array(2);
 	
 	var lat = 59.0;
 	var lon = 9.0;
-	var southhemi = false;
+	var latlon = [lat, lon];
 	test.innerHTML += "<br/>Test case: " + " N " + lat + " E " + lon;
 	
-	// Compute the UTM zone.
-	var zone = Math.floor ((lon + 180.0) / 6) + 1;
+	var utm2 = LatLonToUTM(latlon, utm);
+	test.innerHTML += "<br/>Converted to UTM: " + utm[0] + utm[1] + " " + utm[2] + "mE " + utm[3] + "mN ";
+	test.innerHTML += "<br/>Converted to UTM: " + utm2[0] + utm2[1] + " " + utm2[2] + "mE " + utm2[3] + "mN ";
 
-	zone = LatLonToUTMXY (DegToRad (lat), DegToRad (lon), zone, xy);
-	test.innerHTML += "<br/>Converted to UTM: " + zone + " " + xy[0] + "mE " + xy[1] + "mN ";
 
-	var x = xy[0];
-	var y = xy[1];
+	var latlon2 = UTMToLatLon (utm, latlon);
 	
-	UTMXYToLatLon (x, y, zone, southhemi, latlon);
+	test.innerHTML += "<br/>Converted back to: " + " N " + latlon2[0] + "° E " + latlon2[1] + "°";
 
-	
-	test.innerHTML += "<br/>Converted back to: " + " N " + RadToDeg (latlon[0]) + " E " + RadToDeg (latlon[1]);
 	utmparse.setDebugDiv("divDebug");
 	geoparse.setDebugDiv("divDebug");
 	
@@ -36,37 +36,32 @@
 		var str = document.getElementById("txtCoordinate").value;
 		var utmTry = utmparse.parseUtm(str);
 		
-		if (utmTry) {
-			var zone = utmTry[0];
-			var southhemi = (utmTry[1] >= "N" ) ? "N" : "S";
-			var x = utmTry[2];
-			var y = utmTry[3];
-			
+		if (utmTry) {			
 			var latlon = new Array(2);
-			var geo = UTMXYToLatLon (x, y, zone, southhemi, latlon);
+			var geo = UTMToLatLon (utmTry, latlon);
 			
 			var div = document.getElementById("divResult");
+			div.innerHTML = "UTM: " + utmTry + "<br/>" + "Geo: " + " N " + latlon[0] + " E " + latlon[1];
+		} else {
+			div.innerHTML = "Cannot parse the UTM coordinate";
 		}
-		div.innerHTML = "UTM: " + utmTry + "<br/>" + "Geo: " + " N " + RadToDeg (latlon[0]) + " E " + RadToDeg (latlon[1]);
+		
 	}
 	function onClickConvertGeo() {
 		var str = document.getElementById("txtCoordinate").value;
 		var geoTry = geoparse.parseGeo(str);
-		
 
-		// Compute the UTM zone.
-		var zone = Math.floor ((lon + 180.0) / 6) + 1;
-
-		zone = LatLonToUTMXY (DegToRad (lat), DegToRad (lon), zone, xy);
-		
-		
-		var div = document.getElementById("divResult");
-		div.innerHTML = "Lat/Long: " + geoTry + "<br/>" + "UTM: " + zone + " " + xy[0] + "mE " + xy[1] + "mN";
+		if (geoTry) {
+			utm = LatLonToUTM(geoTry, utm);
+			
+			var div = document.getElementById("divResult");
+			div.innerHTML = "Lat/Long: " + geoTry + "<br/>" + "UTM: " + utm[0] + utm[1] + " " + utm[2] + "mE " + utm[3] + "mN";
+		} else {
+			div.innerHTML = "Cannot parse Lat/Long coordinate ";
+		}
 	}
 
 </script>
-</head>
-<body>
 	<div id="divInput">
 			Coordinate: <input id="txtCoordinate" autofocus/> <button id="btnConvertUtm" type="submit" onclick="onClickConvertUtm()">Convert UTM</button><button id="btnConvertGeo"  onclick="onClickConvertGeo()">Convert Lat/Long</button>
 	</div>
