@@ -1,34 +1,43 @@
 ToDo
 ====
 - Turn geoconverter into a module
+- Merge UTM parse into GeoParse.js
 
 Backlog
 =======
-- Merge UTM parse into GeoParse.js
-- Formatting LatLong
-- Formatting UTM
-- Add Google Analytics
+- Parse Lat/Lon: Allow the varous degree-like symbols
+- Parse UTM: If no NSEW is present, use the number with 6 digits as easting
+- Allow swap northing/easting if no directional letter is present
+- Formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
 - Public site on vafe.net
-- Log used coordinates
+- Add Google Analytics
 - Add Map on HTML page
-- Map: Choose between different maps
 - Test 32V, 31V, and 31-37X
+- Map: Choose between different maps
+- Log used coordinates to DB
 - Improve UI of HTML page
+- Add heuristics for choosing UTM vs LatLong 
 - Parse Multiple coordinates
 - Make multi-pos HTML
 - MultiPos: If multiple neighbouring Grid zones, display flag for converting them into the same zone
+- MultiPos: Allow coordinates to start with a dot (.) indicating it has the same leading digits the the previous position
 - MultiPos: Update conversion on input change event
 - MultiPos: Update map when changed input yields different parsed coordinates
-- Add heuristics for choosing UTM vs LatLong 
 - Get user's location. Use in heuristics
+- Store settings in cookie
 
 - Gracefully handle zone band S (South and/or S) 
 - Handle MGRS coordinates
 
+- Share: Store coordinates in DB, generate bit.ly like url geo.vafe.net/fX
+	Algorithm: D:\Slettes\Py\Gen.py
+- Share: Allow modifications, store history, add comment and/or username
 
 
 Done
 ====
+- Formatting LatLong
+- Formatting UTM
 - Fix UTM: Handle zone and zone band in UTMXYToLatLon() and LatLonToUTMXY()
 - Fix UTM & Geo: Handle Deg instead of Rad
 - UTM - LatLong conversion
