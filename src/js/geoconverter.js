@@ -406,42 +406,59 @@
     * Universal Transverse Mercator projection.
     *
     * Inputs:
-    *   latlon - Array of Latitude and Longitude of the point, in degrees.
-    *   zone - UTM zone to be used for calculating values for x and y.
-    *          If zone is less than 1 or greater than 60, the routine
-    *          will determine the appropriate zone from the value of lon.
+    *   latlon - a geoLatLon object having Latitude and Longitude of the point, in degrees.
     *
     * Outputs:
-    *   utm - A 4-element array where the UTM zone, band, x and y values will be stored.
+    *   utm - A geuUtm object, where the UTM zone, band, easting (x) and northing (y) values will be stored.
     *
     * Returns:
-    *   The UTM zone used for calculating the values of x and y.
+    *   The UTM object
     *
     */
     function LatLonToUTM (latlon, utm)
     {
-		var latRad = DegToRad(latlon[0]);
-		var lonRad = DegToRad(latlon[1]);
+		var latRad = DegToRad(latlon.lat);
+		var lonRad = DegToRad(latlon.lon);
 
         // Compute the UTM zone.
-        var zone = Math.floor ((latlon[1] + 180.0) / 6) + 1;
+        var zone = Math.floor ((latlon.lon + 180.0) / 6) + 1;
+        var band = GetBandLetter(latlon);
 		var xy = Array(2);
 
-        MapLatLonToXY (latRad, lonRad, UTMCentralMeridian (zone), xy);
+        MapLatLonToXY (latRad, lonRad, UTMCentralMeridian(zone), xy);
 
-        /* Adjust easting and northing for UTM system. */
-		utm[0] = zone;
-		utm[1] = "N";
-        utm[2] = xy[0] * UTMScaleFactor + 500000.0;
-        utm[3] = xy[1] * UTMScaleFactor;
-        if (utm[3] < 0.0) {
-            utm[3] = utm[3] + 10000000.0;
-			utm[1] = "S";
+		if (utm == null)
+			utm = new geoUtm();
+		utm.zone = zone;
+		utm.band = band;
+		
+        // Adjust easting and northing for UTM system. 
+        utm.easting = xy[0] * UTMScaleFactor + 500000.0;
+        utm.northing = xy[1] * UTMScaleFactor;
+        if (utm.northing < 0.0) {
+            utm.northing = utm.northing + 10000000.0;
 		}
 
+		// Adjust zone for Southern Norway and Svalbard
+		// ToDo: 32V and 31-37X
+		
         return utm;
     }
     
+	function GetBandLetter(latlon) {
+		var bandLetters = "CDEFGHJKLMNPQRSTUVW";
+        var band;
+
+		if (latlon.lat < -80) {
+			band = (latlon.lon < 0 ? "A" : "B");
+		} else if (latlon.lat >= 84) {
+			band = (latlon.lon < 0 ? "Y" : "Z");
+		} else {
+			var bandNo = Math.floor(latlon.lat / 8) + 10;
+			band = bandLetters[bandNo];
+		}
+		return band;
+	}
     
     
     /*
@@ -451,26 +468,24 @@
     * projection to a latitude/longitude pair.
     *
     * Inputs:
-    *	x - The easting of the point, in meters.
-    *	y - The northing of the point, in meters.
-    *	zone - The UTM zone in which the point lies.
-    *	southhemi - True if the point is in the southern hemisphere;
-    *               false otherwise.
+	*   utm - a geoUtm object, containing
+    *	       zone     - The UTM zone in which the point lies.
+    *	       easting  - The easting (x) of the point, in meters.
+    *	       northing - The northing (y) of the point, in meters.
     *
     * Outputs:
-    *	latlon - A 2-element array containing the latitude and
-    *            longitude of the point, in radians.
+    *	latlon - A geoLatLon object the latitude and longitude of the point, in degrees.
     *
     * Returns:
-    *	The function does not return a value.
+    *	The latlon object
     *
     */
     function UTMToLatLon (utm, latlon)
     {
-		var zone = utm[0];
-		var southhemi = (utm[1] == "S") ? true : false;
-		var x = utm[2];
-		var y = utm[3];
+		var zone = utm.zone;
+		var southhemi = (utm.getHemisphere() == "N") ? false : true;
+		var x = utm.easting;
+		var y = utm.northing;
 		
         var cmeridian;
         	
@@ -484,11 +499,16 @@
         y /= UTMScaleFactor;
         
         cmeridian = UTMCentralMeridian (zone);
-        MapXYToLatLon (x, y, cmeridian, latlon);
+		var rad = new Array(2);
+        MapXYToLatLon (x, y, cmeridian, rad);
         
 		// Convert back to degrees
-		latlon[0] = RadToDeg(latlon[0]);
-		latlon[1] = RadToDeg(latlon[1]);
+		if (latlon == null) {
+			latlon = new geoLatLon(RadToDeg(rad[0]), RadToDeg(rad[1]));
+		} else {
+			latlon.lat = RadToDeg(rad[0]);
+			latlon.lon = RadToDeg(rad[1]);
+		}
 		
         return latlon;
     }

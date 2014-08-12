@@ -66,8 +66,7 @@
 			easting = -easting;
 		}
 		
-		var utm = [zone, band, easting, northing]
-		_self.dbg(zone + band + " " + easting + "E " + northing + "N");
+		var utm = new geoUtm(zone, band, easting, northing);
 		return utm;
 	}
 

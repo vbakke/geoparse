@@ -13,34 +13,39 @@
 <script type="text/javascript">
 	var test = document.getElementById("divTest");
 	
-	var g = new geoLatLon(59.155,-9.999);
-	test.innerHTML += "<br/>Test class: " + g.toString();
-	var g = new geoLatLon(-45.155,174.999);
-	test.innerHTML += "<br/>Test class: " + g.toString(" : N d° m' s\" : ");
-	test.innerHTML += "<br/>Test class: " + g.toString("[do m s N]", ", ", true, true);
-	test.innerHTML += "<br/>Test class: " + g.toString("d° m N", ", ", true);
-	test.innerHTML += "<br/>Test class: " + g.toString("d° N", ", ", true);
+	var utm = new geoUtm();
+	var latlon = new geoLatLon(59.155,9.999);
+	test.innerHTML += "<br/>Test toString(): " + latlon.toString();
+	//var latlon = new geoLatLon(-45.155,174.999);
+	test.innerHTML += "<br/>Test toString(): " + latlon.toString(" : N d° m' s\" : ");
+	test.innerHTML += "<br/>Test toString(): " + latlon.toString("[do m s N]", ", ", true, true);
+	test.innerHTML += "<br/>Test toString(): " + latlon.toString("d° m N", ", ", true);
+	test.innerHTML += "<br/>Test toString(): " + latlon.toString("d° N", ", ", true);
 
-	var utm = new Array(4);
-	var latlon = new Array(2);
 	
-	var lat = 59.0;
-	var lon = 9.0;
-	var latlon = [lat, lon];
 	
-	test.innerHTML += "<br/>Test case: " + " N " + lat + " E " + lon;
+	test.innerHTML += "<br/>Test case: " + " N " + latlon.lat + " E " + latlon.lon;
 	
 	
 	
 	
-	var utm2 = LatLonToUTM(latlon, utm);
-	test.innerHTML += "<br/>Converted to UTM: " + utm[0] + utm[1] + " " + utm[2] + "mE " + utm[3] + "mN ";
-	test.innerHTML += "<br/>Converted to UTM: " + utm2[0] + utm2[1] + " " + utm2[2] + "mE " + utm2[3] + "mN ";
+	LatLonToUTM(latlon, utm);
+	var utmStr = utm.toString();
+	
+	test.innerHTML += "<br/>Converted to UTM: " + utmStr;
+	
+	// Parse UtmStr
+	utm = utmparse.parseUtm(utmStr);
+	test.innerHTML += "<br/>Parsed back as: " + utm.toString();
 
-
-	var latlon2 = UTMToLatLon (utm, latlon);
+	UTMToLatLon (utm, latlon);
+	var latlonStr = latlon.toString();
+	test.innerHTML += "<br/>Converted back to Lat/Lon: " + latlonStr;
 	
-	test.innerHTML += "<br/>Converted back to: " + " N " + latlon2[0] + "° E " + latlon2[1] + "°";
+	// Parse latlonStr 
+	latlon = geoparse.parseGeo(latlonStr);
+	test.innerHTML += "<br/>Parsed back as: " + latlon.toString();
+
 
 	utmparse.setDebugDiv("divDebug");
 	geoparse.setDebugDiv("divDebug");

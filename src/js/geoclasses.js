@@ -120,26 +120,43 @@ function geoLatLon(lat, lon) {
 	};
 }
 
-function geoUtm() {
-	this.zone = -1;
-	this.band = "";  // Strict UTM uses only N and S for band. However, the defacto standard is using MGRS band A-Z.
-	this.easting = "";
-	this.northing = "";
+// Strict UTM doesn't use MGRS band A-Z. 
+// However, the defacto standard is using band, and it easier to calculate the band while still having access to the lat lon values in the conversion.
+// If the band is unknown, set band to "+" or "-" to indicate Northern or Souther hemisphere, respectively.
+function geoUtm(zone, band, easting, northing) {
+	this.zone = zone;
+	this.band = band;  
+	this.easting = easting;
+	this.northing = northing;
 	
-	this.toString = function (showEastBeforeNorth, delim) {	
-		showEastBeforeNorth = (typeof showEastBeforeNorth === "undefined") ? false : showEastBeforeNorth;
+	this.toString = function (useStrictUtm, showNorthBeforeEast, delim) {	
+		useStrictUtm = (typeof useStrictUtm === "undefined") ? false : useStrictUtm;
+		showNorthBeforeEast = (typeof showNorthBeforeEast === "undefined") ? false : showNorthBeforeEast;
 		delim = (typeof delim === "undefined") ? " " : delim;
 
-		var str = this.zone + this.band;
+		var str = this.zone + (useStrictUtm ? this.getHemisphere() : this.band);
+		
 		var strE = this.easting.toFixed(0);
 		var strN = this.northing.toFixed(0);
 		
-		if (showEastBeforeNorth) {
-			str += " " + strE + delim + strN;
-		} else {
+		if (showNorthBeforeEast) {
 			str += " " + strN + delim + strE;
+		} else {
+			str += " " + strE + delim + strN;
 		}
 		
 		return str;
 	};
+	
+	this.getHemisphere = function () {
+		if (this.band == "+")
+			return "N";
+		if (this.band == "-")
+			return "S";
+
+		if (this.band >= "N")
+			return "N";
+		else
+			return "S";
+	}
 }

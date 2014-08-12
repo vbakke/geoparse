@@ -11,7 +11,7 @@
 	var _WEST = "W";
 	
 	var _dirChars = _NORTH+_SOUTH+_EAST+_WEST;
-	var _degChars = "0-9.,\"'º -";
+	var _degChars = "0-9.,°°º^~\*'\" -";
 	var _geoRe = RegExp("\s*(["+_dirChars+"]?)\s*(["+_degChars+"]+)[,\s]*(["+_dirChars+"]?)[,\s]*(["+_degChars+"]+)\s*(["+_dirChars+"]?)");
 
 	var _self = {};
@@ -56,7 +56,7 @@
 			longititude = -longititude;
 		}
 		
-		var geo = [latitude, longititude]
+		var geo = new geoLatLon(latitude, longititude);
 		return geo;
 	}
 

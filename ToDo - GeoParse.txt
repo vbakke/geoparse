@@ -2,13 +2,12 @@ ToDo
 ====
 - Turn geoconverter into a module
 - Merge UTM parse into GeoParse.js
+- Formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
 
 Backlog
 =======
-- Parse Lat/Lon: Allow the varous degree-like symbols
 - Parse UTM: If no NSEW is present, use the number with 6 digits as easting
 - Allow swap northing/easting if no directional letter is present
-- Formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
 - Public site on vafe.net
 - Add Google Analytics
 - Add Map on HTML page
@@ -36,6 +35,7 @@ Backlog
 
 Done
 ====
+- Parse Lat/Lon: Allow the various degree-like symbols
 - Formatting LatLong
 - Formatting UTM
 - Fix UTM: Handle zone and zone band in UTMXYToLatLon() and LatLonToUTMXY()
