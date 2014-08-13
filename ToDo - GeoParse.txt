@@ -1,17 +1,17 @@
 ToDo
 ====
-- Turn geoconverter into a module
 - Merge UTM parse into GeoParse.js
+- Test 32V, 31V, and 31-37X
 - Formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
+- Turn geoconverter into a module
 
 Backlog
 =======
 - Parse UTM: If no NSEW is present, use the number with 6 digits as easting
-- Allow swap northing/easting if no directional letter is present
 - Public site on vafe.net
 - Add Google Analytics
 - Add Map on HTML page
-- Test 32V, 31V, and 31-37X
+- GUI/Parse: Allow swap northing/easting if no directional letter is present
 - Map: Choose between different maps
 - Log used coordinates to DB
 - Improve UI of HTML page
