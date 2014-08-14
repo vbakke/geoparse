@@ -3,7 +3,6 @@
 	<script src=".\js\geoclasses.js"></script>
 	<script src=".\js\geoconverter.js"></script>
 	<script src=".\js\geoparse.js"></script>
-	<script src=".\js\utmparse.js"></script>
 	<!--script src=".\geoparse_test.js"></script>
 	<script src=".\utmparse_test.js"></script-->
 </head>
@@ -35,7 +34,7 @@
 	test.innerHTML += "<br/>Converted to UTM: " + utmStr;
 	
 	// Parse UtmStr
-	utm = utmparse.parseUtm(utmStr);
+	utm = geoparse.parseUtm(utmStr);
 	test.innerHTML += "<br/>Parsed back as: " + utm.toString();
 
 	UTMToLatLon (utm, latlon);
@@ -43,16 +42,15 @@
 	test.innerHTML += "<br/>Converted back to Lat/Lon: " + latlonStr;
 	
 	// Parse latlonStr 
-	latlon = geoparse.parseGeo(latlonStr);
+	latlon = geoparse.parseLatLon(latlonStr);
 	test.innerHTML += "<br/>Parsed back as: " + latlon.toString();
 
 
-	utmparse.setDebugDiv("divDebug");
 	geoparse.setDebugDiv("divDebug");
 	
 	function onClickConvertUtm() {
 		var str = document.getElementById("txtCoordinate").value;
-		var utmTry = utmparse.parseUtm(str);
+		var utmTry = geoparse.parseUtm(str);
 		
 		var div = document.getElementById("divResult");
 		if (utmTry) {			
@@ -70,11 +68,11 @@
 	}
 	function onClickConvertGeo() {
 		var str = document.getElementById("txtCoordinate").value;
-		var geoTry = geoparse.parseGeo(str);
+		var geoTry = geoparse.parseLatLon(str);
 
 		var div = document.getElementById("divResult");
 		if (geoTry) {
-			div.innerHTML += "" + "Parsed as Lat/Long: " + geoTry.toString() + "<br/>\n";
+			div.innerHTML = "" + "Parsed as Lat/Long: " + geoTry.toString() + "<br/>\n";
 			
 			var utm = LatLonToUTM(geoTry);
 			div.innerHTML += "" + "UTM: " + utm.toString() + "<br/>\n";
