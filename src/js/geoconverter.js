@@ -13,9 +13,9 @@
  *
  */
 
-//var geoconvert = (function () {
+var geoconverter = (function () {
 	
-//	var _self = {};
+	var _self = {};
 
     var pi = 3.14159265358979;
 
@@ -407,6 +407,7 @@
     *
     * Inputs:
     *   latlon - a geoLatLon object having Latitude and Longitude of the point, in degrees.
+	*   zone   - normally zone is left undefined.
     *
     * Outputs:
     *   utm - A geuUtm object, where the UTM zone, band, easting (x) and northing (y) values will be stored.
@@ -415,16 +416,34 @@
     *   The UTM object
     *
     */
-    function LatLonToUTM (latlon, utm)
+    _self.LatLonToUTM = function (latlon, utm, zone)
     {
 		var latRad = DegToRad(latlon.lat);
 		var lonRad = DegToRad(latlon.lon);
 
         // Compute the UTM zone.
-        var zone = Math.floor ((latlon.lon + 180.0) / 6) + 1;
         var band = GetBandLetter(latlon);
-		var xy = Array(2);
+		if (zone == undefined) {
+			zone = Math.floor ((latlon.lon + 180.0) / 6) + 1;
 
+			// Adjust zone for Southern Norway and Svalbard
+			if (band == "V" && zone == 31 && latlon.lon >= 3) {
+				zone = 32;
+			} else {
+				if (band == "X" && zone >= 31) {
+					if (latlon.lon < 15)
+						zone = 31;
+					else if (latlon.lon < 27)
+						zone = 33;
+					else if (latlon.lon < 39)
+						zone = 35;
+					else if (latlon.lon < 48)
+						zone = 37;
+				}
+			}
+		}
+
+		var xy = Array(2);
         MapLatLonToXY (latRad, lonRad, UTMCentralMeridian(zone), xy);
 
 		if (utm == null)
@@ -439,14 +458,25 @@
             utm.northing = utm.northing + 10000000.0;
 		}
 
-		// Adjust zone for Southern Norway and Svalbard
 		// ToDo: 32V and 31-37X
 		
         return utm;
     }
     
+	/*
+	* GetBandLetter
+	*
+	* Return the MGRS band letter for the given latlon coordinate.
+	*
+	* Inputs:
+	*   latlon - a geoLatLon object with lat and lon in degrees
+	*
+	* Returns:
+	*   
+	*
+	*/
 	function GetBandLetter(latlon) {
-		var bandLetters = "CDEFGHJKLMNPQRSTUVW";
+		var bandLetters = "CDEFGHJKLMNPQRSTUVWX";
         var band;
 
 		if (latlon.lat < -80) {
@@ -480,7 +510,7 @@
     *	The latlon object
     *
     */
-    function UTMToLatLon (utm, latlon)
+    _self.UTMToLatLon = function (utm, latlon)
     {
 		var zone = utm.zone;
 		var southhemi = (utm.getHemisphere() == "N") ? false : true;
@@ -625,5 +655,5 @@
     }
 
 	
-//	return _self;
-//}());
+	return _self;
+}());

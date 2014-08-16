@@ -15,9 +15,9 @@
 	var _numChars = "0-9,.";
 	var _degreesChars = "0-9.,°°ºo^~\*'\" -";
 	var _delimChars = ",|\\/ ";
-	var _zoneBandChars = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-	var _latLonRe = RegExp("\s*(["+_dirChars+"]?)\s*(["+_degreesChars+"]+)\s*(["+_dirChars+"]?)["+_delimChars+"]*(["+_dirChars+"]?)(["+_degreesChars+"]+)\s*(["+_dirChars+"]?)");
-	var _utmRe = RegExp("\s*(["+_digitChars+"]{1,2}) *(["+_zoneBandChars+"]) *(["+_dirChars+"]?) *(["+_numChars+"]+)m? *(["+_dirChars+"]?)[, ]*(["+_dirChars+"]?) *(["+_numChars+"]+) *m? *(["+_dirChars+"]?)");
+	var _zoneBandChars = "A-HJ-NP-Z";
+	var _latLonRe = RegExp("\s*(["+_dirChars+"]?)\s*(["+_degreesChars+"]+)\s*(["+_dirChars+"]?)["+_delimChars+"]+(["+_dirChars+"]?)(["+_degreesChars+"]+)\s*(["+_dirChars+"]?)");
+	var _utmRe = RegExp("\s*(["+_digitChars+"]{1,2}) *(["+_zoneBandChars+"]) *(["+_dirChars+"]?) *(["+_numChars+"]+) *(["+_dirChars+"]?)["+_delimChars+"]*(["+_dirChars+"]?) *(["+_numChars+"]+) *(["+_dirChars+"]?)");
 
 	var _self = {};
 	
@@ -25,6 +25,10 @@
 	// Parse string containing latitude and longitude
 	//
 	_self.parseLatLon = function (str) {
+		if (str == undefined || str == null)
+			return undefined;
+		
+		// Check if it matches the reg.exp.
 		str = str.toUpperCase() + " ";
 		var parts = _latLonRe.exec(str);
 
@@ -42,8 +46,16 @@
 
 		_self.dbg("<br/>"+str);
 		// If directions are placed _after_ degrees, move them
-		dir1 = (dir1 == "") ? dir1b : dir1;
-		dir2 = (dir2 == "") ? dir2b : dir2;
+		if (dir1 == "") { 
+			dir1 = dir1b;
+			dir1b = "";
+		}
+		if (dir2 == "") {
+			if (dir2b == "")
+				dir2 = dir1b;
+			else
+				dir2 = dir2b;
+		}
 
 		// If longitude is placed before latitude, swap them
 		if (dir1 == _EAST || dir1 == _WEST || dir2 == _NORTH || dir2 == _SOUTH) {
@@ -74,6 +86,9 @@
 	// Parse string containing UTM coordinates
 	//
 	_self.parseUtm = function (str) {
+		if (str == undefined || str == null)
+			return undefined;
+		
 		var parts = _utmRe.exec(str.toUpperCase());
 		_self.dbg("<br/><b>"+str+"</b>");
 		_self.dbg(parts);
@@ -265,7 +280,7 @@
 		if (_self.dbgDiv) {
 			var dbgDiv = document.getElementById("dbgDiv");
 			if (dbgDiv) {
-				dbgDiv.innerHTML += "<br/>" + str + "\n";
+				dbgDiv.innerHTML = str + "<br/>\n" + dbgDiv.innerHTML;
 			}
 		}
 	}

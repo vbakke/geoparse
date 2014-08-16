@@ -1,4 +1,4 @@
-<html>
+﻿<html>
 <head>
 	<script src=".\js\geoclasses.js"></script>
 	<script src=".\js\geoconverter.js"></script>
@@ -28,7 +28,7 @@
 	
 	
 	
-	LatLonToUTM(latlon, utm);
+	geoconverter.LatLonToUTM(latlon, utm);
 	var utmStr = utm.toString();
 	
 	test.innerHTML += "<br/>Converted to UTM: " + utmStr;
@@ -37,7 +37,7 @@
 	utm = geoparse.parseUtm(utmStr);
 	test.innerHTML += "<br/>Parsed back as: " + utm.toString();
 
-	UTMToLatLon (utm, latlon);
+	geoconverter.UTMToLatLon (utm, latlon);
 	var latlonStr = latlon.toString();
 	test.innerHTML += "<br/>Converted back to Lat/Lon: " + latlonStr;
 	
@@ -56,11 +56,16 @@
 		if (utmTry) {			
 			div.innerHTML = "Parsed as UTM: " + utmTry + "<br/>\n";
 
-			var latlon = UTMToLatLon (utmTry);			
+			var latlon = geoconverter.UTMToLatLon (utmTry);			
 			div.innerHTML += "" + "Geo: " + latlon.toString() + "<br/>\n";
 			
-			var utm = LatLonToUTM(latlon);
+			var utm = geoconverter.LatLonToUTM(latlon);
 			div.innerHTML += "Back again to UTM: " + utm.toString() + "<br/>";
+
+			var utm33 = geoconverter.LatLonToUTM(latlon, undefined, 33);
+			var posStr = utm33.easting+"/"+utm33.northing;
+			var urlN = "http://norgeskart.no/#12/"+posStr+"/m/"+posStr;
+			div.innerHTML += "In UTM zone 33: <a href=\""+urlN+"\" target=\"_blank\">" + utm33.toString() + "</a><br/>";
 		} else {
 			div.innerHTML = "Cannot parse the UTM coordinate";
 		}
@@ -74,10 +79,10 @@
 		if (geoTry) {
 			div.innerHTML = "" + "Parsed as Lat/Long: " + geoTry.toString() + "<br/>\n";
 			
-			var utm = LatLonToUTM(geoTry);
+			var utm = geoconverter.LatLonToUTM(geoTry);
 			div.innerHTML += "" + "UTM: " + utm.toString() + "<br/>\n";
 			
-			var latlon = UTMToLatLon(utm);
+			var latlon = geoconverter.UTMToLatLon(utm);
 			div.innerHTML += "Back again to Lat/Long: " + latlon.toString() + "<br/>";
 		} else {
 			div.innerHTML = "Cannot parse Lat/Long coordinate ";

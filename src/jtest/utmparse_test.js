@@ -2,7 +2,9 @@
 	
 	var _self = {};
 	var _testdata = [
+		["32V 500000E, 2100827N", [32, 500000, 2100827]],
 		["32V 500000mE, 2100827mN", [32, 500000, 2100827]],
+		["32V 500000mE | 2100827mN", [32, 500000, 2100827]],
 		["UTM 32V 500000, 2100827", [32, 500000, 2100827]],
 		["32 V N2100827, 500000E", [32, 500000, 2100827]],
 		["32N E500000 N2100827", [32, 500000, 2100827]],
@@ -11,6 +13,11 @@
 		["32A 2100827N, 500000E", [32, 500000, 2100827]],
 		["32S 2100827N, 500000E", [32, 500000, 2100827]],
 		["" [0,0,0]]];
+	
+	// NØ: UTM 32W 353646E 7100664N
+	// NV: UTM 31W 646448E 7100664N
+	// SV: UTM 32V 353060E 7100190N
+	// SØ: UTM 32V 353646E 7100190N
 	
 	
 	_self.createTable = function () {
@@ -30,14 +37,14 @@
 		
 		html = "";
 		html += "<td>"+teststr+"</td>\n";
-		utm = utmparse.parseUtm(teststr);
+		utm = geoparse.parseUtm(teststr);
 		if (utm == null) {
 			html += '<td colspan="2">null</td>';
 		} else {
-			html += "<td>"+utm[0]+"</td>\n";
-			html += "<td>"+utm[1]+"</td>\n";
-			html += "<td>"+utm[2]+"</td>\n";
-			html += "<td>"+utm[3]+"</td>\n";
+			html += "<td>"+utm.zone+"</td>\n";
+			html += "<td>"+utm.band+"</td>\n";
+			html += "<td>"+utm.easting+"</td>\n";
+			html += "<td>"+utm.northing+"</td>\n";
 			if (expectedPos && expectedPos.length==2) {
 				html += "<td>"+_self.utmDiff(utm, expectedPos)+"</td>\n";
 			}

@@ -1,7 +1,7 @@
-<html>
+﻿<html>
 <head>
+<script src="..\js\geoclasses.js"></script>
 <script src="..\js\geoparse.js"></script>
-<script src="..\js\utmparse.js"></script>
 <script src=".\geoparse_test.js"></script>
 <script src=".\utmparse_test.js"></script>
 </head>
@@ -13,7 +13,7 @@
 	utmDiv = document.getElementById("utmDiv");
 	geoDiv = document.getElementById("geoDiv");
 	
-	utmparse.setDebugDiv("dbgDiv");
+	geoparse.setDebugDiv("dbgDiv");
 	utmDiv.innerHTML += utmparse_test.createTable();
 	geoDiv.innerHTML += geoparse_test.createTable();
 </script>
