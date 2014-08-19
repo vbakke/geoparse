@@ -7,14 +7,16 @@ ToDo
   - Each coordinate is added to the table
   - Add a clear button
   - Add a live map
-  
-  - Refactor position array
   - Init map world scale
   - Init map with current location
+  
   - Calculate center and zoom with multiple markers
-  - Add formatting based on last row  
+  - Refactor position array
+  - Add formatting based on config
+  - Update table when formatting config changes
   - Add input field for pos label, updating
   - Allow shorthand for parsing UTM
+  - Add parsing based on last row / current location
   - Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
   - Add address, lookup with google
   - Fix column width, and layout

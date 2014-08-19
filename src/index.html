@@ -14,17 +14,21 @@
 <body>
 <div id="divAll">
 	<div id="divPanel">
-		 <div id="divHeader"><span class="header">EARTH</span></div>
-		 <div id="divInput">
+		<div id="divHeader"><span class="header">EARTH</span></div>
+		<div id="divInput">
+			<div style="float:left;">
 		    	  Enter coordinate: <input id="txtCoordinate" style="width:200px" ><!--autofocus-->  
+			</div>
+			<div style="float:left;">
 				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()">Convert UTM</button>
 				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()">Convert Lat/Long</button>
-				  <div id="divMyLocation" style="float:right">
+			</div>
+			<div id="divMyLocation" style="float:right">
 					<span id="sMyLocation"></span>
 					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()">Add my location</button>
-				  </div>
-		 </div>
-		 <div id="divTable">
+			</div>
+		</div>
+		<div id="divTable">
 			 <table id="posTable">
 			  		 <thead>
 			  		 <!--tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr-->
@@ -59,12 +63,37 @@
 				{label:"Test2", src: "utm", latlon: new geoLatLon(59.234,9.345), utm: new geoUtm(32, "V", 5567554, 6001987)},
 				];
 
+	var initZoomLevel = 2;
+	var firstZoomLevel = 7;
+	
 	var myLocation = undefined; // a geoLatLon object
-	var mapCenter = new google.maps.LatLng(59.1, 9.17002);
-	var parliament = new google.maps.LatLng(59.327383, 18.06747);
 	var markers;
 	var map;
 
+	function initialize() {
+		initMap("divMap2");
+		displayLocations();
+	}
+	function initMap(div) {
+		var mapOptions = {
+			zoom: initZoomLevel,
+			center: new google.maps.LatLng(0, 0),
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		  };
+		
+		map = new google.maps.Map(document.getElementById(div), mapOptions);
+
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function (location) {
+				map.setCenter(new google.maps.LatLng(location.coords.latitude, location.coords.longitude));
+				map.setZoom(firstZoomLevel);
+				myLocation = new geoLatLon(location.coords.latitude, location.coords.longitude);
+			});
+		} 
+
+	}
+
+	
 	function onClickConvertGeo() {
 		var orgStr = $("#txtCoordinate").val();
 		var latlon = geoparse.parseLatLon(orgStr);
@@ -132,59 +161,6 @@
 		displayLocationsOnMap();
 	}
 	
-	function displayLocationsOnMap() {
-		if (map == undefined)
-			initMap();
-		
-		for (var i=0; i<posArray.length; i++) {
-			var pos = posArray[i];
-			if (pos.marker == undefined) {
-				var markerPos = new google.maps.LatLng(pos.latlon.lat, pos.latlon.lon);
-				var markerOptions = {
-										map:map,
-										draggable:true,
-										animation: google.maps.Animation.DROP,
-										position: markerPos
-									};
-				
-				marker = new google.maps.Marker(markerOptions);
-				pos.marker = marker;
-			}
-		}
-	}
-	
-	function initMap() {
-		var mapOptions = {
-			zoom: 8,
-			center: mapCenter
-		  };
-		
-		map = new google.maps.Map(document.getElementById("divMap2"), mapOptions);
-		
-		/*
-		marker = new google.maps.Marker({
-									map:map,
-		
-			*/
-		//posArray = [];
-		displayLocations();
-	}
-	
-	function copyToClipboard(b, str) {
-		alert("Str: '"+str+"'");
-		
-		var clip = new ClipboardEvent( 'copy' );
-		clip.clipboardData.setData( 'text/plain', str);
-		clip.preventDefault();
-		
-		b.target.dispatchEvent( clip );
-		
-	}
-
-	function displayLocations() {
-		generateTable();
-		displayLocationsOnMap();
-	}
 	
 	function displayLocationsOnMap() {
 		if (map == undefined)
@@ -202,35 +178,13 @@
 									};
 				
 				marker = new google.maps.Marker(markerOptions);
+				//google.maps.event.addListener(marker, 'click', toggleBounce);
 				pos.marker = marker;
 			}
 		}
 	}
 	
-	function initialize() {
-		initMap();
-		displayLocations();
-	}
-	function initMap() {
-		var mapOptions = {
-			zoom: 8,
-			center: mapCenter
-		  };
-		
-		map = new google.maps.Map(document.getElementById("divMap2"), mapOptions);
-		
-		//*
-		marker = new google.maps.Marker({
-									map:map,
-									draggable:true,
-									animation: google.maps.Animation.DROP,
-									position: parliament
-		  });
-		  // */
-		  //google.maps.event.addListener(marker, 'click', toggleBounce);
-	}
 
-	google.maps.event.addDomListener(window, 'load', initialize);
 
 	function generateTable() {
 		var labelLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -245,7 +199,9 @@
 			tb.append("<tr><td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td></tr>");
 		}
 	}
-	
+
+	// Add on load event to initialize the whole shebang
+	google.maps.event.addDomListener(window, 'load', initialize);
 </script>
 </body>
 </html>
