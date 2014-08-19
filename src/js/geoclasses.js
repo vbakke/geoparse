@@ -11,7 +11,7 @@ function geoLatLon(lat, lon) {
 	this.toString = function (format, delim, useNegatives, showEastBeforeNorth) {	
 		// ====================================
 		// Define default values for parameters
-		format = (typeof format === "undefined") ? "N d° m' s\"" : format;
+		format = (typeof format === "undefined") ? "d° m' s\" N" : format;
 		delim = (typeof delim === "undefined") ? " " : delim;
 		useNegatives = (typeof useNegatives === "undefined") ? false : useNegatives;
 		showEastBeforeNorth = (typeof showEastBeforeNorth === "undefined") ? false : showEastBeforeNorth;
@@ -147,6 +147,7 @@ function geoUtm(zone, band, easting, northing) {
 		
 		return str;
 	};
+	
 	
 	this.getHemisphere = function () {
 		if (this.band == "+")

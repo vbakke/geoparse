@@ -1,105 +1,251 @@
-﻿<html>
+<html>
 <head>
+	<meta charset="UTF-8">
+	<meta name="description" content="Convert between UTM and Latitude/Longitude, using any format">
+	<meta name="keywords" content="online,convert,conversion,UTM,Latitude/Longitude,latlon,lat,long,long,gps,map,location,coordinate,map coordinate">
+
+	<link rel="stylesheet" type="text/css" href="./css/geoparse.css">
 	<script src=".\js\geoclasses.js"></script>
 	<script src=".\js\geoconverter.js"></script>
 	<script src=".\js\geoparse.js"></script>
-	<!--script src=".\geoparse_test.js"></script>
-	<script src=".\utmparse_test.js"></script-->
+	<script src=".\js\jquery-1.11.1.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
 </head>
 <body>
-	<div id="divTest">Test
+<div id="divAll">
+	<div id="divPanel">
+		 <div id="divHeader"><span class="header">EARTH</span></div>
+		 <div id="divInput">
+		    	  Enter coordinate: <input id="txtCoordinate" style="width:200px" ><!--autofocus-->  
+				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()">Convert UTM</button>
+				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()">Convert Lat/Long</button>
+				  <div id="divMyLocation" style="float:right">
+					<span id="sMyLocation"></span>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()">Add my location</button>
+				  </div>
+		 </div>
+		 <div id="divTable">
+			 <table id="posTable">
+			  		 <thead>
+			  		 <!--tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr-->
+			  		 <tr><th>Label</th><th>Latitude / logingtude</th><th>UTM</th></tr>
+					 </thead>
+					 <tbody>
+					 </tbody>
+					 <tfoot>
+			  		 <tr>
+					 	 <td><button id="btnClear" class="rounded-corners" onclick="clearLocations()" >Clear</button> </td>
+						 <td>
+						 	 <select class="rounded-corners" >
+							 		 <option>d°</option>
+									 <option>d°m'</option>
+									 <option selected>d°m's"</option>
+							 </select>
+							 <!-- ToDo: Ala http://proto.io/freebies/onoff/ -->
+						 	 <input id="latlonOrderNE" type="checkbox" checked class="rounded-corners" value="posNE">N before E
+						 </td>
+						 <td>
+							 <input id="utmOrderEN" type="checkbox" checked class="rounded-corners" value="posEN">E before N
+						 </td>
+					 </tr>
+					 </tfoot>
+				</table>
+		 </div>
 	</div>
+	<div id="divMap">Map<div id="divMap2"></div></div>
+</div>
 <script type="text/javascript">
-	var test = document.getElementById("divTest");
-	
-	var utm = new geoUtm();
-	var latlon = new geoLatLon(59.155,9.999);
-	test.innerHTML += "<br/>Test toString(): " + latlon.toString();
-	//var latlon = new geoLatLon(-45.155,174.999);
-	test.innerHTML += "<br/>Test toString(): " + latlon.toString(" : N d° m' s\" : ");
-	test.innerHTML += "<br/>Test toString(): " + latlon.toString("[do m s N]", ", ", true, true);
-	test.innerHTML += "<br/>Test toString(): " + latlon.toString("d° m N", ", ", true);
-	test.innerHTML += "<br/>Test toString(): " + latlon.toString("d° N", ", ", true);
+	var posArray = [{label:"Test1", src: "latlon", latlon: new geoLatLon(59,9), utm: new geoUtm(32, "V", 555555, 6666666)},
+				{label:"Test2", src: "utm", latlon: new geoLatLon(59.234,9.345), utm: new geoUtm(32, "V", 5567554, 6001987)},
+				];
 
-	
-	
-	test.innerHTML += "<br/>Test case: " + " N " + latlon.lat + " E " + latlon.lon;
-	
-	
-	
-	
-	geoconverter.LatLonToUTM(latlon, utm);
-	var utmStr = utm.toString();
-	
-	test.innerHTML += "<br/>Converted to UTM: " + utmStr;
-	
-	// Parse UtmStr
-	utm = geoparse.parseUtm(utmStr);
-	test.innerHTML += "<br/>Parsed back as: " + utm.toString();
+	var myLocation = undefined; // a geoLatLon object
+	var mapCenter = new google.maps.LatLng(59.1, 9.17002);
+	var parliament = new google.maps.LatLng(59.327383, 18.06747);
+	var markers;
+	var map;
 
-	geoconverter.UTMToLatLon (utm, latlon);
-	var latlonStr = latlon.toString();
-	test.innerHTML += "<br/>Converted back to Lat/Lon: " + latlonStr;
-	
-	// Parse latlonStr 
-	latlon = geoparse.parseLatLon(latlonStr);
-	test.innerHTML += "<br/>Parsed back as: " + latlon.toString();
-
-
-	geoparse.setDebugDiv("divDebug");
-	
-	function onClickConvertUtm() {
-		var str = document.getElementById("txtCoordinate").value;
-		var utmTry = geoparse.parseUtm(str);
-		
-		var div = document.getElementById("divResult");
-		if (utmTry) {			
-			div.innerHTML = "Parsed as UTM: " + utmTry + "<br/>\n";
-
-			var latlon = geoconverter.UTMToLatLon (utmTry);			
-			div.innerHTML += "" + "Geo: " + latlon.toString() + "<br/>\n";
-			
-			var utm = geoconverter.LatLonToUTM(latlon);
-			div.innerHTML += "Back again to UTM: " + utm.toString() + "<br/>";
-
-			var utm33 = geoconverter.LatLonToUTM(latlon, undefined, 33);
-			var posStr = utm33.easting+"/"+utm33.northing;
-			var urlN = "http://norgeskart.no/#12/"+posStr+"/m/"+posStr;
-			div.innerHTML += "In UTM zone 33: <a href=\""+urlN+"\" target=\"_blank\">" + utm33.toString() + "</a><br/>";
-		} else {
-			div.innerHTML = "Cannot parse the UTM coordinate";
-		}
-		
-	}
 	function onClickConvertGeo() {
-		var str = document.getElementById("txtCoordinate").value;
-		var geoTry = geoparse.parseLatLon(str);
-
-		var div = document.getElementById("divResult");
-		if (geoTry) {
-			div.innerHTML = "" + "Parsed as Lat/Long: " + geoTry.toString() + "<br/>\n";
-			
-			var utm = geoconverter.LatLonToUTM(geoTry);
-			div.innerHTML += "" + "UTM: " + utm.toString() + "<br/>\n";
-			
-			var latlon = geoconverter.UTMToLatLon(utm);
-			div.innerHTML += "Back again to Lat/Long: " + latlon.toString() + "<br/>";
+		var orgStr = $("#txtCoordinate").val();
+		var latlon = geoparse.parseLatLon(orgStr);
+		var utm = geoconverter.LatLonToUTM(latlon);
+		
+		addLocation(orgStr, latlon, utm);
+	}
+	function onClickConvertUtm() {
+		var orgStr = $("#txtCoordinate").val();
+		var utm = geoparse.parseUtm(orgStr);
+		var latlon = geoconverter.UTMToLatLon(utm);
+		
+		addLocation(orgStr, latlon, utm);
+	}
+	
+	
+	// Ask browser for location
+	function onClickAddMyPos() {
+		var span = $("#sMyLocation");
+		span.innerHTML = "";
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(showCurrentPosition);
 		} else {
-			div.innerHTML = "Cannot parse Lat/Long coordinate ";
+			span.innerHTML = "Geolocation is not supported by this browser.";
 		}
 	}
+	function showCurrentPosition(location) {
+		if (location == undefined) {
+			var span = $("#sMyLocation");
+			span.innerHTML = "Could not retrieve your location";
+		} else {
+			var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
+			var latlon = new geoLatLon(location.coords.latitude, location.coords.longitude);
+			var utm = geoconverter.LatLonToUTM(latlon);
+			var label = "Here";
+			addLocation(orgStr, latlon, utm, label);
+		}
+	}
+				
+	function addLocation(orgStr, latlon, utm, label) {
+		var loc = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
+		posArray.push(loc);
+		displayLocations();
+	}
+	function editLocation(index) {
+	}
+	function clearLocations() {
+		//for osArray = [];
+		displayLocations()
+	}
+	
+	function copyToClipboard(b, str) {
+		alert("Str: '"+str+"'");
+		
+		var clip = new ClipboardEvent( 'copy' );
+		clip.clipboardData.setData( 'text/plain', str);
+		clip.preventDefault();
+		
+		b.target.dispatchEvent( clip );
+		
+	}
 
+	function displayLocations() {
+		generateTable();
+		displayLocationsOnMap();
+	}
+	
+	function displayLocationsOnMap() {
+		if (map == undefined)
+			initMap();
+		
+		for (var i=0; i<posArray.length; i++) {
+			var pos = posArray[i];
+			if (pos.marker == undefined) {
+				var markerPos = new google.maps.LatLng(pos.latlon.lat, pos.latlon.lon);
+				var markerOptions = {
+										map:map,
+										draggable:true,
+										animation: google.maps.Animation.DROP,
+										position: markerPos
+									};
+				
+				marker = new google.maps.Marker(markerOptions);
+				pos.marker = marker;
+			}
+		}
+	}
+	
+	function initMap() {
+		var mapOptions = {
+			zoom: 8,
+			center: mapCenter
+		  };
+		
+		map = new google.maps.Map(document.getElementById("divMap2"), mapOptions);
+		
+		/*
+		marker = new google.maps.Marker({
+									map:map,
+		
+			*/
+		//posArray = [];
+		displayLocations();
+	}
+	
+	function copyToClipboard(b, str) {
+		alert("Str: '"+str+"'");
+		
+		var clip = new ClipboardEvent( 'copy' );
+		clip.clipboardData.setData( 'text/plain', str);
+		clip.preventDefault();
+		
+		b.target.dispatchEvent( clip );
+		
+	}
+
+	function displayLocations() {
+		generateTable();
+		displayLocationsOnMap();
+	}
+	
+	function displayLocationsOnMap() {
+		if (map == undefined)
+			initMap();
+		
+		for (var i=0; i<posArray.length; i++) {
+			var pos = posArray[i];
+			if (pos.marker == undefined) {
+				var markerPos = new google.maps.LatLng(pos.latlon.lat, pos.latlon.lon);
+				var markerOptions = {
+										map:map,
+										draggable:true,
+										animation: google.maps.Animation.DROP,
+										position: markerPos
+									};
+				
+				marker = new google.maps.Marker(markerOptions);
+				pos.marker = marker;
+			}
+		}
+	}
+	
+	function initialize() {
+		initMap();
+		displayLocations();
+	}
+	function initMap() {
+		var mapOptions = {
+			zoom: 8,
+			center: mapCenter
+		  };
+		
+		map = new google.maps.Map(document.getElementById("divMap2"), mapOptions);
+		
+		//*
+		marker = new google.maps.Marker({
+									map:map,
+									draggable:true,
+									animation: google.maps.Animation.DROP,
+									position: parliament
+		  });
+		  // */
+		  //google.maps.event.addListener(marker, 'click', toggleBounce);
+	}
+
+	google.maps.event.addDomListener(window, 'load', initialize);
+
+	function generateTable() {
+		var labelLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		var tb = $("#posTable tbody");
+		tb.empty();
+		for (var i=0; i<posArray.length; i++) {
+			var pos = posArray[i];
+			var labelStr = (pos.label == undefined) ? labelLetters[i%len(labelLetters)] : pos.label;
+			var latlonStr = pos.latlon.toString();
+			var utmStr = pos.utm.toString();
+			
+			tb.append("<tr><td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td></tr>");
+		}
+	}
+	
 </script>
-	<div id="divInput">
-			Coordinate: <input id="txtCoordinate" autofocus/> <button id="btnConvertUtm" type="submit" onclick="onClickConvertUtm()">Convert UTM</button><button id="btnConvertGeo"  onclick="onClickConvertGeo()">Convert Lat/Long</button>
-	</div>
-	<div id="extraUtmHemisphere" style="display: none;">
-		This UTM coordinate does not indicate wherther it is on the norther or southern hemisphere.<br/>
-		Is it on the <select ><option value="N">North</option><option value="S">South<option></select>
-	</div>
-	<div id="divResult">
-	</div>
-	<div id="divDebug">
-	</div>
 </body>
 </html>
