@@ -49,20 +49,28 @@
 						 	 <input id="latlonOrderNE" type="checkbox" checked class="rounded-corners" value="posNE">N before E
 						 </td>
 						 <td>
-							 <input id="utmOrderEN" type="checkbox" checked class="rounded-corners" value="posEN">E before N
+							 <div><input id="utmOrderEN" type="checkbox" checked class="rounded-corners" value="posEN">E before N</div>
+							 <div><input id="utmStrict" type="checkbox" class="rounded-corners" value="strict">Strict UTM</div>
+							 <div>Fixed zone: <input size="2" class="rounded-corners"></div>
 						 </td>
 					 </tr>
 					 </tfoot>
 				</table>
 		 </div>
 	</div>
-	<div id="divMap">Map<div id="divMap2"></div></div>
+	<div id="divMap"><div id="divMap2"></div>
+	<div>
+		<p>
+		Project in progress....  Currently, the 'clear' and any formatting does not work. And needs some heavy refactoring behind the scenes.
+		</p>
+		<p>
+		Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>.
+		</p>
+	</div>
+	</div>
 </div>
 <script type="text/javascript">
-	var posArray = [{label:"Test1", src: "latlon", latlon: new geoLatLon(59,9), utm: new geoUtm(32, "V", 555555, 6666666)},
-				{label:"Test2", src: "utm", latlon: new geoLatLon(59.234,9.345), utm: new geoUtm(32, "V", 5567554, 6001987)},
-				];
-
+	var posArray = [];
 	var initZoomLevel = 2;
 	var firstZoomLevel = 7;
 	
@@ -85,9 +93,13 @@
 
 		if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(function (location) {
-				map.setCenter(new google.maps.LatLng(location.coords.latitude, location.coords.longitude));
+				var lat = location.coords.latitude;
+				var lon = location.coords.longitude;
+
+				myLocation = new geoLatLon(lat, lon);
+
+				map.setCenter(new google.maps.LatLng(lat, lon));
 				map.setZoom(firstZoomLevel);
-				myLocation = new geoLatLon(location.coords.latitude, location.coords.longitude);
 			});
 		} 
 
@@ -105,6 +117,7 @@
 		var orgStr = $("#txtCoordinate").val();
 		var utm = geoparse.parseUtm(orgStr);
 		var latlon = geoconverter.UTMToLatLon(utm);
+		geoconverter.LatLonToUTM(latlon, utm);
 		
 		addLocation(orgStr, latlon, utm);
 	}
@@ -141,7 +154,7 @@
 	function editLocation(index) {
 	}
 	function clearLocations() {
-		//for osArray = [];
+		// osArray = [];
 		displayLocations()
 	}
 	
@@ -165,11 +178,14 @@
 	function displayLocationsOnMap() {
 		if (map == undefined)
 			initMap();
+
+		var boundingbox = new google.maps.LatLngBounds();
+		var markerPos;
 		
 		for (var i=0; i<posArray.length; i++) {
 			var pos = posArray[i];
 			if (pos.marker == undefined) {
-				var markerPos = new google.maps.LatLng(pos.latlon.lat, pos.latlon.lon);
+				markerPos = new google.maps.LatLng(pos.latlon.lat, pos.latlon.lon);
 				var markerOptions = {
 										map:map,
 										draggable:true,
@@ -180,7 +196,19 @@
 				marker = new google.maps.Marker(markerOptions);
 				//google.maps.event.addListener(marker, 'click', toggleBounce);
 				pos.marker = marker;
+			} else {
+				markerPos = pos.marker.getPosition()
 			}
+			boundingbox.extend(markerPos);
+		}
+		if (posArray.length == 0) {
+			//map.setZoom(firstZoomLevel);
+			// pass
+		} else if (posArray.length == 1) {
+			map.setCenter(markerPos);
+			map.setZoom(firstZoomLevel);
+		} else {
+			map.fitBounds(boundingbox);
 		}
 	}
 	
@@ -198,10 +226,23 @@
 			
 			tb.append("<tr><td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td></tr>");
 		}
+		if (posArray.length == 0) {
+			tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td></tr>");
+		}
 	}
 
 	// Add on load event to initialize the whole shebang
 	google.maps.event.addDomListener(window, 'load', initialize);
 </script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-6677714-3', 'auto');
+  ga('send', 'pageview');
+
+</script>XPnq7Fmo
 </body>
 </html>

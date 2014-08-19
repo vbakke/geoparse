@@ -140,9 +140,9 @@ function geoUtm(zone, band, easting, northing) {
 		var strN = this.northing.toFixed(0);
 		
 		if (showNorthBeforeEast) {
-			str += " " + strN + delim + strE;
+			str += " " + strN+"N" + delim + strE+"E";
 		} else {
-			str += " " + strE + delim + strN;
+			str += " " + strE+"E" + delim + strN+"N";
 		}
 		
 		return str;

@@ -1,16 +1,5 @@
 ToDo
-====
-- Improve UI of HTML page
-  - tmp
-  - pos = { orgStr: , orgType: , utm: , latlon: , label: , index: }
-  - Add my pos to table
-  - Each coordinate is added to the table
-  - Add a clear button
-  - Add a live map
-  - Init map world scale
-  - Init map with current location
-  
-  - Calculate center and zoom with multiple markers
+====  
   - Refactor position array
   - Add formatting based on config
   - Update table when formatting config changes
@@ -35,6 +24,8 @@ Backlog
 - Parse UTM: If no NSEW is present, use the number with 6 digits as easting
 
 - Log used coordinates to DB
+- Read url arguments to disable logging
+
 - Add heuristics for choosing UTM and LatLong 
 - Parse Multiple coordinates
 - Make multi-pos HTML
@@ -56,6 +47,16 @@ Backlog
 
 Done
 ====
+- Improve UI of HTML page
+  - tmp
+  - pos = { orgStr: , orgType: , utm: , latlon: , label: , index: }
+  - Add my pos to table
+  - Each coordinate is added to the table
+  - Add a clear button
+  - Add a live map
+  - Init map world scale
+  - Init map with current location
+  - Calculate center and zoom with multiple markers
 - Add Map on HTML page
 - Fix: jtest/ to use classes
 - Turn geoconverter into a module
