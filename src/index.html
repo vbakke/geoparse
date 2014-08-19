@@ -238,7 +238,7 @@
 		tb.empty();
 		for (var i=0; i<posArray.length; i++) {
 			var pos = posArray[i];
-			var labelStr = (pos.label == undefined) ? labelLetters[i%len(labelLetters)] : pos.label;
+			var labelStr = (pos.label == undefined) ? labelLetters[i%labelLetters.length] : pos.label;
 			var latlonStr = pos.latlon.toString();
 			var utmStr = pos.utm.toString();
 			
