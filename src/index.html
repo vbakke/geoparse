@@ -56,6 +56,7 @@
 					 </tr>
 					 </tfoot>
 				</table>
+				<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners">Åpne i Norgeskart.no</button>
 		 </div>
 	</div>
 	<div id="divMap"><div id="divMap2"></div>
@@ -63,7 +64,7 @@
 		<p>
 		Project in progress....  Currently, 'Clear' and formatting don't work. As well as a number of known bugs. Some heavy refactoring behind the scenes is also required.
 		</p>
-		<p>
+		<p style="margin-bottom:0;">
 		Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
 		</p>
 	</div>
@@ -133,6 +134,36 @@
 			span.innerHTML = "Geolocation is not supported by this browser.";
 		}
 	}
+	
+	function onClickOpenNorgeskart() {
+		// Make UTM33 coordinates
+		var utm33s = [];
+		var minN, maxN, minE, maxE, cN, cE;
+		var urlMarkers = "";
+		for (var i=0; i<posArray.length; i++) {
+			var pos = posArray[i];
+			var utm33 = geoconverter.LatLonToUTM(pos.latlon, undefined, 33);
+
+			if (minE == undefined || utm33.easting < minE)
+				minE = utm33.easting;
+			if (maxE == undefined || utm33.easting > maxE)
+				maxE = utm33.easting;
+			if (minN == undefined || utm33.northing < minN)
+				minN = utm33.northing;
+			if (maxN == undefined || utm33.northing > maxN)
+				maxN = utm33.northing;
+				
+			urlMarkers += "/m/"+utm33.easting.toFixed(0)+"/"+utm33.northing.toFixed(0)+"/"+pos.label;
+		}
+		
+		cE = (minE + maxE)/2;
+		cN = (minN + maxN)/2;			
+		var urlCenter = "/#6/"+cE.toFixed(0)+"/"+cN.toFixed(0);
+		var url = "http://norgeskart.no" + urlCenter + urlMarkers;
+		window.open(url);
+	}
+	
+	
 	function showCurrentPosition(location) {
 		if (location == undefined) {
 			var span = $("#sMyLocation");
@@ -175,6 +206,7 @@
 	}
 	
 	
+	// ToDo: Refactor, make an addLocation function instead of iterating over all
 	function displayLocationsOnMap() {
 		if (map == undefined)
 			initMap();
@@ -184,6 +216,7 @@
 		
 		for (var i=0; i<posArray.length; i++) {
 			var pos = posArray[i];
+			// Only add google markers if not already added
 			if (pos.marker == undefined) {
 				markerPos = new google.maps.LatLng(pos.latlon.lat, pos.latlon.lon);
 				var markerOptions = {
@@ -197,11 +230,15 @@
 				//google.maps.event.addListener(marker, 'click', toggleBounce);
 				pos.marker = marker;
 			} else {
+				// If already added, get markers position (for the bounding box)
 				markerPos = pos.marker.getPosition()
 			}
-			boundingbox.extend(markerPos);
+			
+			// Add currently visible markers to the bounding box, and always ad the one just added
+			if (i==posArray.length-1 || map.getBounds().contains(markerPos))
+				boundingbox.extend(markerPos);
 		}
-		if (posArray.length == 0) {
+		if (boundingbox.length == 0) {
 			//map.setZoom(firstZoomLevel);
 			// pass
 		} else if (posArray.length == 1) {
@@ -239,10 +276,10 @@
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
+  ga('require', 'displayfeatures');
   ga('create', 'UA-6677714-3', 'auto');
   ga('send', 'pageview');
 
-</script>XPnq7Fmo
+</script>
 </body>
 </html>

@@ -22,17 +22,17 @@ div {
 #divMap
 {
 /* background:#FFFFCD;*/
- /*position:relative;
- top:0em;
- right:0em;
- bottom:0em; */
- float:right;
- height: 70%;
- width: 70%;
-        margin: 0px;
-        padding: 0px
+	float: right;
+	position:absolute;
+	top:0.5em;
+	bottom:8em; 
+	right:0.5em;
+	left: 36em;
+	float:right;
+	margin: 0px;
+	padding: 0px
 }
-#divMap2
+#divMap2 
 {
  height: 100%;
  width: 100%;
@@ -40,8 +40,12 @@ div {
 
 #divPanel
 {
+ /*float:left;*/
+ position: absolute;
+ left: 0;
  width:33em;
- float:left;
+ top: 0;
+ bottom: 0;
  padding: 5px;
 }
 
