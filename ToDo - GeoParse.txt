@@ -1,6 +1,5 @@
 ToDo
 ====  
-- Fix: LatLon toString(): N 7° 59' 60.00"
 - Refactor position array
 - Add formatting based on config
 - Add filter on Norgeskart-button (only including coords in norway)
@@ -50,6 +49,7 @@ Backlog
 
 Done
 ====
+- Fix: LatLon toString(): N 7° 59' 60.00"
 - Add button to Norgeskart.no
 - Fix: Create boundingbox around currently visible markes, plus the new one
 - Add Google Analytics

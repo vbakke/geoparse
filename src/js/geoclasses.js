@@ -55,7 +55,24 @@ function geoLatLon(lat, lon) {
 				secLon = ((remainingLon - minLon)*60.0).toFixed(2);
 			}
 		}
-			
+
+		// Modify rounding out of bounds
+		if (secLat >= 60) {
+			secLat -= 60;
+			minLat += 1;
+		}
+		if (minLat >= 60) {
+			minLat -= 60;
+			degLat += 1;
+		}
+		if (secLon >= 60) {
+			secLon -= 60;
+			minLon += 1;
+		}
+		if (minLon >= 60) {
+			minLon -= 60;
+			degLon += 1;
+		}
 		
 		
 		// ======================
