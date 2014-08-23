@@ -24,7 +24,7 @@
 				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()">Convert Lat/Long</button>
 			</div>
 			<div id="divMyLocation" style="float:right">
-					<div id="sMyLocation">Getting your location...</div>
+					<div id="sMyLocation"></div>
 					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()">Add my location</button>
 			</div>
 		</div>
@@ -38,7 +38,7 @@
 					 </tbody>
 					 <tfoot>
 			  		 <tr>
-					 	 <td><button id="btnClear" class="rounded-corners" onclick="clearLocations()" >Clear</button> </td>
+					 	 <td><button id="btnClear" class="rounded-corners" onclick="onClickClearLocations()" >Clear</button> </td>
 						 <td>
 						 	 <select class="rounded-corners" >
 							 		 <option>d°</option>
@@ -156,6 +156,12 @@
 		window.open(url);
 	}
 	
+	function onClickClearLocations() {
+		var btn = $("#btnAddMyPos");
+		btn.prop("disabled", false);
+		clearLocations();
+	}
+
 	// Ask browser for location
 	function onClickAddMyPos() {
 		var span = $("#sMyLocation");
@@ -171,6 +177,8 @@
 			var span = $("#sMyLocation");
 			span.innerHTML = "Could not retrieve your location";
 		} else {
+			var me = $("#btnAddMyPos");
+			me.prop("disabled", true);
 			var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
 			var latlon = new geoLatLon(location.coords.latitude, location.coords.longitude);
 			var utm = geoconverter.LatLonToUTM(latlon);
@@ -186,15 +194,14 @@
 		}
 		var location = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
 		
+		var tb = $("#posTable tbody");
+		addLocationToTable(tb, location);
 		addLocationToMap(location);
-		addLocationToTable(location);
 		
 		posArray.push(location);
 	}
-	function addLocationToTable(location) {
-		var tb = $("#posTable tbody");
-		
-		if (posArray.length <= 1) 
+	function addLocationToTable(tb, location) {
+		if (posArray.length <= 0) 
 			tb.empty();
 		
 		var labelStr = location.label;
@@ -202,7 +209,6 @@
 		var utmStr = location.utm.toString();
 		
 		tb.append("<tr><td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td></tr>");
-
 	}
 	function addLocationToMap(location) {
 		if (map == undefined)
