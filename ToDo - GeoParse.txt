@@ -1,7 +1,6 @@
 ToDo
 ====  
-- Add formatting based on config
-- Update table when formatting config changes
+- Force zone, if filled in
 - Add location on page 
 - Add filter on Norgeskart-button (only including coords in norway)
 - Allow shorthand for parsing UTM
@@ -49,6 +48,8 @@ Backlog
 
 Done
 ====
+- Add formatting based on config
+- Update table when formatting config changes
 - Refactor position array
 - Fix: LatLon toString(): N 7° 59' 60.00"
 - Add button to Norgeskart.no

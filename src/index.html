@@ -40,18 +40,19 @@
 			  		 <tr>
 					 	 <td><button id="btnClear" class="rounded-corners" onclick="onClickClearLocations()" >Clear</button> </td>
 						 <td>
-						 	 <select class="rounded-corners" >
-							 		 <option>d°</option>
-									 <option>d°m'</option>
-									 <option selected>d°m's"</option>
+						 	 <select id="optDegrees" class="rounded-corners" onchange="onClickFormatChange(this, 'degrees')" >
+							 		 <option value="d">d°</option>
+									 <option value="dm">d°m'</option>
+									 <option value="dms" selected>d°m's"</option>
 							 </select>
 							 <!-- ToDo: Ala http://proto.io/freebies/onoff/ -->
-						 	 <input id="latlonOrderNE" type="checkbox" checked class="rounded-corners" value="posNE">N before E
+						 	 <div><input id="latlonOrderNE" type="checkbox" checked onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N before E</div>
+						 	 <div><input id="latlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
 						 </td>
 						 <td>
-							 <div><input id="utmOrderEN" type="checkbox" checked class="rounded-corners" value="posEN">E before N</div>
-							 <div><input id="utmStrict" type="checkbox" class="rounded-corners" value="strict">Strict UTM</div>
-							 <div>Fixed zone: <input size="2" class="rounded-corners"></div>
+							 <div><input id="utmOrderEN" type="checkbox" checked onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
+							 <div><input id="utmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
+							 <!--div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div-->
 						 </td>
 					 </tr>
 					 </tfoot>
@@ -62,10 +63,14 @@
 	<div id="divMap"><div id="divMap2"></div>
 	<div>
 		<p>
-		Project in progress....  Currently, 'Clear' and formatting don't work. As well as a number of known bugs. Some heavy refactoring behind the scenes is also required.
+		Project in progress....  
+		Labels are not yet displayed, 
+		layout not optimized for anything but my own screen, 
+		and the Norgeskart button is visible also for coordinates outside Norway. 
 		</p>
 		<p style="margin-bottom:0;">
 		Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
+		Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a>.
 		</p>
 	</div>
 	</div>
@@ -74,6 +79,8 @@
 	var posArray = [];
 	var initZoomLevel = 2;
 	var firstZoomLevel = 7;
+	var format = {utm: {strict: false, orderEN: true, zone: null},
+				 latlon: {format: undefined,  orderNE: true, useNeg: false}};
 	
 	var myLocation = undefined; // a geoLatLon object
 	var markers;
@@ -156,6 +163,43 @@
 		window.open(url);
 	}
 	
+	
+	
+	function onClickFormatChange(elem, type) {
+		// Lat/Lon
+		if (type=="degrees") {
+			var val = elem.value;
+			if (val == "d")
+				format.latlon.format = "d° N";
+			else if (val == "dm")
+				format.latlon.format = "d° m' N";
+			else
+				format.latlon.format = "d° m' s\" N";
+		}
+		if (type=="degOrder") {
+			format.latlon.orderNE = elem.checked;
+		}
+		if (type=="degNeg") {
+			format.latlon.useNeg = elem.checked;
+		}
+		// UTM
+		if (type=="utmOrder") {
+			format.utm.orderEN = elem.checked;
+		}
+		if (type=="utmStrict") {
+			format.utm.strict = elem.checked;
+		}
+		if (type=="utmZone") {
+			if (!elem.value || elem.value.trim() == "")
+				format.utm.zone = null;
+			else
+				format.utm.zone = elem.value;
+		}
+		
+		// Regenerate table
+		generateTable();
+	}
+	
 	function onClickClearLocations() {
 		var btn = $("#btnAddMyPos");
 		btn.prop("disabled", false);
@@ -205,8 +249,8 @@
 			tb.empty();
 		
 		var labelStr = location.label;
-		var latlonStr = location.latlon.toString();
-		var utmStr = location.utm.toString();
+		var latlonStr = location.latlon.toString(format.latlon.format, ' ', format.latlon.useNeg, format.latlon.orderNE);
+		var utmStr = location.utm.toString(format.utm.strict, format.utm.orderEN, ' ');
 		
 		tb.append("<tr><td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td></tr>");
 	}
@@ -275,6 +319,16 @@
 		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td></tr>");
 	}
 
+	function generateTable() {
+		if (posArray.length > 0) {
+			var tb = $("#posTable tbody");
+			tb.empty();
+			for (var i=0; i<posArray.length; i++) {
+				addLocationToTable(tb, posArray[i]);
+			}
+		}
+	}
+	
 	function copyToClipboard(b, str) {
 		alert("Str: '"+str+"'");
 		

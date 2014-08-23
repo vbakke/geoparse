@@ -13,6 +13,10 @@ you could use my code for something else. :)
 And if you feel like improving it, it is all available on:
 	https://github.com/vbakke/geoparse.git
 
+
+The project can be seen on:
+	http://vafe.net/geo/
+	
 Best regards,
 Vegard Bakke, geoparse@vafe.net
 2014-08-01

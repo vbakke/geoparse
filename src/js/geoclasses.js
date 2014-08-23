@@ -8,13 +8,13 @@ function geoLatLon(lat, lon) {
 	 * dms
 	 * N    NSEW directions
 	 */
-	this.toString = function (format, delim, useNegatives, showEastBeforeNorth) {	
+	this.toString = function (format, delim, useNegatives, showNorthBeforeEast) {	
 		// ====================================
 		// Define default values for parameters
 		format = (typeof format === "undefined") ? "d° m' s\" N" : format;
 		delim = (typeof delim === "undefined") ? " " : delim;
 		useNegatives = (typeof useNegatives === "undefined") ? false : useNegatives;
-		showEastBeforeNorth = (typeof showEastBeforeNorth === "undefined") ? false : showEastBeforeNorth;
+		showNorthBeforeEast = (typeof showNorthBeforeEast === "undefined") ? true : showNorthBeforeEast;
 		
 		var strN = "";
 		var strE = "";
@@ -127,10 +127,10 @@ function geoLatLon(lat, lon) {
 		// ================
 		// Join coordinates
 		var str;
-		if (showEastBeforeNorth) {
-			str = strE + delim + strN;
-		} else {
+		if (showNorthBeforeEast) {
 			str = strN + delim + strE;
+		} else {
+			str = strE + delim + strN;
 		}
 		
 		return str;
@@ -146,9 +146,9 @@ function geoUtm(zone, band, easting, northing) {
 	this.easting = easting;
 	this.northing = northing;
 	
-	this.toString = function (useStrictUtm, showNorthBeforeEast, delim) {	
+	this.toString = function (useStrictUtm, showEastBeforeNorth, delim) {	
 		useStrictUtm = (typeof useStrictUtm === "undefined") ? false : useStrictUtm;
-		showNorthBeforeEast = (typeof showNorthBeforeEast === "undefined") ? false : showNorthBeforeEast;
+		showEastBeforeNorth = (typeof showEastBeforeNorth === "undefined") ? false : showEastBeforeNorth;
 		delim = (typeof delim === "undefined") ? " " : delim;
 
 		var str = this.zone + (useStrictUtm ? this.getHemisphere() : this.band);
@@ -156,10 +156,10 @@ function geoUtm(zone, band, easting, northing) {
 		var strE = this.easting.toFixed(0);
 		var strN = this.northing.toFixed(0);
 		
-		if (showNorthBeforeEast) {
-			str += " " + strN+"N" + delim + strE+"E";
-		} else {
+		if (showEastBeforeNorth) {
 			str += " " + strE+"E" + delim + strN+"N";
+		} else {
+			str += " " + strN+"N" + delim + strE+"E";
 		}
 		
 		return str;
