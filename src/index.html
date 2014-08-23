@@ -24,7 +24,7 @@
 				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()">Convert Lat/Long</button>
 			</div>
 			<div id="divMyLocation" style="float:right">
-					<span id="sMyLocation"></span>
+					<div id="sMyLocation">Getting your location...</div>
 					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()">Add my location</button>
 			</div>
 		</div>
@@ -81,7 +81,7 @@
 
 	function initialize() {
 		initMap("divMap2");
-		displayLocations();
+		clearLocations();
 	}
 	function initMap(div) {
 		var mapOptions = {
@@ -93,6 +93,7 @@
 		map = new google.maps.Map(document.getElementById(div), mapOptions);
 
 		if (navigator.geolocation) {
+			var span = $("#sMyLocation");
 			navigator.geolocation.getCurrentPosition(function (location) {
 				var lat = location.coords.latitude;
 				var lon = location.coords.longitude;
@@ -101,6 +102,9 @@
 
 				map.setCenter(new google.maps.LatLng(lat, lon));
 				map.setZoom(firstZoomLevel);
+				// Display the location
+				var tmp = myLocation.toString();
+				span.innerText = tmp;
 			});
 		} 
 
@@ -123,17 +127,6 @@
 		addLocation(orgStr, latlon, utm);
 	}
 	
-	
-	// Ask browser for location
-	function onClickAddMyPos() {
-		var span = $("#sMyLocation");
-		span.innerHTML = "";
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(showCurrentPosition);
-		} else {
-			span.innerHTML = "Geolocation is not supported by this browser.";
-		}
-	}
 	
 	function onClickOpenNorgeskart() {
 		// Make UTM33 coordinates
@@ -163,7 +156,16 @@
 		window.open(url);
 	}
 	
-	
+	// Ask browser for location
+	function onClickAddMyPos() {
+		var span = $("#sMyLocation");
+		span.innerHTML = "";
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(showCurrentPosition);
+		} else {
+			span.innerHTML = "Geolocation is not supported by this browser.";
+		}
+	}
 	function showCurrentPosition(location) {
 		if (location == undefined) {
 			var span = $("#sMyLocation");
@@ -178,17 +180,95 @@
 	}
 				
 	function addLocation(orgStr, latlon, utm, label) {
-		var loc = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
-		posArray.push(loc);
-		displayLocations();
+		var labelLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		if (!label) {
+			label = labelLetters[posArray.length];
+		}
+		var location = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
+		
+		addLocationToMap(location);
+		addLocationToTable(location);
+		
+		posArray.push(location);
 	}
-	function editLocation(index) {
+	function addLocationToTable(location) {
+		var tb = $("#posTable tbody");
+		
+		if (posArray.length <= 1) 
+			tb.empty();
+		
+		var labelStr = location.label;
+		var latlonStr = location.latlon.toString();
+		var utmStr = location.utm.toString();
+		
+		tb.append("<tr><td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td></tr>");
+
 	}
-	function clearLocations() {
-		// osArray = [];
-		displayLocations()
+	function addLocationToMap(location) {
+		if (map == undefined)
+			initMap();
+
+			
+		// Make a bounding box of currently visible markers 
+		var data, markerPos;
+		var boundingbox = new google.maps.LatLngBounds();
+		var bbCount = 0;
+		for (var i=0; i<posArray.length; i++) {
+			data = posArray[i];
+			markerPos = new google.maps.LatLng(data.latlon.lat, data.latlon.lon);
+			if (map.getBounds().contains(markerPos)) {
+				boundingbox.extend(markerPos);
+				bbCount++;
+			}
+		}
+		
+		// Add new marker
+		var newLat = location.latlon.lat;
+		var newLon = location.latlon.lon;
+		markerPos = new google.maps.LatLng(newLat, newLon);
+		var markerOptions = {   map:map,
+								draggable:true,
+								animation: google.maps.Animation.DROP,
+								position: markerPos
+							};
+		marker = new google.maps.Marker(markerOptions);
+		location.marker = marker;
+		boundingbox.extend(markerPos); // Always add new marker to bounding box
+		bbCount++;
+		
+		// Resize and zoom to boundingbox
+		if (bbCount == 1) {
+			if (map.getZoom() < firstZoomLevel)
+				map.setZoom(firstZoomLevel);
+			if (!map.getBounds().contains(markerPos))
+				map.setCenter(markerPos);
+		} else {
+			map.fitBounds(boundingbox);
+		}
+
 	}
 	
+	function clearLocations() {
+		clearLocationsFromMap();
+		clearLocationsFromTable();
+		posArray = [];
+	}
+	
+	function clearLocationsFromMap() {
+		for (var i=0; i<posArray.length; i++) {
+			var location = posArray[i];
+			if (location.marker) {
+				location.marker.setMap(null);
+				location.marker = null;
+			}
+		}
+	}
+	function clearLocationsFromTable() {
+		var tb = $("#posTable tbody");
+		tb.empty();
+		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td></tr>");
+	}
+
 	function copyToClipboard(b, str) {
 		alert("Str: '"+str+"'");
 		
@@ -200,73 +280,7 @@
 		
 	}
 
-	function displayLocations() {
-		generateTable();
-		displayLocationsOnMap();
-	}
 	
-	
-	// ToDo: Refactor, make an addLocation function instead of iterating over all
-	function displayLocationsOnMap() {
-		if (map == undefined)
-			initMap();
-
-		var boundingbox = new google.maps.LatLngBounds();
-		var markerPos;
-		
-		for (var i=0; i<posArray.length; i++) {
-			var pos = posArray[i];
-			// Only add google markers if not already added
-			if (pos.marker == undefined) {
-				markerPos = new google.maps.LatLng(pos.latlon.lat, pos.latlon.lon);
-				var markerOptions = {
-										map:map,
-										draggable:true,
-										animation: google.maps.Animation.DROP,
-										position: markerPos
-									};
-				
-				marker = new google.maps.Marker(markerOptions);
-				//google.maps.event.addListener(marker, 'click', toggleBounce);
-				pos.marker = marker;
-			} else {
-				// If already added, get markers position (for the bounding box)
-				markerPos = pos.marker.getPosition()
-			}
-			
-			// Add currently visible markers to the bounding box, and always ad the one just added
-			if (i==posArray.length-1 || map.getBounds().contains(markerPos))
-				boundingbox.extend(markerPos);
-		}
-		if (boundingbox.length == 0) {
-			//map.setZoom(firstZoomLevel);
-			// pass
-		} else if (posArray.length == 1) {
-			map.setCenter(markerPos);
-			map.setZoom(firstZoomLevel);
-		} else {
-			map.fitBounds(boundingbox);
-		}
-	}
-	
-
-
-	function generateTable() {
-		var labelLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		var tb = $("#posTable tbody");
-		tb.empty();
-		for (var i=0; i<posArray.length; i++) {
-			var pos = posArray[i];
-			var labelStr = (pos.label == undefined) ? labelLetters[i%labelLetters.length] : pos.label;
-			var latlonStr = pos.latlon.toString();
-			var utmStr = pos.utm.toString();
-			
-			tb.append("<tr><td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td></tr>");
-		}
-		if (posArray.length == 0) {
-			tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td></tr>");
-		}
-	}
 
 	// Add on load event to initialize the whole shebang
 	google.maps.event.addDomListener(window, 'load', initialize);

@@ -1,9 +1,9 @@
 ToDo
 ====  
-- Refactor position array
 - Add formatting based on config
-- Add filter on Norgeskart-button (only including coords in norway)
 - Update table when formatting config changes
+- Add location on page 
+- Add filter on Norgeskart-button (only including coords in norway)
 - Allow shorthand for parsing UTM
 - Add parsing based on last row / current location
 - Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
@@ -49,6 +49,7 @@ Backlog
 
 Done
 ====
+- Refactor position array
 - Fix: LatLon toString(): N 7° 59' 60.00"
 - Add button to Norgeskart.no
 - Fix: Create boundingbox around currently visible markes, plus the new one
