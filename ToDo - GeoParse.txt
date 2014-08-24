@@ -1,7 +1,8 @@
 ToDo
 ====  
 - Force zone, if filled in
-- Add location on page 
+- Add maker by doubleclick in map
+- Add myLocation on page, in writing
 - Add filter on Norgeskart-button (only including coords in norway)
 - Allow shorthand for parsing UTM
 - Add parsing based on last row / current location
@@ -48,6 +49,7 @@ Backlog
 
 Done
 ====
+- Fix: Norgeskart without markers
 - Add formatting based on config
 - Update table when formatting config changes
 - Refactor position array
