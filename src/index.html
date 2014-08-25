@@ -130,6 +130,8 @@
 	}
 	function placeNewMarker() {	
 		if(tmpMapZoom == map.getZoom()){
+			var posStr = clickedMapPos.lat().toFixed(5)+"N "+clickedMapPos.lng().toFixed(5)+"E";
+			ga('send', 'event', 'user-click', 'addMapPos', 'addMapPos-'+posStr); // .replace(/[0-8]/g,'9'));
 			addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng());
 			clickedMapPos = null;
 		}
@@ -137,8 +139,8 @@
 	
 	function onClickConvertGeo() {
 		var orgStr = $("#txtCoordinate").val();
-		ga('send', 'event', 'button-click', 'convertLatLon', 'convertLatLon-'+orgStr); // .replace(/[0-8]/g,'9'));
-		ga('send', 'event', 'button-click', 'convertLatLon', 'convertLatLon-'+orgStr.replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'user-click', 'convertLatLon', 'convertLatLon-'+orgStr); // .replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'user-click', 'convertLatLon', 'convertLatLon-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
 				'page': '/geoparse/convertLatLon',
 				'title': orgStr
@@ -150,8 +152,8 @@
 	}
 	function onClickConvertUtm() {
 		var orgStr = $("#txtCoordinate").val();
-		ga('send', 'event', 'button-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
-		ga('send', 'event', 'button-click', 'convertUtm', 'convertUtm-'+orgStr.replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'user-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'user-click', 'convertUtm', 'convertUtm-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
 				'page': '/geoparse/convertUtm',
 				'title': "orgStr"
@@ -195,7 +197,7 @@
 		}
 		var urlCenter = "/#6/"+cE+"/"+cN;
 		var url = "http://norgeskart.no" + urlCenter + urlMarkers;
-		ga('send', 'event', 'button-click', 'openKart', 'openKart-'+url);
+		ga('send', 'event', 'user-click', 'openKart', 'openKart-'+url);
 		window.open(url);
 	}
 	
@@ -238,14 +240,14 @@
 				format.utm.zone = elem.value;
 			vDbg = format.utm.zone;
 		}
-		ga('send', 'event', 'button-click', 'changeFormat-'+type, 'changeFormat-'+type+"-"+vDbg); 
+		ga('send', 'event', 'user-click', 'changeFormat-'+type, 'changeFormat-'+type+"-"+vDbg); 
 		
 		// Regenerate table
 		generateTable();
 	}
 	
 	function onClickClearLocations() {
-		ga('send', 'event', 'button-click', 'clear', 'clear-'+posArray.length); 
+		ga('send', 'event', 'user-click', 'clear', 'clear-'+posArray.length); 
 		var btn = $("#btnAddMyPos");
 		//btn.prop("disabled", false);
 		clearLocations();
@@ -273,8 +275,8 @@
 			addLatLonLocation(location.coords.latitude, location.coords.longitude, label);
 
 			var posStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
-			ga('send', 'event', 'button-click', 'addMyPos', 'addMyPos-'+posStr); // .replace(/[0-8]/g,'9'));
-			ga('send', 'event', 'button-click', 'addMyPos', 'addMyPos-'+posStr.replace(/[0-8]/g,'9'));
+			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+posStr); // .replace(/[0-8]/g,'9'));
+			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+posStr.replace(/[0-8]/g,'9'));
 			ga('send', 'pageview', {
 					'page': '/geoparse/addMyPos',
 					'title': posStr
@@ -362,8 +364,8 @@
 								locationObj: location
 							};
 		var marker = new google.maps.Marker(markerOptions);
-		google.maps.event.addListener(marker, 'drag', markerDragged);
-		google.maps.event.addListener(marker,'dragend', markerDragged);
+		google.maps.event.addListener(marker, 'drag', markerDrag);
+		google.maps.event.addListener(marker,'dragend', markerDragEnd);
 		location.marker = marker;
 		boundingbox.extend(markerPos); // Always add new marker to bounding box
 		bbCount++;
@@ -379,7 +381,12 @@
 		}
 
 	}
-	function markerDragged(event) {
+	function markerDragEnd(event) {
+		var posStr = this.position.lat().toFixed(5)+"N "+this.position.lng().toFixed(5)+"E";
+		ga('send', 'event', 'user-click', 'dragTo', 'dragTo-'+posStr); // .replace(/[0-8]/g,'9'));
+		updateLatLonLocation(this.locationObj, this.position.lat(), this.position.lng());
+	}
+	function markerDrag(event) {
 		updateLatLonLocation(this.locationObj, this.position.lat(), this.position.lng());
 	}
 	
