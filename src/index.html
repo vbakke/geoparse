@@ -62,19 +62,21 @@
 				<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners">Åpne i Norgeskart.no</button>
 		 </div>
 	</div>
-	<div id="divMap"><div id="divMap2"></div>
-	<div>
-		<p>
-		Project in progress....  
-		Labels are not yet displayed, 
-		layout not optimized for anything but my own screen, 
-		and the Norgeskart button is visible also for coordinates outside Norway. 
-		</p>
-		<p style="margin-bottom:0;">
-		Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
-		Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a>.
-		</p>
-	</div>
+	<div id="divMap">
+		<!--div id="dbg">Dbg</div-->
+		<div id="divMap2"></div>
+		<div>
+			<p>
+			Project in progress....  
+			Labels are not yet displayed, 
+			layout not optimized for anything but my own screen, 
+			and the Norgeskart button is visible also for coordinates outside Norway. 
+			</p>
+			<p style="margin-bottom:0;">
+			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
+			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a>.
+			</p>
+		</div>
 	</div>
 </div>
 <script type="text/javascript">
@@ -87,6 +89,8 @@
 	var myLocation = undefined; // a geoLatLon object
 	var markers;
 	var map;
+	var clickedMapPos, tmpMapZoom;
+	var tb = $("#posTable tbody");
 
 	function initialize() {
 		initMap("divMap2");
@@ -100,7 +104,13 @@
 		  };
 		
 		map = new google.maps.Map(document.getElementById(div), mapOptions);
+		google.maps.event.addListener(map, 'click', function(event) {
+            tmpMapZoom = map.getZoom();
+            clickedMapPos = event.latLng;
+            setTimeout("placeNewMarker()", 600);
+        });
 
+		// Get current location
 		if (navigator.geolocation) {
 			var span = $("#sMyLocation");
 			navigator.geolocation.getCurrentPosition(function (location) {
@@ -118,11 +128,17 @@
 		} 
 
 	}
-
+	function placeNewMarker() {	
+		if(tmpMapZoom == map.getZoom()){
+			addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng());
+			clickedMapPos = null;
+		}
+	}
 	
 	function onClickConvertGeo() {
 		var orgStr = $("#txtCoordinate").val();
 		ga('send', 'event', 'button-click', 'convertLatLon', 'convertLatLon-'+orgStr); // .replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'button-click', 'convertLatLon', 'convertLatLon-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
 				'page': '/geoparse/convertLatLon',
 				'title': orgStr
@@ -135,6 +151,7 @@
 	function onClickConvertUtm() {
 		var orgStr = $("#txtCoordinate").val();
 		ga('send', 'event', 'button-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'button-click', 'convertUtm', 'convertUtm-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
 				'page': '/geoparse/convertUtm',
 				'title': "orgStr"
@@ -230,7 +247,7 @@
 	function onClickClearLocations() {
 		ga('send', 'event', 'button-click', 'clear', 'clear-'+posArray.length); 
 		var btn = $("#btnAddMyPos");
-		btn.prop("disabled", false);
+		//btn.prop("disabled", false);
 		clearLocations();
 	}
 
@@ -239,31 +256,47 @@
 		var span = $("#sMyLocation");
 		span.innerHTML = "";
 		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(showCurrentPosition);
+			navigator.geolocation.getCurrentPosition(addMyLocation);
 		} else {
 			span.innerHTML = "Geolocation is not supported by this browser.";
 		}
 	}
-	function showCurrentPosition(location) {
+	function addMyLocation(location) {
 		if (location == undefined) {
 			var span = $("#sMyLocation");
 			span.innerHTML = "Could not retrieve your location";
 		} else {
 			var me = $("#btnAddMyPos");
-			me.prop("disabled", true);
-			var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
-			var latlon = new geoLatLon(location.coords.latitude, location.coords.longitude);
-			var utm = geoconverter.LatLonToUTM(latlon);
+			//me.prop("disabled", true);
+
 			var label = "Here";
-			addLocation(orgStr, latlon, utm, label);
-			ga('send', 'event', 'button-click', 'addMyPos', 'addMyPos-'+orgStr); // .replace(/[0-8]/g,'9'));
+			addLatLonLocation(location.coords.latitude, location.coords.longitude, label);
+
+			var posStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
+			ga('send', 'event', 'button-click', 'addMyPos', 'addMyPos-'+posStr); // .replace(/[0-8]/g,'9'));
+			ga('send', 'event', 'button-click', 'addMyPos', 'addMyPos-'+posStr.replace(/[0-8]/g,'9'));
 			ga('send', 'pageview', {
 					'page': '/geoparse/addMyPos',
-					'title': orgStr
+					'title': posStr
 			});
 		}
 	}
 				
+	function addLatLonLocation(lat, lon, label) {
+		//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
+		var latlon = new geoLatLon(lat, lon);
+		var utm = geoconverter.LatLonToUTM(latlon);
+		addLocation("", latlon, utm, label);
+	}
+	function updateLatLonLocation(location, newLat, newLon) {
+		//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
+		var latlon = new geoLatLon(newLat, newLon);
+		var utm = geoconverter.LatLonToUTM(latlon);
+		location.orgStr = "";
+		location.latlon = latlon;
+		location.utm = utm;
+		updateLocationInTable(tb, location);
+	}
 	function addLocation(orgStr, latlon, utm, label) {
 		var labelLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		if (!label) {
@@ -271,7 +304,7 @@
 		}
 		var location = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
 		
-		var tb = $("#posTable tbody");
+		
 		addLocationToTable(tb, location);
 		addLocationToMap(location);
 		
@@ -281,12 +314,25 @@
 		if (posArray.length <= 0) 
 			tb.empty();
 		
+		var str = generateTableRowStr(location);
+		tb.append("<tr>"+str+"</tr>");
+	}
+	function updateLocationInTable(tb, location) {
+		var index = posArray.indexOf(location);
+		var tableRow = tb.find("tr")[index];
+		var str = generateTableRowStr(location);
+		tableRow.innerHTML = str;
+	}
+	function generateTableRowStr(location) {
 		var labelStr = location.label;
 		var latlonStr = location.latlon.toString(format.latlon.format, ' ', format.latlon.useNeg, format.latlon.orderNE);
 		var utmStr = location.utm.toString(format.utm.strict, format.utm.orderEN, ' ');
 		
-		tb.append("<tr><td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td></tr>");
+		var str = "<td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td>";
+		return str;
 	}
+	
+	
 	function addLocationToMap(location) {
 		if (map == undefined)
 			initMap();
@@ -312,9 +358,12 @@
 		var markerOptions = {   map:map,
 								draggable:true,
 								animation: google.maps.Animation.DROP,
-								position: markerPos
+								position: markerPos,
+								locationObj: location
 							};
-		marker = new google.maps.Marker(markerOptions);
+		var marker = new google.maps.Marker(markerOptions);
+		google.maps.event.addListener(marker, 'drag', markerDragged);
+		google.maps.event.addListener(marker,'dragend', markerDragged);
 		location.marker = marker;
 		boundingbox.extend(markerPos); // Always add new marker to bounding box
 		bbCount++;
@@ -330,6 +379,9 @@
 		}
 
 	}
+	function markerDragged(event) {
+		updateLatLonLocation(this.locationObj, this.position.lat(), this.position.lng());
+	}
 	
 	function clearLocations() {
 		clearLocationsFromMap();
@@ -341,20 +393,19 @@
 		for (var i=0; i<posArray.length; i++) {
 			var location = posArray[i];
 			if (location.marker) {
+				location.marker.locationObj = null;
 				location.marker.setMap(null);
 				location.marker = null;
 			}
 		}
 	}
 	function clearLocationsFromTable() {
-		var tb = $("#posTable tbody");
 		tb.empty();
 		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td></tr>");
 	}
 
 	function generateTable() {
 		if (posArray.length > 0) {
-			var tb = $("#posTable tbody");
 			tb.empty();
 			for (var i=0; i<posArray.length; i++) {
 				addLocationToTable(tb, posArray[i]);
@@ -376,16 +427,19 @@ var tracker;
 	// Add on load event to initialize the whole shebang
 	google.maps.event.addDomListener(window, 'load', initialize);
 </script>
-	<script>
-	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-	  ga('create', 'UA-6677714-4', {'cookieDomain': 'none'}); 
-	  ga('send', 'pageview');
-
-	</script>	
+	if (document.URL.indexOf("http://localhost") > -1)
+		ga('create', 'UA-6677714-4', 'auto');   // development
+	else
+		ga('create', 'UA-6677714-3', 'auto');   // public site
+	ga('require', 'displayfeatures');
+	ga('send', 'pageview');
+</script>	
 
 </body>
 </html>

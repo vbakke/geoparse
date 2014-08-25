@@ -1,46 +1,38 @@
 ToDo
 ====  
-- Force zone, if filled in
-- Add maker by doubleclick in map
-- Add myLocation on page, in writing
-- Add filter on Norgeskart-button (only including coords in norway)
-- Allow shorthand for parsing UTM
-- Add parsing based on last row / current location
-- Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
-- Add address, lookup with google
+- GUI: Fix zoom-level of Norgeskart!!!
+- GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
+- GUI: Remove one marker
+- GUI: Force zone, if filled in
+- GUI: Add filter on Norgeskart-button (only include if coords are in Norway)
+- GUI: Add myLocation on page, in writing
+- GUI: Add address, lookup with google
   - https://developers.google.com/maps/documentation/javascript/examples/places-searchbox
-- Fix column width, and layout
-- Add label on marker
-- Add input field for pos label, updating
+- GUI: Fix layout for mobiles
+- Parse: Allow shorthand for parsing UTM
+- Parse: Add parsing based on last row / current location
+- GUI: Add label on marker
+- GUI: Add input field for pos label, updating
 - Add scale 
-- Map: Choose between different maps
 
 Backlog
 =======
-- Test 32V, 31V, and 31-37X
-- Test all formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
+- GUI: Map: Choose between different maps
+- Parse: Test 32V, 31V, and 31-37X
+- Parse: Test all formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
 - Test from Android
-- Fix: parseUtm() to allow the 'm' as in '555555mE'
+- Parse: Fix: parseUtm() to allow the 'm' as in '555555mE'
 - GUI/Parse: Allow swap northing/easting if no directional letter is present
 - Parse UTM: If no NSEW is present, use the number with 6 digits as easting
 
-- Log used coordinates to DB
-- Read url arguments to disable logging
 
-- Add heuristics for choosing UTM and LatLong 
-- Parse Multiple coordinates
-- Make multi-pos HTML
-- MultiPos: If multiple neighbouring Grid zones, display flag for converting them into the same zone
-- MultiPos: Allow coordinates to start with a dot (.) indicating it has the same leading digits the the previous position
-- MultiPos: Update conversion on input change event
-- MultiPos: Update map when changed input yields different parsed coordinates
-- Get user's location. Use in heuristics
-- Store settings in cookie
+- Parse: Add heuristics for choosing UTM and LatLong 
+- GUI: Store settings in cookie
 
 - GUI: Gracefully handle zone band S (South and/or S) 
   - Identify ambiguous S northings, and their opposites.  
 
-- Handle MGRS coordinates
+- Parse: Handle MGRS coordinates
 
 - Share: Store coordinates in DB, generate bit.ly like url geo.vafe.net/fX
 	Algorithm: D:\Slettes\Py\Gen.py
@@ -49,6 +41,8 @@ Backlog
 
 Done
 ====
+- GUI: Add maker by click in map
+- GUI: Listen to markerMove event. Update posArray and table
 - Fix: Norgeskart without markers
 - Add formatting based on config
 - Update table when formatting config changes
@@ -84,3 +78,16 @@ Done
 - UTM parse TEST
 - Directory architecture
 - Parse LatLong
+
+
+Archive
+=======
+- Parse Multiple coordinates
+- Make multi-pos HTML
+- MultiPos: If multiple neighbouring Grid zones, display flag for converting them into the same zone
+- MultiPos: Allow coordinates to start with a dot (.) indicating it has the same leading digits the the previous position
+- MultiPos: Update conversion on input change event
+- MultiPos: Update map when changed input yields different parsed coordinates
+- Get user's location. Use in heuristics
+- Log used coordinates to DB
+- Read url arguments to disable logging
