@@ -10,6 +10,7 @@
 	<script src=".\js\geoparse.js"></script>
 	<script src=".\js\jquery-1.11.1.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+	<script src=".\js\markerwithlabel.js"></script>
 
 
 </head>
@@ -100,6 +101,7 @@
 		var mapOptions = {
 			zoom: initZoomLevel,
 			center: new google.maps.LatLng(0, 0),
+			scaleControl: true,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		  };
 		
@@ -274,7 +276,7 @@
 			var label = "Here";
 			addLatLonLocation(location.coords.latitude, location.coords.longitude, label);
 
-			var posStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
+			var posStr = location.coords.latitude.toFixed(5) + " N " + location.coords.longitude.toFixed(5) + " E ";
 			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+posStr); // .replace(/[0-8]/g,'9'));
 			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+posStr.replace(/[0-8]/g,'9'));
 			ga('send', 'pageview', {
@@ -353,7 +355,7 @@
 			}
 		}
 		
-		// Add new marker
+		// Add new marker to map
 		var newLat = location.latlon.lat;
 		var newLon = location.latlon.lon;
 		markerPos = new google.maps.LatLng(newLat, newLon);
@@ -361,9 +363,13 @@
 								draggable:true,
 								animation: google.maps.Animation.DROP,
 								position: markerPos,
-								locationObj: location
-							};
-		var marker = new google.maps.Marker(markerOptions);
+								locationObj: location,
+								labelContent: location.label,
+								labelAnchor: new google.maps.Point(30, -1),
+								labelClass: "markerlabel", // the CSS class for the label
+								labelStyle: {opacity: 0.95}
+		};
+		var marker = new MarkerWithLabel(markerOptions);
 		google.maps.event.addListener(marker, 'drag', markerDrag);
 		google.maps.event.addListener(marker,'dragend', markerDragEnd);
 		location.marker = marker;
@@ -445,6 +451,7 @@ var tracker;
 	else
 		ga('create', 'UA-6677714-3', 'auto');   // public site
 	ga('require', 'displayfeatures');
+	ga('set', 'appName', 'GeoParse');
 	ga('send', 'pageview');
 </script>	
 

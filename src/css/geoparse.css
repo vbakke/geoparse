@@ -111,3 +111,16 @@ input {
  -webkit-border-radius: 4px 4px 4px 4px;
  -khtml-border-radius: 4px 4px 4px 4px;
 }
+
+ .markerlabel {
+   color: #5A80BB;
+   background-color: #C4D9FA;
+   font-family: sans-serif;
+   font-size: 14px;
+   font-weight: bold;
+   text-align: center;
+   width: 60px;     
+   border: 1px solid #5A80BB;
+   border-radius: 3px;
+   white-space: nowrap;
+ }
