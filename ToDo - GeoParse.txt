@@ -1,9 +1,5 @@
 ToDo
 ====  
-- GUI: Fix zoom-level of Norgeskart!!!
-  http://www.statkart.no/Kart/Gratis-kartdata/Cache-tjenester/
-- GUI: Add filter on Norgeskart-button (only include if coords are in Norway)
-
 - GUI: Add checkbox for enabling editing of markers on map
 - GUI: Add checkbox for displaying labels of markers on map
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
@@ -20,6 +16,7 @@ ToDo
 
 Backlog
 =======
+- GUI: Center on one location in table, display distance to each other location
 - GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
 - Parse: Test 32V, 31V, and 31-37X
@@ -45,6 +42,9 @@ Backlog
 
 Done
 ====
+- GUI: Fix zoom-level of Norgeskart!!!
+  http://www.statkart.no/Kart/Gratis-kartdata/Cache-tjenester/
+- GUI: Add filter on Norgeskart-button (only include if coords are in Norway)
 - GUI: Add label on marker
 - GUI: Add maker by click in map
 - GUI: Listen to markerMove event. Update posArray and table

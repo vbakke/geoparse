@@ -8,6 +8,7 @@
 	<script src=".\js\geoclasses.js"></script>
 	<script src=".\js\geoconverter.js"></script>
 	<script src=".\js\geoparse.js"></script>
+	<script src=".\js\norgeskart.js"></script>
 	<script src=".\js\jquery-1.11.1.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
 	<script src=".\js\markerwithlabel.js"></script>
@@ -20,7 +21,7 @@
 		<div id="divHeader"><span class="header">EARTH</span></div>
 		<div id="divInput">
 			<div style="float:left;">
-		    	  Enter coordinate: <input id="txtCoordinate" style="width:200px" ><!--autofocus-->  
+		    	  Enter coordinate: <input id="txtCoordinate" autofocus style="width:200px" ><!--autofocus-->  
 			</div>
 			<div style="float:left;">
 				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()">Convert UTM</button>
@@ -169,37 +170,9 @@
 	
 	
 	function onClickOpenNorgeskart() {
-		// Make UTM33 coordinates
-		var utm33s = [];
-		var minN, maxN, minE, maxE, cN, cE;
-		var urlMarkers = "";
-		for (var i=0; i<posArray.length; i++) {
-			var pos = posArray[i];
-			var utm33 = geoconverter.LatLonToUTM(pos.latlon, undefined, 33);
-
-			if (minE == undefined || utm33.easting < minE)
-				minE = utm33.easting;
-			if (maxE == undefined || utm33.easting > maxE)
-				maxE = utm33.easting;
-			if (minN == undefined || utm33.northing < minN)
-				minN = utm33.northing;
-			if (maxN == undefined || utm33.northing > maxN)
-				maxN = utm33.northing;
-				
-			urlMarkers += "/m/"+utm33.easting.toFixed(0)+"/"+utm33.northing.toFixed(0)+"/"+pos.label;
-		}
-		
-		cE = (minE + maxE)/2;
-		cN = (minN + maxN)/2;	
-		if (isNaN(cE)) {
-			var pos = map.getCenter();
-			// Swap lat and non, for th order to be correct in the url
-			cN = pos.lng();
-			cE = pos.lat();
-		}
-		var urlCenter = "/#6/"+cE+"/"+cN;
-		var url = "http://norgeskart.no" + urlCenter + urlMarkers;
+		var url = norgeskart.makeUrl(posArray, {w: $(window).width(), h: $(window).height()});
 		ga('send', 'event', 'user-click', 'openKart', 'openKart-'+url);
+		alert(url);
 		window.open(url);
 	}
 	
