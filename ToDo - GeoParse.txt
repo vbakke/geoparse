@@ -1,12 +1,9 @@
 ToDo
 ====  
 v1.0
-- GUI: Make Control bar above map
 - GUI: Add myLocation on page, in writing
-- GUI: Add checkbox for enabling editing of markers on map
-- GUI: Add checkbox for displaying labels of markers on map
 - GUI: Force zone, if filled in
-- GUI: Remove one marker
+- GUI: Remove one marker  (=>moves orgstr into <input>)
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 
 - GUI: Fix layout for mobiles
@@ -46,6 +43,10 @@ Backlog
 
 Done
 ====
+- Fix: GUI: Add new marker in-map, changes zoom level and shifts center of map
+- GUI: Make Control bar above map
+- GUI: Add checkbox for enabling editing of markers on map
+- GUI: Add checkbox for displaying labels of markers on map
 - GUI: Fix zoom-level of Norgeskart!!!
   http://www.statkart.no/Kart/Gratis-kartdata/Cache-tjenester/
 - GUI: Add filter on Norgeskart-button (only include if coords are in Norway)
