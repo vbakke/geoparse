@@ -67,8 +67,8 @@
 	<div id="divMap">
 		<div id="divMap2"></div>
 		<div id="divMapHeader">
-			<div style="float:left;padding-right:1em;"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEdit(this)" class="rounded-corners" >Allow editing in map</div>
-			<div style="float:left"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabels(this)" class="rounded-corners" >Display labels in map</div>
+			<div style="float:left;padding-right:1em;"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
+			<div style="float:left"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
 			
 			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Åpne i Norgeskart.no</button>
 			<div class="clearfix"></div>
@@ -118,7 +118,7 @@
 			if (config.map.editInMap) {
 				tmpMapZoom = map.getZoom();
 				clickedMapPos = event.latLng;
-				setTimeout("placeNewMarker()", 600);
+				setTimeout("onClickInMap()", 600);
 			}
         });
 
@@ -140,10 +140,14 @@
 		} 
 
 	}
-	function placeNewMarker() {	
+	function onClickInMap() {	
 		if(tmpMapZoom == map.getZoom()){
 			var posStr = clickedMapPos.lat().toFixed(5)+"N "+clickedMapPos.lng().toFixed(5)+"E";
 			ga('send', 'event', 'user-click', 'addMapPos', 'addMapPos-'+posStr); // .replace(/[0-8]/g,'9'));
+			ga('send', 'pageview', {
+					'page': '/geoparse/addMyPos',
+					'title': posStr
+			});
 			addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, true);
 			clickedMapPos = null;
 		}
@@ -184,9 +188,10 @@
 		window.open(url);
 	}
 	
-	function onClickMapEdit(elem) {
+	function onClickMapEditChk(elem) {
 		var checked = elem.checked;
 		config.map.editInMap = checked;
+		ga('send', 'event', 'user-click', 'changeMapConfig-EditInMap', 'changeMapConfig-EditInMap-'+checked); 
 
 		for (var i=0; i<posArray.length; i++) {
 			var location = posArray[i];
@@ -197,9 +202,10 @@
 		}		
 	}
 	
-	function onClickDisplayLabels(elem) {
+	function onClickDisplayLabelsChk(elem) {
 		var checked = elem.checked;
 		config.map.displayLabalsInMap = elem.checked;
+		ga('send', 'event', 'user-click', 'changeMapConfig-DisplayLabel', 'changeMapConfig-DisplayLabel-'+checked); 
 
 		for (var i=0; i<posArray.length; i++) {
 			var location = posArray[i];

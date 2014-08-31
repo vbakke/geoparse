@@ -53,7 +53,11 @@
 			cN = pos.lng();
 			cE = pos.lat();
 		}
-		var zoomLevel = _self.findZoomLevel(locationArray, boundingbox, viewport);
+		var zoomLevel;
+		if (posArray.length <= 1)
+			zoomLevel = 7;
+		else
+			zoomLevel = _self.findZoomLevel(locationArray, boundingbox, viewport);
 		
 
 		var urlCenter = "/#"+zoomLevel+"/"+cE+"/"+cN;
