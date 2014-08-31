@@ -172,7 +172,6 @@
 	function onClickOpenNorgeskart() {
 		var url = norgeskart.makeUrl(posArray, {w: $(window).width(), h: $(window).height()});
 		ga('send', 'event', 'user-click', 'openKart', 'openKart-'+url);
-		alert(url);
 		window.open(url);
 	}
 	
