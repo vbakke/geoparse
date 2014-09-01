@@ -9,9 +9,10 @@
 	<script src=".\js\geoconverter.js"></script>
 	<script src=".\js\geoparse.js"></script>
 	<script src=".\js\norgeskart.js"></script>
-	<script src=".\js\jquery-1.11.1.js"></script>
+	<script src=".\lib\jquery-1.11.1.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
-	<script src=".\js\markerwithlabel.js"></script>
+	<script src=".\lib\amplify.min.js"></script>
+	<script src=".\lib\markerwithlabel.js"></script>
 
 
 </head>
@@ -47,15 +48,15 @@
 						 	 <select id="optDegrees" class="rounded-corners" onchange="onClickFormatChange(this, 'degrees')" >
 							 		 <option value="d">d°</option>
 									 <option value="dm">d°m'</option>
-									 <option value="dms" selected>d°m's"</option>
+									 <option value="dms">d°m's"</option>
 							 </select>
 							 <!-- ToDo: Ala http://proto.io/freebies/onoff/ -->
-						 	 <div><input id="latlonOrderNE" type="checkbox" checked onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N before E</div>
-						 	 <div><input id="latlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
+						 	 <div><input id="chkLatlonOrderNE" type="checkbox" onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N before E</div>
+						 	 <div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
 						 </td>
 						 <td>
-							 <div><input id="utmOrderEN" type="checkbox" checked onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
-							 <div><input id="utmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
+							 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
+							 <div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
 							 <!--div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div-->
 						 </td>
 					 </tr>
@@ -90,10 +91,18 @@
 	var posArray = [];
 	var initZoomLevel = 2;
 	var firstZoomLevel = 7;
-	var config = {utm: {strict: false, orderEN: true, zone: null},
-				 latlon: {format: undefined,  orderNE: true, useNeg: false},
-				 map: {editInMap: false, displayLabalsInMap: true}};
-	
+	var latlonFormats = { d: "d° N", dm: "d° m' N", dms: "d° m' s\" N"};
+	var config_default = {utm: {strict: false, orderEN: true, zone: null},
+						 latlon: {format: "dms",  orderNE: true, useNeg: false},
+						 map: {editInMap: false, displayLabalsInMap: true}};
+	var config = amplify.store("config");
+	if (!config) {
+		config = config_default;
+		amplify.store("config", config);
+	}
+	updateTableOptions();
+	updateMapOptions();
+
 	var myLocation = undefined; // a geoLatLon object
 	var markers;
 	var map;
@@ -142,24 +151,26 @@
 	}
 	function onClickInMap() {	
 		if(tmpMapZoom == map.getZoom()){
-			var posStr = clickedMapPos.lat().toFixed(5)+"N "+clickedMapPos.lng().toFixed(5)+"E";
-			ga('send', 'event', 'user-click', 'addMapPos', 'addMapPos-'+posStr); // .replace(/[0-8]/g,'9'));
+			var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, true);
+			clickedMapPos = null;
+
+			var utmLogMsg = approxUtm(location.utm);
+			ga('send', 'event', 'user-click', 'addMapPos', 'addMapPos-'+utmLogMsg); 
+			ga('send', 'event', 'debug-click', 'addMapPos', 'addMapPos-'+location.utm.toString()); 
 			ga('send', 'pageview', {
 					'page': '/geoparse/addMyPos',
-					'title': posStr
+					'title': utmLogMsg
 			});
-			addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, true);
-			clickedMapPos = null;
 		}
 	}
 	
 	function onClickConvertGeo() {
 		var orgStr = $("#txtCoordinate").val();
-		ga('send', 'event', 'user-click', 'convertLatLon', 'convertLatLon-'+orgStr); // .replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'debug-click', 'convertLatLon', 'convertLatLon-'+orgStr); 
 		ga('send', 'event', 'user-click', 'convertLatLon', 'convertLatLon-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
 				'page': '/geoparse/convertLatLon',
-				'title': orgStr
+				'title': orgStr.replace(/[0-8]/g,'9')
 		});
 		var latlon = geoparse.parseLatLon(orgStr);
 		var utm = geoconverter.LatLonToUTM(latlon);
@@ -168,11 +179,11 @@
 	}
 	function onClickConvertUtm() {
 		var orgStr = $("#txtCoordinate").val();
-		ga('send', 'event', 'user-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'debug-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
 		ga('send', 'event', 'user-click', 'convertUtm', 'convertUtm-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
 				'page': '/geoparse/convertUtm',
-				'title': "orgStr"
+				'title': orgStr.replace(/[0-8]/g,'9')
 		});
 		var utm = geoparse.parseUtm(orgStr);
 		var latlon = geoconverter.UTMToLatLon(utm);
@@ -184,13 +195,15 @@
 	
 	function onClickOpenNorgeskart() {
 		var url = norgeskart.makeUrl(posArray, {w: $(window).width(), h: $(window).height()});
-		ga('send', 'event', 'user-click', 'openKart', 'openKart-'+url);
+		ga('send', 'event', 'debug-click', 'openKart', 'openKart-'+url);
+		ga('send', 'event', 'user-click', 'openKart', 'openKart');
 		window.open(url);
 	}
 	
 	function onClickMapEditChk(elem) {
 		var checked = elem.checked;
 		config.map.editInMap = checked;
+		amplify.store('config', config);
 		ga('send', 'event', 'user-click', 'changeMapConfig-EditInMap', 'changeMapConfig-EditInMap-'+checked); 
 
 		for (var i=0; i<posArray.length; i++) {
@@ -205,6 +218,7 @@
 	function onClickDisplayLabelsChk(elem) {
 		var checked = elem.checked;
 		config.map.displayLabalsInMap = elem.checked;
+		amplify.store('config', config);
 		ga('send', 'event', 'user-click', 'changeMapConfig-DisplayLabel', 'changeMapConfig-DisplayLabel-'+checked); 
 
 		for (var i=0; i<posArray.length; i++) {
@@ -220,13 +234,7 @@
 		// Lat/Lon
 		var vDbg;
 		if (type=="degrees") {
-			var val = elem.value;
-			if (val == "d")
-				config.latlon.format = "d° N";
-			else if (val == "dm")
-				config.latlon.format = "d° m' N";
-			else
-				config.latlon.format = "d° m' s\" N";
+			config.latlon.format = elem.value;
 			vDbg = config.latlon.format;
 		}
 		if (type=="degOrder") {
@@ -253,6 +261,9 @@
 				config.utm.zone = elem.value;
 			vDbg = config.utm.zone;
 		}
+
+		amplify.store('config', config);
+
 		ga('send', 'event', 'user-click', 'changeFormat-'+type, 'changeFormat-'+type+"-"+vDbg); 
 		
 		// Regenerate table
@@ -276,8 +287,8 @@
 			span.innerHTML = "Geolocation is not supported by this browser.";
 		}
 	}
-	function addMyLocation(location) {
-		if (location == undefined) {
+	function addMyLocation(pos) {
+		if (pos == undefined) {
 			var span = $("#sMyLocation");
 			span.innerHTML = "Could not retrieve your location";
 		} else {
@@ -285,14 +296,14 @@
 			//me.prop("disabled", true);
 
 			var label = "Here";
-			addLatLonLocation(location.coords.latitude, location.coords.longitude, label);
+			var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label);
 
-			var posStr = location.coords.latitude.toFixed(5) + " N " + location.coords.longitude.toFixed(5) + " E ";
-			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+posStr); // .replace(/[0-8]/g,'9'));
-			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+posStr.replace(/[0-8]/g,'9'));
+			var utmLogMsg = approxUtm(location.utm);
+			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+utmLogMsg); 
+			ga('send', 'event', 'debug-click', 'addMyPos', 'addMyPos-'+location.utm.toString());
 			ga('send', 'pageview', {
 					'page': '/geoparse/addMyPos',
-					'title': posStr
+					'title': utmLogMsg
 			});
 		}
 	}
@@ -301,8 +312,10 @@
 		//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
 		var latlon = new geoLatLon(lat, lon);
 		var utm = geoconverter.LatLonToUTM(latlon);
-		addLocation("", latlon, utm, label, freezeMap);
+		var location = addLocation("", latlon, utm, label, freezeMap);
+		return location;
 	}
+
 	function updateLatLonLocation(location, newLat, newLon) {
 		//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
 		var latlon = new geoLatLon(newLat, newLon);
@@ -324,6 +337,8 @@
 		addLocationToMap(location, freezeMap);
 		
 		posArray.push(location);
+		
+		return location;
 	}
 	function addLocationToTable(tb, location) {
 		if (posArray.length <= 0) 
@@ -340,7 +355,8 @@
 	}
 	function generateTableRowStr(location) {
 		var labelStr = location.label;
-		var latlonStr = location.latlon.toString(config.latlon.format, ' ', config.latlon.useNeg, config.latlon.orderNE);
+		var format = latlonFormats[config.latlon.format];
+		var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ');
 		
 		var str = "<td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td>";
@@ -440,9 +456,27 @@
 		}
 	}
 
+	function updateTableOptions() {
+		var s = '#optDegrees option[value='+config.latlon.format+']';
+		var o = $(s);
+		//o.prop('selected', true);
+		$('#optDegrees option[value='+config.latlon.format+']').prop('selected', true);
+		$("#chkLatlonNeg").attr("checked", config.latlon.useNeg);
+		$("#chkLatlonOrderNE").attr("checked", config.latlon.orderNE);
+		$("#chkUtmStrict").attr("checked", config.utm.strict);
+		$("#chkUtmOrderEN").attr("checked", config.utm.orderEN);
+	}
+
 	function updateMapOptions() {
 		$("#chkMapEdit").attr("checked", config.map.editInMap);
 		$("#chkDisplayLabels").attr("checked", config.map.displayLabalsInMap);
+	}
+
+
+	function approxUtm(utm) {
+		var round = 1000; //  in meters
+		var str = utm.zone + utm.band + " " + Math.floor(utm.easting/round)*round + "E " + Math.floor(utm.northing/round)*round + "N";
+		return str;
 	}
 	
 	function copyToClipboard(b, str) {

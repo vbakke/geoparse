@@ -13,6 +13,7 @@ v1.1
 - GUI: Add address, lookup with google
   - https://developers.google.com/maps/documentation/javascript/examples/places-searchbox
 - GUI: Add input field for pos label, updating
+- GUI: Rafactor config to read from default_config, by override default getter()
 
 Backlog
 =======
@@ -29,7 +30,6 @@ Backlog
 
 
 - Parse: Add heuristics for choosing UTM and LatLong 
-- GUI: Store settings in cookie
 
 - GUI: Gracefully handle zone band S (South and/or S) 
   - Identify ambiguous S northings, and their opposites.  
@@ -37,12 +37,14 @@ Backlog
 - Parse: Handle MGRS coordinates
 
 - Share: Store coordinates in DB, generate bit.ly like url geo.vafe.net/fX
-	Algorithm: D:\Slettes\Py\Gen.py
+  Algorithm: D:\Slettes\Py\Gen.py
 - Share: Allow modifications, store history, add comment and/or username
 
 
 Done
 ====
+- GUI: Store settings in localStorage
+- Logging: Split real event and debug events
 - Fix: GUI: Add new marker in-map, changes zoom level and shifts center of map
 - GUI: Make Control bar above map
 - GUI: Add checkbox for enabling editing of markers on map
