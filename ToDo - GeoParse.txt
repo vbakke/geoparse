@@ -2,18 +2,32 @@ ToDo
 ====  
 v1.0
 - GUI: Add myLocation on page, in writing
-- GUI: Force zone, if filled in
 - GUI: Remove one marker  (=>moves orgstr into <input>)
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 
 - GUI: Fix layout for mobiles
 - Test from Android
 
+
 v1.1
+- GUI: Save locations in localStorage
+- GUI: Give a location set a name
+- GUI: Display a list with stored locations
+
+v1.2
 - GUI: Add address, lookup with google
   - https://developers.google.com/maps/documentation/javascript/examples/places-searchbox
 - GUI: Add input field for pos label, updating
 - GUI: Rafactor config to read from default_config, by override default getter()
+- Parse: Refactor toString to use config objects, instead of explicit arguments
+- GUI: Add warning if fixing zone to more than its neighbour
+- Norgeskart: Fix isInNorway to use boundingbox with latlon
+
+v1.3
+- Share: Store coordinates in DB, generate bit.ly like url vafe.net/g?FX3E
+  Algorithm: D:\Slettes\Py\Gen.py
+- Share: Allow modifications, store history, add comment and/or username
+
 
 Backlog
 =======
@@ -36,13 +50,11 @@ Backlog
 
 - Parse: Handle MGRS coordinates
 
-- Share: Store coordinates in DB, generate bit.ly like url geo.vafe.net/fX
-  Algorithm: D:\Slettes\Py\Gen.py
-- Share: Allow modifications, store history, add comment and/or username
 
 
 Done
 ====
+- GUI: Force zone, if filled in
 - GUI: Store settings in localStorage
 - Logging: Split real event and debug events
 - Fix: GUI: Add new marker in-map, changes zoom level and shifts center of map

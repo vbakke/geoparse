@@ -10,13 +10,16 @@
 	// Uses location.utm 
 	// 	
 	_self.isInNorway = function (location) {
-		if (location.utm.zone < 32)
+		return _self.isUtmInNorway(location.utm);
+	}
+	_self.isUtmInNorway = function (utm) {
+		if (utm.zone < 32)
 			return false;
-		if (location.utm.zone > 35)
+		if (utm.zone > 35)
 			return false;
-		if (location.utm.band < 'V')
+		if (utm.band < 'V')
 			return false;
-		if (location.utm.band > 'X')
+		if (utm.band > 'X')
 			return false;
 		return true;
 	}
@@ -24,12 +27,13 @@
 	_self.makeUrl = function (locationArray, viewport) {
 		// Make UTM33 coordinates
 		var utm33s = [];
-		var minN, maxN, minE, maxE, cN, cE;
+		var minN, maxN, minE, maxE, c1, c2, zoomlevel;
 		var urlMarkers = "";
 		for (var i=0; i<posArray.length; i++) {
-			var pos = posArray[i];
-			if (_self.isInNorway(pos)) {
-				var utm33 = geoconverter.LatLonToUTM(pos.latlon, undefined, 33);
+			var location = posArray[i];
+			if (_self.isInNorway(location)) {
+				var utm33 = geoconverter.LatLonToUTM(location.latlon, undefined, 33);
+				utm33s.push(utm33);
 
 				if (minE == undefined || utm33.easting < minE)
 					minE = utm33.easting;
@@ -40,27 +44,33 @@
 				if (maxN == undefined || utm33.northing > maxN)
 					maxN = utm33.northing;
 					
-				urlMarkers += "/m/"+utm33.easting.toFixed(0)+"/"+utm33.northing.toFixed(0)+"/"+pos.label;
+				urlMarkers += "/m/"+utm33.easting.toFixed(0)+"/"+utm33.northing.toFixed(0)+"/"+location.label;
 			}
 		}
 		
-		var boundingbox = {w: maxE-minE, h: maxN-minN};
-		cE = (minE + maxE)/2;
-		cN = (minN + maxN)/2;	
-		if (isNaN(cE)) {
+		var urlCenter = "";
+		if (urlMarkers=="") {
 			var pos = map.getCenter();
-			// Swap lat and lon, for the order to be correct in the url
-			cN = pos.lng();
-			cE = pos.lat();
+			var utm = geoconverter.LatLonToUTM(new geoLatLon(pos.lat(), pos.lng()));
+			if (_self.isUtmInNorway(utm)) {
+				c1 = pos.lng();
+				c2 = pos.lat();
+			} 
+		} else {
+			var boundingbox = {w: maxE-minE, h: maxN-minN};
+			c1 = (minE + maxE)/2;
+			c2 = (minN + maxN)/2;	
 		}
-		var zoomLevel;
-		if (posArray.length <= 1)
-			zoomLevel = 7;
-		else
-			zoomLevel = _self.findZoomLevel(locationArray, boundingbox, viewport);
-		
 
-		var urlCenter = "/#"+zoomLevel+"/"+cE+"/"+cN;
+		if (c1 != undefined) {
+			if (utm33s.length <= 1)
+				zoomLevel = 7;
+			else
+				zoomLevel = _self.findZoomLevel(locationArray, boundingbox, viewport);
+			
+
+			var urlCenter = "/#"+zoomLevel+"/"+c1+"/"+c2;
+		}
 		var url = "http://norgeskart.no" + urlCenter + urlMarkers;
 
 		return url;

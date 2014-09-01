@@ -423,7 +423,7 @@ var geoconverter = (function () {
 
         // Compute the UTM zone.
         var band = GetBandLetter(latlon);
-		if (zone == undefined) {
+		if (zone == undefined || zone == null) {
 			zone = Math.floor ((latlon.lon + 180.0) / 6) + 1;
 
 			// Adjust zone for Southern Norway and Svalbard

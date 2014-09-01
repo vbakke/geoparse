@@ -36,7 +36,7 @@
 		<div id="divTable">
 			 <table id="posTable">
 			  		 <thead>
-			  		 <!--tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr-->
+			  		 <!-- <tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr> -->
 			  		 <tr><th>Label</th><th>Latitude / logingtude</th><th>UTM</th></tr>
 					 </thead>
 					 <tbody>
@@ -55,9 +55,9 @@
 						 	 <div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
 						 </td>
 						 <td>
+							 <div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
 							 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
 							 <div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
-							 <!--div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div-->
 						 </td>
 					 </tr>
 					 </tfoot>
@@ -255,11 +255,14 @@
 			vDbg = config.utm.strict;
 		}
 		if (type=="utmZone") {
-			if (!elem.value || elem.value.trim() == "")
+			var orgZone = config.utm.zone;
+			if (!elem.value || elem.value.trim() == "" || parseInt(elem.value)==NaN)
 				config.utm.zone = null;
 			else
-				config.utm.zone = elem.value;
+				config.utm.zone = parseInt(elem.value);
 			vDbg = config.utm.zone;
+			if (orgZone != config.utm.zone)
+				regenerateUtm(config.utm.zone);
 		}
 
 		amplify.store('config', config);
@@ -445,6 +448,14 @@
 	function clearLocationsFromTable() {
 		tb.empty();
 		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td></tr>");
+	}
+
+	function regenerateUtm(zone) {
+		for (var i=0; i<posArray.length; i++) {
+			var location = posArray[i];
+			var utmNew = geoconverter.LatLonToUTM(location.latlon, undefined, zone);
+			location.utm = utmNew;
+		}
 	}
 
 	function generateTable() {
