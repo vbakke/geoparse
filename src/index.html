@@ -37,33 +37,53 @@
 			 <table id="posTable">
 			  		 <thead>
 			  		 <!-- <tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr> -->
-			  		 <tr><th>Label</th><th>Latitude / logingtude</th><th>UTM</th></tr>
+				  		 <tr>
+				  		 	<th>Label</th>
+				  		 	<th>Latitude / logingtude</th>
+				  		 	<th>UTM</th>
+				  		 	<th><img src="imgRemoveRow" style="visibility:hidden;"></th>
+			  		 	</tr>
 					 </thead>
 					 <tbody>
 					 </tbody>
 					 <tfoot>
-			  		 <tr>
-					 	 <td><button id="btnClear" class="rounded-corners" onclick="onClickClearLocations()" >Clear</button> </td>
-						 <td>
-						 	 <select id="optDegrees" class="rounded-corners" onchange="onClickFormatChange(this, 'degrees')" >
-							 		 <option value="d">d°</option>
-									 <option value="dm">d°m'</option>
-									 <option value="dms">d°m's"</option>
-							 </select>
-							 <!-- ToDo: Ala http://proto.io/freebies/onoff/ -->
-						 	 <div><input id="chkLatlonOrderNE" type="checkbox" onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N before E</div>
-						 	 <div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
-						 </td>
-						 <td>
-							 <div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
-							 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
-							 <div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
-						 </td>
-					 </tr>
+				  		 <tr>
+						 	 <td><button id="btnClear" class="rounded-corners" onclick="onClickClearLocations()" >Clear</button> </td>
+							 <td>
+							 	 <select id="optDegrees" class="rounded-corners" onchange="onClickFormatChange(this, 'degrees')" >
+								 		 <option value="d">d°</option>
+										 <option value="dm">d°m'</option>
+										 <option value="dms">d°m's"</option>
+								 </select>
+								 <!-- ToDo: Ala http://proto.io/freebies/onoff/ -->
+							 	 <div><input id="chkLatlonOrderNE" type="checkbox" onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N before E</div>
+							 	 <div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
+							 </td>
+							 <td>
+								 <div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
+								 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
+								 <div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
+							 </td>
+							 <td>
+							 </td>
+						 </tr>
 					 </tfoot>
 				</table>
 				
 		 </div>
+		<div>
+			<p>
+			Project in progress....  
+			Layout not optimized for anything but my own screen. and certainly not for any mobile devices... yet...
+			</p>
+			<p style="margin-bottom:0;">
+			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
+			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
+			</p>
+			<p>
+				Cheers, :)
+			</p>
+		</div>
 	</div>
 	<div id="divMap">
 		<div id="divMap2"></div>
@@ -73,17 +93,6 @@
 			
 			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Åpne i Norgeskart.no</button>
 			<div class="clearfix"></div>
-		</div>
-		<div>
-			<p>
-			Project in progress....  
-			Layout not optimized for anything but my own screen, 
-			and the Norgeskart button is visible also for coordinates outside Norway. 
-			</p>
-			<p style="margin-bottom:0;">
-			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
-			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a>.
-			</p>
 		</div>
 	</div>
 </div>
@@ -96,6 +105,8 @@
 						 latlon: {format: "dms",  orderNE: true, useNeg: false},
 						 map: {editInMap: false, displayLabalsInMap: true}};
 	var config = amplify.store("config");
+	var imgRemoveRow = "./img/red-x_16_gray.png";
+	var imgRemoveRowHover = "./img/red-x_16.png";
 	if (!config) {
 		config = config_default;
 		amplify.store("config", config);
@@ -108,6 +119,7 @@
 	var map;
 	var clickedMapPos, tmpMapZoom;
 	var tb = $("#posTable tbody");
+	var txtCoordinate = $("#txtCoordinate");
 
 	function initialize() {
 		initMap("divMap2");
@@ -165,11 +177,11 @@
 	}
 
 	function onClickTableCell(elem) {
-		$("#txtCoordinate").val(elem.innerText);
+		txtCoordinate.val(elem.innerText);
 	}
 
 	function onClickConvertGeo() {
-		var orgStr = $("#txtCoordinate").val();
+		var orgStr = txtCoordinate.val();
 		ga('send', 'event', 'debug-click', 'convertLatLon', 'convertLatLon-'+orgStr); 
 		ga('send', 'event', 'user-click', 'convertLatLon', 'convertLatLon-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
@@ -182,7 +194,7 @@
 		addLocation(orgStr, latlon, utm);
 	}
 	function onClickConvertUtm() {
-		var orgStr = $("#txtCoordinate").val();
+		var orgStr = txtCoordinate.val();
 		ga('send', 'event', 'debug-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
 		ga('send', 'event', 'user-click', 'convertUtm', 'convertUtm-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
@@ -284,6 +296,19 @@
 		clearLocations();
 	}
 
+	function onClickRemoveRow(elem) {
+		var index = tb.index(elem.parentNode.parentNode);
+		var tr = $(elem).closest("tr");
+		var tdUtm = tr.find("td").eq(2);
+
+		txtCoordinate.val(tdUtm.text());
+
+		index = tr.index();
+		removeLocation(index);
+
+		ga('send', 'event', 'user-click', 'removeRow', 'removeRow-'+index); 
+	}
+
 	// Ask browser for location
 	function onClickAddMyPos() {
 		var span = $("#sMyLocation");
@@ -369,7 +394,8 @@
 		
 		var str = "<td>"+labelStr+"</td>" + 
 					"<td onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
-					"<td  onclick=\"onClickTableCell(this)\">"+utmStr+"</td>";
+					"<td  onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
+					'<td><img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}
 	
@@ -398,7 +424,7 @@
 		var newLon = location.latlon.lon;
 		markerPos = new google.maps.LatLng(newLat, newLon);
 		var markerOptions = {   map:map,
-								draggable:true,
+								draggable:config.map.editInMap,
 								animation: google.maps.Animation.DROP,
 								position: markerPos,
 								locationObj: location,
@@ -442,19 +468,44 @@
 		posArray = [];
 	}
 	
+	function removeLocation(index) {
+		removeLocationFromMap(index);
+		removeLocationFromTable(index);
+		posArray.splice(index, 1); // Remove the element
+	}
+	
 	function clearLocationsFromMap() {
 		for (var i=0; i<posArray.length; i++) {
-			var location = posArray[i];
-			if (location.marker) {
-				location.marker.locationObj = null;
-				location.marker.setMap(null);
-				location.marker = null;
-			}
+			removeLocationFromMap(i);
 		}
 	}
+
+	function removeLocationFromMap(index) {		
+		var location = posArray[index];
+		if (location.marker) {
+			location.marker.locationObj = null;
+			location.marker.setMap(null);
+			location.marker = null;
+		}
+	}
+	
+
 	function clearLocationsFromTable() {
 		tb.empty();
-		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td></tr>");
+		addToTableNoElelemntsText();
+	}
+
+	function removeLocationFromTable(index) {
+		var tr = tb.find("tr").eq(index);
+
+		tr.remove();
+
+		if (tb.children().length == 0)
+			addToTableNoElelemntsText();
+	}
+
+	function addToTableNoElelemntsText() {
+		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td><td></td></tr>");
 	}
 
 	function regenerateUtm(zone) {
@@ -495,6 +546,14 @@
 		var round = 1000; //  in meters
 		var str = utm.zone + utm.band + " " + Math.floor(utm.easting/round)*round + "E " + Math.floor(utm.northing/round)*round + "N";
 		return str;
+	}
+
+
+	function imgSwap(elem) {
+		$(elem).attr({
+				'src':        $(elem).attr('hover-src'), 
+				'hover-src':  $(elem).attr('src') 
+		});
 	}
 	
 	function copyToClipboard(b, str) {

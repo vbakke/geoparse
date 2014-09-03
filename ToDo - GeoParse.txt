@@ -1,7 +1,6 @@
 ToDo
 ====  
 v1.0
-- GUI: Remove one marker  (=>moves orgstr into <input>)
 - GUI: Center on one location in table, display distance to each other location
 
 - GUI: Fix layout for mobiles
@@ -54,6 +53,7 @@ Backlog
 
 Done
 ====
+- GUI: Remove one marker  (=>moves orgstr into <input>)
 - GUI: Click on row, copies original row text to <input>.
 - GUI: Force zone, if filled in
 - GUI: Store settings in localStorage
