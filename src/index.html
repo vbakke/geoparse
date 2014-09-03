@@ -163,7 +163,11 @@
 			});
 		}
 	}
-	
+
+	function onClickTableCell(elem) {
+		$("#txtCoordinate").val(elem.innerText);
+	}
+
 	function onClickConvertGeo() {
 		var orgStr = $("#txtCoordinate").val();
 		ga('send', 'event', 'debug-click', 'convertLatLon', 'convertLatLon-'+orgStr); 
@@ -346,23 +350,26 @@
 	function addLocationToTable(tb, location) {
 		if (posArray.length <= 0) 
 			tb.empty();
-		
-		var str = generateTableRowStr(location);
+
+		var index = posArray.length;
+		var str = generateTableRowStr(index, location);
 		tb.append("<tr>"+str+"</tr>");
 	}
 	function updateLocationInTable(tb, location) {
 		var index = posArray.indexOf(location);
 		var tableRow = tb.find("tr")[index];
-		var str = generateTableRowStr(location);
+		var str = generateTableRowStr(index, location);
 		tableRow.innerHTML = str;
 	}
-	function generateTableRowStr(location) {
+	function generateTableRowStr(index, location) {
 		var labelStr = location.label;
 		var format = latlonFormats[config.latlon.format];
 		var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ');
 		
-		var str = "<td>"+labelStr+"</td><td>"+latlonStr+"</td><td>"+utmStr+"</td>";
+		var str = "<td>"+labelStr+"</td>" + 
+					"<td onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
+					"<td  onclick=\"onClickTableCell(this)\">"+utmStr+"</td>";
 		return str;
 	}
 	

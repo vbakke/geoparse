@@ -1,9 +1,8 @@
 ToDo
 ====  
 v1.0
-- GUI: Add myLocation on page, in writing
 - GUI: Remove one marker  (=>moves orgstr into <input>)
-- GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
+- GUI: Center on one location in table, display distance to each other location
 
 - GUI: Fix layout for mobiles
 - Test from Android
@@ -31,9 +30,10 @@ v1.3
 
 Backlog
 =======
+- GUI: Add myLocation on page, in writing
+- GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 - Parse: Allow shorthand for parsing UTM
 - Parse: Add parsing based on last row / current location
-- GUI: Center on one location in table, display distance to each other location
 - GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
 - Parse: Test 32V, 31V, and 31-37X
@@ -54,6 +54,7 @@ Backlog
 
 Done
 ====
+- GUI: Click on row, copies original row text to <input>.
 - GUI: Force zone, if filled in
 - GUI: Store settings in localStorage
 - Logging: Split real event and debug events
