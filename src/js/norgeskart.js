@@ -1,4 +1,4 @@
-﻿var norgeskart = (function () {
+var norgeskart = (function () {
 	var _self = {};
 
 	var _tileSizePixels = 256; 
@@ -64,7 +64,7 @@
 
 		if (c1 != undefined) {
 			if (utm33s.length <= 1)
-				zoomLevel = 7;
+				zoomLevel = 13; // fartherest zoomlevel with detailed iso curves
 			else
 				zoomLevel = _self.findZoomLevel(locationArray, boundingbox, viewport);
 			

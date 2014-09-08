@@ -41,7 +41,7 @@
 				  		 	<th>Label</th>
 				  		 	<th>Latitude / logingtude</th>
 				  		 	<th>UTM</th>
-				  		 	<th><img src="imgRemoveRow" style="visibility:hidden;"></th>
+				  		 	<th><img id="hiddenImgRemoveRow" style="visibility:hidden;"></th>
 			  		 	</tr>
 					 </thead>
 					 <tbody>
@@ -107,6 +107,7 @@
 	var config = amplify.store("config");
 	var imgRemoveRow = "./img/red-x_16_gray.png";
 	var imgRemoveRowHover = "./img/red-x_16.png";
+	$("#hiddenImgRemoveRow").prop("src", imgRemoveRowHover);
 	if (!config) {
 		config = config_default;
 		amplify.store("config", config);
@@ -505,7 +506,7 @@
 	}
 
 	function addToTableNoElelemntsText() {
-		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td></td><td></td></tr>");
+		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td></td></tr>");
 	}
 
 	function regenerateUtm(zone) {
