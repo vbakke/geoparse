@@ -60,19 +60,19 @@ body {
   bottom: 0px;
 }
 
-@media screen and (min-width:1040px) {
+@media screen and (min-width:760px) {
   #divPanel
   {
     /*background-color: red;*/
     /*max-width: 575px;*/
     float:left;
-    width: 33%;
+    width: 45%;
   }
   #divMap
   {
     /*background-color: orange;*/
     float:right;
-    width: 66%;
+    width: 54%;
     height: 98%;
 
   }
