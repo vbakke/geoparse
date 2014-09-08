@@ -1,52 +1,90 @@
 /* Default CSS */
 
-body { 
-  font-family:sans-serif;   
-  background-color: #D9E6FC;
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
 }
 
-
-div {
-    /*background-color:#eeeeee;*/
+html { 
+  height: 100%;
+}
+body { 
+  height: 100%;
+  font-family:sans-serif;   
+  background-color: #D9E6FC;
+  margin: 0px;
 }
 
 #divAll
 {
- width:100%;
- height: 100%;
- padding: 0px;
- margin: 0px;
+  position: relative;
+  width:100%;
+  height: 100%;
+  padding: 0.3em;
+  margin: 0px;
+}
+
+
+#divPanel
+{
+  /*background-color: gray;*/
+  position: relative;
+  width: 100%;
+  min-width: 330px;
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: 0.4em;
 }
 
 #divMap
 {
-/* background:#FFFFCD;*/
-	float: right;
-	position:absolute;
-	top:0.5em;
-	bottom:8em; 
-	right:0.5em;
-	left: 36em;
-	float:right;
-	margin: 0px;
-	padding: 0px
+  /* background:#FFFFCD;*/
+  /*background-color: yellow;*/
+  position: relative;
+  padding: 0px;
+  height: 75%;
 }
 #divMap2 
 {
- height: 100%;
- width: 100%;
+  position: absolute;
+  top: 1px;
+  bottom: 3.2em;
+  left: 1px;
+  right: 1px;
+}
+#divMapHeader 
+{
+  position: absolute;
+  width: 100%;
+  bottom: 0px;
 }
 
-#divPanel
-{
- /*float:left;*/
- position: absolute;
- left: 0;
- width:33em;
- top: 0;
- bottom: 0;
- padding: 5px;
+@media screen and (min-width:1040px) {
+  #divPanel
+  {
+    /*background-color: red;*/
+    /*max-width: 575px;*/
+    float:left;
+    width: 33%;
+  }
+  #divMap
+  {
+    /*background-color: orange;*/
+    float:right;
+    width: 66%;
+    height: 98%;
+
+  }
 }
+
+#divUsage
+{
+  position: relative;
+  background: #C4D9FA;
+  padding: 0.5em;
+}
+
 
 #divInput
 {
@@ -62,7 +100,7 @@ table {
            border-radius: 10px;
            -moz-border-radius:10px;
            -webkit-border-radius:10px;
-           margin:6px;
+           margin:0px;
 }
 
 th {
@@ -88,8 +126,9 @@ input {
 	border-color: #A5BCE2;
 }
 
-.inputLabel {
-	width: 100%;
+.inputText {
+  width: 17em;
+  font-size: 1.2em;
 }
 
 .header

@@ -1,10 +1,10 @@
 ToDo
 ====  
 v1.0
-- GUI: Center on one location in table, display distance to each other location
+- GUI: Center on one location in table, display distance to each other location (center icon)
+- GUI: 
+- GUI: Clickk on cordinate,  selects the inserted text and sets focus to txtInput 
 
-- GUI: Fix layout for mobiles
-- Test from Android
 
 
 v1.1
@@ -29,6 +29,8 @@ v1.3
 
 Backlog
 =======
+- Test from Android
+- GUI: Fix layout for mobiles
 - GUI: Add myLocation on page, in writing
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 - Parse: Allow shorthand for parsing UTM

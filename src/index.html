@@ -1,6 +1,8 @@
 <html>
 <head>
 	<meta charset="UTF-8">
+	<!-- <META HTTP-EQUIV="Pragma" CONTENT="no-cache"> -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="Convert between UTM and Latitude/Longitude, using any format">
 	<meta name="keywords" content="online,convert,conversion,UTM,Latitude/Longitude,latlon,lat,long,long,gps,map,location,coordinate,map coordinate">
 
@@ -22,15 +24,15 @@
 		<div id="divHeader"><span class="header">EARTH</span></div>
 		<div id="divInput">
 			<div style="float:left;">
-		    	  Enter coordinate: <input id="txtCoordinate" autofocus style="width:200px" ><!--autofocus-->  
-			</div>
-			<div style="float:left;">
-				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()">Convert UTM</button>
-				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()">Convert Lat/Long</button>
+		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" ><!--autofocus-->  
 			</div>
 			<div id="divMyLocation" style="float:right">
 					<div id="sMyLocation"></div>
-					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()">Add my location</button>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="4">Add my location</button>
+			</div>
+			<div style="float:left;">
+				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()" tabindex="2">Convert UTM</button>
+				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()" tabindex="3">Convert Lat/Long</button>
 			</div>
 		</div>
 		<div id="divTable">
@@ -71,11 +73,21 @@
 				</table>
 				
 		 </div>
-		<div>
-			<p>
-			Project in progress....  
-			Layout not optimized for anything but my own screen. and certainly not for any mobile devices... yet...
-			</p>
+	</div>
+	<div id="divMap">
+		<div id="divMap2"></div>
+		<div id="divMapHeader">
+			<div style="float:left;padding-right:1em;display:"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
+			<div style="float:left"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
+			
+			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Åpne i Norgeskart.no</button>
+			<div class="clearfix"></div>
+		</div>
+	</div>
+</div>
+<!-- 
+<div style="clear: both"></div>
+		<div id="divUsage">
 			<p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
 			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
@@ -84,18 +96,7 @@
 				Cheers, :)
 			</p>
 		</div>
-	</div>
-	<div id="divMap">
-		<div id="divMap2"></div>
-		<div id="divMapHeader">
-			<div style="float:left;padding-right:1em;"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
-			<div style="float:left"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
-			
-			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Åpne i Norgeskart.no</button>
-			<div class="clearfix"></div>
-		</div>
-	</div>
-</div>
+ -->
 <script type="text/javascript">
 	var posArray = [];
 	var initZoomLevel = 2;
