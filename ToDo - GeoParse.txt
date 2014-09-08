@@ -1,11 +1,5 @@
 ToDo
 ====  
-v1.0
-- GUI: Center on one location in table, display distance to each other location (center icon)
-- GUI: 
-- GUI: Clickk on cordinate,  selects the inserted text and sets focus to txtInput 
-
-
 
 v1.1
 - GUI: Save locations in localStorage
@@ -29,8 +23,8 @@ v1.3
 
 Backlog
 =======
-- Test from Android
-- GUI: Fix layout for mobiles
+- GUI: Center on one location in table, display distance to each other location (center icon)
+- GUI: Zoom to one location, from click in the table
 - GUI: Add myLocation on page, in writing
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 - Parse: Allow shorthand for parsing UTM
@@ -55,6 +49,10 @@ Backlog
 
 Done
 ====
+v1.0
+- GUI: Clickk on cordinate,  selects the inserted text and sets focus to txtInput 
+- Test from Android
+- GUI: Fix layout for mobiles
 - GUI: Remove one marker  (=>moves orgstr into <input>)
 - GUI: Click on row, copies original row text to <input>.
 - GUI: Force zone, if filled in
