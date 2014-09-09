@@ -166,6 +166,10 @@ function geoUtm(zone, band, easting, northing) {
 	};
 	
 	
+	this.getGridZone = function () {
+		return this.zone + this.band;
+	}
+
 	this.getHemisphere = function () {
 		if (this.band == "+")
 			return "N";

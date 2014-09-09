@@ -3,9 +3,15 @@
 	<meta charset="UTF-8">
 	<!-- <META HTTP-EQUIV="Pragma" CONTENT="no-cache"> -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="Convert between UTM and Latitude/Longitude, using any format">
+	<meta name="description" content="Convert and view your UTM coordinates">
 	<meta name="keywords" content="online,convert,conversion,UTM,Latitude/Longitude,latlon,lat,long,long,gps,map,location,coordinate,map coordinate">
 
+	<link rel="shortcut icon" href="./img/favicon.png">
+	<meta property="og:type" content="website"/>
+	<meta property="og:title" content="Convert and view your UTM coordinates"/>
+	<meta property="og:description" content="Enter UTM or latitude/lonigitude coordinates, in the format you like. View them formatted in the writing style you prefer, as well as on the map. Easily convert between UTM zones if you need to."/>
+	<meta property="og:url" content="http://vafe.net/geo/"/>
+	<meta property="og:image" content="http://vafe.net/geo/img/site-sample-2.jpg"/>
 	<link rel="stylesheet" type="text/css" href="./css/geoparse.css">
 	<script src=".\js\geoclasses.js"></script>
 	<script src=".\js\geoconverter.js"></script>
@@ -15,8 +21,7 @@
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
 	<script src=".\lib\amplify.min.js"></script>
 	<script src=".\lib\markerwithlabel.js"></script>
-
-
+	<title>Convert and view your UTM coordinates</title>
 </head>
 <body>
 <div id="divAll">
@@ -41,7 +46,7 @@
 			  		 <!-- <tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr> -->
 				  		 <tr>
 				  		 	<th>Label</th>
-				  		 	<th>Latitude / logingtude</th>
+				  		 	<th>Latitude / longitude</th>
 				  		 	<th>UTM</th>
 				  		 	<th><img id="hiddenImgRemoveRow" style="visibility:hidden;"></th>
 			  		 	</tr>
@@ -71,8 +76,20 @@
 						 </tr>
 					 </tfoot>
 				</table>
-				
 		 </div>
+				
+		<div id="divUsage">
+			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
+			The current version requires that you fill in the UTM grid zone (such as %gridZone%), and that you specify at the directions (NSEW) of the latitude/longitude.  Working on a solution so you don't need this... :)
+			</p>
+			<!--p style="margin-bottom:0;">
+			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
+			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
+			</p>
+			<p>
+				Cheers, :)
+			</p-->
+		</div>
 	</div>
 	<div id="divMap">
 		<div id="divMap2"></div>
@@ -84,19 +101,11 @@
 			<div class="clearfix"></div>
 		</div>
 	</div>
-</div>
-<!-- 
+
+
 <div style="clear: both"></div>
-		<div id="divUsage">
-			<p style="margin-bottom:0;">
-			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
-			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
-			</p>
-			<p>
-				Cheers, :)
-			</p>
-		</div>
- -->
+</div>
+ 
 <script type="text/javascript">
 	var posArray = [];
 	var initZoomLevel = 2;
@@ -159,6 +168,12 @@
 				// Display the location
 				var tmp = myLocation.toString();
 				span.innerText = tmp;
+
+				var tmpUtm = geoconverter.LatLonToUTM(myLocation);
+				var gridZone = tmpUtm.getGridZone() || "33W";
+				$(".zoneReplacement").text(function(i, val) {
+					return val.replace("%gridZone%", gridZone)
+				});
 			});
 		} 
 
