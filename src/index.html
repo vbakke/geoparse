@@ -13,14 +13,14 @@
 	<meta property="og:url" content="http://vafe.net/geo/"/>
 	<meta property="og:image" content="http://vafe.net/geo/img/site-sample-2.jpg"/>
 	<link rel="stylesheet" type="text/css" href="./css/geoparse.css">
-	<script src=".\js\geoclasses.js"></script>
-	<script src=".\js\geoconverter.js"></script>
-	<script src=".\js\geoparse.js"></script>
-	<script src=".\js\norgeskart.js"></script>
-	<script src=".\lib\jquery-1.11.1.js"></script>
+	<script src="./js/geoclasses.js"></script>
+	<script src="./js/geoconverter.js"></script>
+	<script src="./js/geoparse.js"></script>
+	<script src="./js/norgeskart.js"></script>
+	<script src="./lib/jquery-1.11.1.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
-	<script src=".\lib\amplify.min.js"></script>
-	<script src=".\lib\markerwithlabel.js"></script>
+	<script src="./lib/amplify.min.js"></script>
+	<script src="./lib/markerwithlabel.js"></script>
 	<title>Convert and view your UTM coordinates</title>
 </head>
 <body>
@@ -39,6 +39,7 @@
 				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()" tabindex="2">Convert UTM</button>
 				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()" tabindex="3">Convert lat/long</button>
 			</div>
+			<div style="clear: both"></div>
 		</div>
 		<div id="divTable">
 			 <table id="posTable">
@@ -201,7 +202,7 @@
 	}
 
 	function onClickTableCell(elem) {
-		txtCoordinate.val(elem.innerText);
+		txtCoordinate.val($(elem).text());
 		txtCoordinate.select();
 	}
 
@@ -438,7 +439,7 @@
 		var str = "<td>"+labelStr+"</td>" + 
 					"<td onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
 					"<td  onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
-					'<td text-align=\"center\"><img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
+					'<td style="text-align:center;"><img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}
 	
@@ -466,6 +467,7 @@
 		var newLat = location.latlon.lat;
 		var newLon = location.latlon.lon;
 		markerPos = new google.maps.LatLng(newLat, newLon);
+		var labelVisible = config.map.displayLabalsInMap;
 		var markerOptions = {   map:map,
 								draggable:config.map.editInMap,
 								animation: google.maps.Animation.DROP,
@@ -474,7 +476,8 @@
 								labelContent: location.label,
 								labelAnchor: new google.maps.Point(20, -1),
 								labelClass: "markerlabel", // the CSS class for the label
-								labelStyle: {opacity: 0.95}
+								labelStyle: {opacity: 0.95},
+								labelVisible: labelVisible
 		};
 		var marker = new MarkerWithLabel(markerOptions);
 		google.maps.event.addListener(marker, 'drag', markerDrag);
