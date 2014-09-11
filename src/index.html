@@ -33,11 +33,11 @@
 			</div>
 			<div id="divMyLocation" style="float:right">
 					<div id="sMyLocation"></div>
-					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="4">Add my location</button>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="4">My location</button>
 			</div>
 			<div style="float:left;">
 				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()" tabindex="2">Convert UTM</button>
-				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()" tabindex="3">Convert Lat/Long</button>
+				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()" tabindex="3">Convert lat/long</button>
 			</div>
 		</div>
 		<div id="divTable">
@@ -80,7 +80,7 @@
 				
 		<div id="divUsage">
 			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
-			The current version requires that you fill in the UTM grid zone (such as %gridZone%), and that you specify at the directions (NSEW) of the latitude/longitude.  Working on a solution so you don't need this... :)
+			The current version requires that you fill in the UTM grid zone (such as %gridZone%), and that you specify at the directions (NSEW) of the latitude/longitude.  Planning a solution where you don't need this... :)
 			</p>
 			<!--p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
@@ -94,10 +94,10 @@
 	<div id="divMap">
 		<div id="divMap2"></div>
 		<div id="divMapHeader">
-			<div style="float:left;padding-right:1em;display:"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
-			<div style="float:left"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
+			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Norgeskart.no</button>
+			<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
+			<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
 			
-			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Åpne i Norgeskart.no</button>
 			<div class="clearfix"></div>
 		</div>
 	</div>
@@ -135,6 +135,13 @@
 	function initialize() {
 		initMap("divMap2");
 		clearLocations();
+
+		txtCoordinate.on("focus",function(e){
+    		$(this).select();
+		});
+		txtCoordinate.on("mouseup",function(e){
+			e.preventDefault();
+		});
 	}
 	function initMap(div) {
 		updateMapOptions();
@@ -378,13 +385,31 @@
 	function addLocation(orgStr, latlon, utm, label, freezeMap) {
 		var labelLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		if (!label) {
-			label = labelLetters[posArray.length];
+			// Get existsing labels
+			if (posArray.length==0) {
+				label = labelLetters[0];
+			} else {	
+				var usedLabels = "";
+				for (var i=0; i<posArray.length; i++) {
+					if (posArray[i].label && posArray[i].label.length == 1)
+						usedLabels += posArray[i].label;
+				}
+				for (var i=0; i<labelLetters.length; i++) {
+					if ( usedLabels.indexOf(labelLetters[i]) == -1) {
+						label = labelLetters[i];
+						break;
+					}
+				}
+				if (!label)
+					label = labelLetters[-1];
+			}
 		}
 		var location = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
 		
 		
 		addLocationToTable(tb, location);
 		addLocationToMap(location, freezeMap);
+
 		
 		posArray.push(location);
 		
@@ -413,7 +438,7 @@
 		var str = "<td>"+labelStr+"</td>" + 
 					"<td onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
 					"<td  onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
-					'<td><img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
+					'<td text-align=\"center\"><img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}
 	

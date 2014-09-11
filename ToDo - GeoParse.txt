@@ -1,19 +1,26 @@
 ToDo
 ====  
 
+v1.0.1
+- Parse: Add parsing based on last row / current location
+
 v1.1
 - GUI: Save locations in localStorage
 - GUI: Give a location set a name
 - GUI: Display a list with stored locations
 
+
 v1.2
 - GUI: Add address, lookup with google
   - https://developers.google.com/maps/documentation/javascript/examples/places-searchbox
+
 - GUI: Add input field for pos label, updating
 - GUI: Rafactor config to read from default_config, by override default getter()
+
 - Parse: Refactor toString to use config objects, instead of explicit arguments
 - GUI: Add warning if fixing zone to more than its neighbour
 - Norgeskart: Fix isInNorway to use boundingbox with latlon
+
 
 v1.3
 - Share: Store coordinates in DB, generate bit.ly like url vafe.net/g?FX3E
@@ -28,7 +35,6 @@ Backlog
 - GUI: Add myLocation on page, in writing
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 - Parse: Allow shorthand for parsing UTM
-- Parse: Add parsing based on last row / current location
 - GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
 - Parse: Test 32V, 31V, and 31-37X
@@ -49,6 +55,9 @@ Backlog
 
 Done
 ====
+v1.0.1
+- GUI: Add next letter, not being used
+
 v1.0
 - GUI: Clickk on cordinate,  selects the inserted text and sets focus to txtInput 
 - Test from Android

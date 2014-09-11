@@ -31,7 +31,7 @@ body {
   /*background-color: gray;*/
   position: relative;
   width: 100%;
-  min-width: 330px;
+  min-width: 310px;
   padding: 0px;
   margin: 0px;
   margin-bottom: 0.4em;
@@ -169,4 +169,10 @@ input {
    display: block; 
    height: 0; 
    clear: both;
+}
+
+.mapOptions {
+  float:left;
+  padding-right:1em;
+  /*padding-top:0.5em;*/
 }
