@@ -24,7 +24,7 @@ var norgeskart = (function () {
 		return true;
 	}
 
-	_self.makeUrl = function (locationArray, viewport) {
+	_self.makeUrl = function (locationArray, viewport, includeLabels) {
 		// Make UTM33 coordinates
 		var utm33s = [];
 		var minN, maxN, minE, maxE, c1, c2, zoomlevel;
@@ -43,8 +43,10 @@ var norgeskart = (function () {
 					minN = utm33.northing;
 				if (maxN == undefined || utm33.northing > maxN)
 					maxN = utm33.northing;
-					
-				urlMarkers += "/m/"+utm33.easting.toFixed(0)+"/"+utm33.northing.toFixed(0)+"/"+location.label;
+				var label = "";
+				if (includeLabels)
+					label = location.label;
+				urlMarkers += "/m/"+utm33.easting.toFixed(0)+"/"+utm33.northing.toFixed(0)+"/"+label;
 			}
 		}
 		

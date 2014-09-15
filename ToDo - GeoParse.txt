@@ -57,6 +57,7 @@ Done
 ====
 v1.0.1
 - GUI: Add next letter, not being used
+- GUI: Added: Removed labels from Norgeskart if not shown in Google Map
 
 v1.0
 - GUI: Clickk on cordinate,  selects the inserted text and sets focus to txtInput 
