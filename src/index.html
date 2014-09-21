@@ -18,7 +18,7 @@
 	<script src="./js/geoparse.js"></script>
 	<script src="./js/norgeskart.js"></script>
 	<script src="./lib/jquery-1.11.1.js"></script>
-	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
 	<script src="./lib/amplify.min.js"></script>
 	<script src="./lib/markerwithlabel.js"></script>
 	<title>Convert and view your UTM coordinates</title>
@@ -46,9 +46,10 @@
 			  		 <thead>
 			  		 <!-- <tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr> -->
 				  		 <tr>
-				  		 	<th>Label</th>
+				  		 	<th></th>
 				  		 	<th>Latitude / longitude</th>
 				  		 	<th>UTM</th>
+				  		 	<th>km</th>
 				  		 	<th><img id="hiddenImgRemoveRow" style="visibility:hidden;"></th>
 			  		 	</tr>
 					 </thead>
@@ -56,7 +57,7 @@
 					 </tbody>
 					 <tfoot>
 				  		 <tr>
-						 	 <td><button id="btnClear" class="rounded-corners" onclick="onClickClearLocations()" >Clear</button> </td>
+						 	 <td></td>
 							 <td>
 							 	 <select id="optDegrees" class="rounded-corners" onchange="onClickFormatChange(this, 'degrees')" >
 								 		 <option value="d">d°</option>
@@ -72,7 +73,8 @@
 								 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
 								 <div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
 							 </td>
-							 <td>
+							 <td colspan="2" style="text-align:center;">
+							 	<button id="btnClear" class="rounded-corners" onclick="onClickClearLocations()" >Clear</button> 
 							 </td>
 						 </tr>
 					 </tfoot>
@@ -109,6 +111,7 @@
  
 <script type="text/javascript">
 	var posArray = [];
+	var centerLocationIndex = null;
 	var initZoomLevel = 2;
 	var firstZoomLevel = 7;
 	var latlonFormats = { d: "d°N", dm: "d° m'N", dms: "d° m' s\"N"};
@@ -205,6 +208,16 @@
 					'title': utmLogMsg
 			});
 		}
+	}
+
+	function onClickCellDistance(elem) {
+		var tr = $(elem).closest("tr");
+		var index = tr.index();
+		if (index != centerLocationIndex) {
+			centerLocationIndex = index;
+			updateAllDistancesInTable(tb);
+		}
+
 	}
 
 	function onClickTableCell(elem) {
@@ -360,7 +373,7 @@
 			var me = $("#btnAddMyPos");
 			//me.prop("disabled", true);
 
-			var label = "Here";
+			var label = "Me";
 			var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label);
 
 			var utmLogMsg = approxUtm(location.utm);
@@ -390,27 +403,33 @@
 		location.utm = utm;
 		updateLocationInTable(tb, location);
 	}
-	function addLocation(orgStr, latlon, utm, label, freezeMap) {
+	function getLabelLetter() {
 		var labelLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		if (!label) {
-			// Get existsing labels
-			if (posArray.length==0) {
-				label = labelLetters[0];
-			} else {	
-				var usedLabels = "";
-				for (var i=0; i<posArray.length; i++) {
-					if (posArray[i].label && posArray[i].label.length == 1)
-						usedLabels += posArray[i].label;
-				}
-				for (var i=0; i<labelLetters.length; i++) {
-					if ( usedLabels.indexOf(labelLetters[i]) == -1) {
-						label = labelLetters[i];
-						break;
-					}
-				}
-				if (!label)
-					label = labelLetters[-1];
+		var label;
+
+		if (posArray.length==0) {
+			label = labelLetters[0];
+		} else {	
+			var usedLabels = "";
+			for (var i=0; i<posArray.length; i++) {
+				if (posArray[i].label && posArray[i].label.length == 1)
+					usedLabels += posArray[i].label;
 			}
+			for (var i=0; i<labelLetters.length; i++) {
+				if ( usedLabels.indexOf(labelLetters[i]) == -1) {
+					label = labelLetters[i];
+					break;
+				}
+			}
+			if (!label)
+				label = labelLetters[-1];
+		}
+		return label;
+
+	}
+	function addLocation(orgStr, latlon, utm, label, freezeMap) {
+		if (!label) {
+			label = getLabelLetter();
 		}
 		var location = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
 		
@@ -423,29 +442,60 @@
 		
 		return location;
 	}
+	function getDistance(locationA, locationB) {
+		var latLngA = new google.maps.LatLng(locationA.latlon.lat, locationA.latlon.lon);
+		var latLngB = new google.maps.LatLng(locationB.latlon.lat, locationB.latlon.lon);
+		var dist = google.maps.geometry.spherical.computeDistanceBetween(latLngA, latLngB);
+		return dist;
+	}
 	function addLocationToTable(tb, location) {
-		if (posArray.length <= 0) 
+		if (posArray.length <= 0) {
 			tb.empty();
+			centerLocationIndex = 0;
+		}
 
 		var index = posArray.length;
-		var str = generateTableRowStr(index, location);
+		var dist = undefined;
+		if (index != centerLocationIndex) {
+			dist = getDistance(posArray[centerLocationIndex], location);
+		}
+
+		var str = generateTableRowStr(index, location, dist);
 		tb.append("<tr>"+str+"</tr>");
+	}
+	function updateAllDistancesInTable(tb, exceptIndex) {
+		for (var index=0; index<posArray.length; index++) {
+			if (index != exceptIndex)
+				updateLocationInTable(tb, posArray[index]);
+		}
 	}
 	function updateLocationInTable(tb, location) {
 		var index = posArray.indexOf(location);
 		var tableRow = tb.find("tr")[index];
-		var str = generateTableRowStr(index, location);
+
+		var dist = undefined;
+		if (index != centerLocationIndex) {
+			dist = getDistance(posArray[centerLocationIndex], location);
+		} else {
+			updateAllDistancesInTable(tb, index);
+		}
+
+		var str = generateTableRowStr(index, location, dist);
 		tableRow.innerHTML = str;
 	}
-	function generateTableRowStr(index, location) {
+	function generateTableRowStr(index, location, dist) {
 		var labelStr = location.label;
 		var format = latlonFormats[config.latlon.format];
 		var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ');
 		
+		var distStr = (dist == undefined) ? "-" : (dist/1000).toFixed(1);
+
+
 		var str = "<td>"+labelStr+"</td>" + 
 					"<td onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
 					"<td  onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
+					"<td  onclick=\"onClickCellDistance(this)\">"+distStr+"</td>" +
 					'<td style="text-align:center;"><img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}
@@ -549,6 +599,18 @@
 	}
 
 	function removeLocationFromTable(index) {
+		if (index < centerLocationIndex)
+			centerLocationIndex--;
+		if (index == centerLocationIndex) {
+			if (centerLocationIndex < posArray.length)
+				centerLocationIndex++;
+			updateAllDistancesInTable(tb, index);
+			centerLocationIndex--;
+		}
+
+		if (posArray.length == 1)
+			centerLocationIndex = undefined;
+
 		var tr = tb.find("tr").eq(index);
 
 		tr.remove();
@@ -558,7 +620,7 @@
 	}
 
 	function addToTableNoElelemntsText() {
-		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td></td></tr>");
+		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td></td><td></td></tr>");
 	}
 
 	function regenerateUtm(zone) {

@@ -30,7 +30,6 @@ v1.3
 
 Backlog
 =======
-- GUI: Center on one location in table, display distance to each other location (center icon)
 - GUI: Zoom to one location, from click in the table
 - GUI: Add myLocation on page, in writing
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
@@ -56,6 +55,7 @@ Backlog
 Done
 ====
 v1.0.1
+- GUI: Center on one location in table, display distance to each other location (center icon)
 - Fix: Click in input box, with selection, does not allow setting position
 - GUI: Add next letter, not being used
 - GUI: Added: Removed labels from Norgeskart if not shown in Google Map
