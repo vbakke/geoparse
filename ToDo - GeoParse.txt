@@ -56,6 +56,7 @@ Backlog
 Done
 ====
 v1.0.1
+- Fix: Click in input box, with selection, does not allow setting position
 - GUI: Add next letter, not being used
 - GUI: Added: Removed labels from Norgeskart if not shown in Google Map
 

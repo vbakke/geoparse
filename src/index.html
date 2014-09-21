@@ -138,10 +138,16 @@
 		clearLocations();
 
 		txtCoordinate.on("focus",function(e){
-    		$(this).select();
+			if (this.selectionEnd == 0) {
+    			$(this).select();
+    			this.isEnterFocus = true;
+			}
 		});
 		txtCoordinate.on("mouseup",function(e){
-			e.preventDefault();
+			if (this.isEnterFocus) {
+				e.preventDefault();
+				this.isEnterFocus = false;
+			}
 		});
 	}
 	function initMap(div) {
