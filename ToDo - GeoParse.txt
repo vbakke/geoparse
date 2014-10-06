@@ -2,9 +2,16 @@ ToDo
 ====  
 
 v1.0.1
-- Parse: Add parsing based on last row / current location
+- Parse UTM: Handle missing grid zone
+- Parse UTM: If no NSEW is present, use the number with 6 digits as easting
+- GUI/Parse: Provide feedback as you type, coord type / ambigous formatting
+- Parse UTM: Fix: parseUtm() to allow the 'm' as in '555555mE'
+- Parse: Allow shorthand for parsing UTM
+- Parse UTM: Add parsing based on last row / current location
+- Parse LatLon:  Add parsing based on last row / current location
 
 v1.1
+- GUI: 
 - GUI: Save locations in localStorage
 - GUI: Give a location set a name
 - GUI: Display a list with stored locations
@@ -33,14 +40,10 @@ Backlog
 - GUI: Zoom to one location, from click in the table
 - GUI: Add myLocation on page, in writing
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
-- Parse: Allow shorthand for parsing UTM
 - GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
 - Parse: Test 32V, 31V, and 31-37X
 - Parse: Test all formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
-- Parse: Fix: parseUtm() to allow the 'm' as in '555555mE'
-- GUI/Parse: Allow swap northing/easting if no directional letter is present
-- Parse UTM: If no NSEW is present, use the number with 6 digits as easting
 
 
 - Parse: Add heuristics for choosing UTM and LatLong 
