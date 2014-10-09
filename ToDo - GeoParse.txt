@@ -11,7 +11,6 @@ v1.0.1
 - Parse LatLon:  Add parsing based on last row / current location
 
 v1.1
-- GUI: 
 - GUI: Save locations in localStorage
 - GUI: Give a location set a name
 - GUI: Display a list with stored locations

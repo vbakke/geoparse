@@ -46,7 +46,7 @@
 			  		 <thead>
 			  		 <!-- <tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr> -->
 				  		 <tr>
-				  		 	<th></th>
+				  		 	<th>&nbsp;</th>
 				  		 	<th>Latitude / longitude</th>
 				  		 	<th>UTM</th>
 				  		 	<th>km</th>
@@ -496,7 +496,7 @@
 					"<td onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
 					"<td  onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
 					"<td  onclick=\"onClickCellDistance(this)\">"+distStr+"</td>" +
-					'<td style="text-align:center;"><img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
+					'<td style="text-align:center;"><img src="'+imgRemoveRow+'" alt="Remove this coordinate" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}
 	
