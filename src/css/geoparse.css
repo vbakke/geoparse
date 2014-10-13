@@ -157,7 +157,8 @@ input {
    font-size: 14px;
    font-weight: bold;
    text-align: center;
-   width: 40px;     
+   /*width: 40px; */
+   padding: 2px;
    border: 1px solid #5A80BB;
    border-radius: 3px;
    white-space: nowrap;

@@ -225,6 +225,73 @@
 		txtCoordinate.select();
 	}
 
+	function onClickLabelCell(elem) {
+		var td = $(elem);
+		var label = td.text();
+
+		if (label) {
+			var width = td.width();
+			//var location = posArray[index];
+			td.empty();
+			td.append('<input id="txtLabel" autofocus class="inputText" style="width:'+(width+20)+'px">');
+			var input = td.find("input");
+			//input.focusout(onExitLabelEdit);
+			input.blur(onExitLabelEdit);
+			input.keyup(onKeyupInLabel);
+			input.val(label);
+			input.focus();
+		}
+	}
+	
+	function onKeyupInLabel(event) { 
+		if (event.which == 13) {
+			onExitLabelEdit(event);
+		}  else if (event.which == 27) {
+			escapeLabelFromInput( $(event.currentTarget) );
+		} else {
+			updateLabelFromInput( $(event.currentTarget) );
+		}
+			
+	}
+	
+	function updateLabelFromInput(input, store) {
+		var index = input.closest("tr").index();
+
+		var label = input.val().trim();
+		if (label == "")
+			label = posArray[index].label;
+
+		var location = posArray[index];
+		location.marker.set("labelContent", label);
+		if (store)
+			location.label = label;
+
+		return label;
+	}
+
+	function escapeLabelFromInput(input) {
+		var index = input.closest("tr").index();
+
+		var label = posArray[index].label;
+
+		var location = posArray[index];
+		location.marker.set("labelContent", label);
+
+		var td = input.closest("td");
+		td.empty();
+		td.text(label);
+	}
+
+	function onExitLabelEdit(event) {
+		var input = $(event.currentTarget);
+		var label = updateLabelFromInput(input, true);
+	
+		var td = input.closest("td");
+		td.empty();
+		td.text(label);
+	}
+
+
 	function onClickConvertGeo() {
 		var orgStr = txtCoordinate.val();
 		ga('send', 'event', 'debug-click', 'convertLatLon', 'convertLatLon-'+orgStr); 
@@ -489,14 +556,15 @@
 		var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ');
 		
-		var distStr = (dist == undefined) ? "-" : (dist/1000).toFixed(1);
+		var distStr = (dist == undefined) ? "&nbsp;-" : (dist/1000).toFixed(1);
+		var distStyle = (dist == undefined) ? "" : 'class="hand"';
 
 
-		var str = "<td>"+labelStr+"</td>" + 
-					"<td onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
-					"<td  onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
-					"<td  onclick=\"onClickCellDistance(this)\">"+distStr+"</td>" +
-					'<td style="text-align:center;"><img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
+		var str = "<td class=\"hand\" onclick=\"onClickLabelCell(this)\">"+labelStr+"</td>" + 
+					"<td class=\"hand\" onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
+					"<td class=\"hand\" onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
+					"<td "+distStyle+"   onclick=\"onClickCellDistance(this)\">"+distStr+"</td>" +
+					'<td style="text-align:center;"><img class=\"hand\"  src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}
 	
@@ -531,7 +599,7 @@
 								position: markerPos,
 								locationObj: location,
 								labelContent: location.label,
-								labelAnchor: new google.maps.Point(20, -1),
+								labelAnchor: new google.maps.Point(8, -1),
 								labelClass: "markerlabel", // the CSS class for the label
 								labelStyle: {opacity: 0.95},
 								labelVisible: labelVisible

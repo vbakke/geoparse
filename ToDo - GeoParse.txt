@@ -1,31 +1,7 @@
 ToDo
 ====  
 
-v1.0.1
-- Parse: Add parsing based on last row / current location
-
-v1.1
-- GUI: Save locations in localStorage
-- GUI: Give a location set a name
-- GUI: Display a list with stored locations
-
-
-v1.2
-- GUI: Add address, lookup with google
-  - https://developers.google.com/maps/documentation/javascript/examples/places-searchbox
-
-- GUI: Add input field for pos label, updating
-- GUI: Rafactor config to read from default_config, by override default getter()
-
-- Parse: Refactor toString to use config objects, instead of explicit arguments
-- GUI: Add warning if fixing zone to more than its neighbour
-- Norgeskart: Fix isInNorway to use boundingbox with latlon
-
-
-v1.3
-- Share: Store coordinates in DB, generate bit.ly like url vafe.net/g?FX3E
-  Algorithm: D:\Slettes\Py\Gen.py
-- Share: Allow modifications, store history, add comment and/or username
+v1.0.2
 
 
 Backlog
@@ -55,6 +31,7 @@ Backlog
 Done
 ====
 v1.0.1
+- GUI: Edit labels
 - GUI: Center on one location in table, display distance to each other location (center icon)
 - Fix: Click in input box, with selection, does not allow setting position
 - GUI: Add next letter, not being used
