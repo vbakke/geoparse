@@ -556,7 +556,7 @@
 		var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ');
 		
-		var distStr = (dist == undefined) ? "&nbsp;-" : (dist/1000).toFixed(1);
+		var distStr = (dist == undefined) ? "&nbsp;&bull;" : (dist/1000).toFixed(1);
 		var distStyle = (dist == undefined) ? "" : 'class="hand"';
 
 
@@ -599,7 +599,7 @@
 								position: markerPos,
 								locationObj: location,
 								labelContent: location.label,
-								labelAnchor: new google.maps.Point(8, -1),
+								labelAnchor: new google.maps.Point(-14, 22),
 								labelClass: "markerlabel", // the CSS class for the label
 								labelStyle: {opacity: 0.95},
 								labelVisible: labelVisible

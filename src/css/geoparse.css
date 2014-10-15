@@ -137,6 +137,12 @@ input {
  font-size:2em;
 }
 
+.hand
+{
+  cursor: pointer;
+  cursor: hand;
+}
+
 .rounded-corners
 {
  background-color: #E8F1FF;
