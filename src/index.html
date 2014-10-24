@@ -16,6 +16,7 @@
 	<script src="./js/geoclasses.js"></script>
 	<script src="./js/geoconverter.js"></script>
 	<script src="./js/geoparse.js"></script>
+	<script src="./js/geotools.js"></script>
 	<script src="./js/norgeskart.js"></script>
 	<script src="./lib/jquery-1.11.1.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
@@ -26,7 +27,7 @@
 <body>
 <div id="divAll">
 	<div id="divPanel">
-		<div id="divHeader"><span class="header">EARTH</span></div>
+		<div id="divHeader"><span class="header">EARTH</span> - Storage branch</div>
 		<div id="divInput">
 			<div style="float:left;">
 		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" ><!--autofocus-->  
@@ -78,8 +79,8 @@
 							 </td>
 						 </tr>
 					 </tfoot>
-				</table>
-		 </div>
+			 </table>
+		</div>
 				
 		<div id="divUsage">
 			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
@@ -92,6 +93,24 @@
 			<p>
 				Cheers, :)
 			</p-->
+		</div>
+		<div id="divStorage">
+			<button id="btnSave" class="rounded-corners" onclick="onClickSave()">Save</button><br/>
+			Name: <input id="txtSetName" style="width:15%">
+			Description: <input id="txtSetDescription" style="width:60%">
+			<div id="divStorageTable">
+				<table id="setsTable">
+
+					<thead style="font-size:0.9em;">
+						<th>Set</th>
+						<th>Last modified</th>
+						<th>Share Code</th>
+						<th></th>
+					</thead>
+					<tbody style="font-size:0.9em;">
+				</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 	<div id="divMap">
@@ -134,11 +153,13 @@
 	var map;
 	var clickedMapPos, tmpMapZoom;
 	var tb = $("#posTable tbody");
+	var tbSets = $("#setsTable tbody");
 	var txtCoordinate = $("#txtCoordinate");
 
 	function initialize() {
 		initMap("divMap2");
 		clearLocations();
+		generateSetsTable();
 
 		txtCoordinate.on("focus",function(e){
 			if (this.selectionEnd == 0) {
@@ -353,6 +374,46 @@
 		removeLocation(index);
 
 		ga('send', 'event', 'user-click', 'removeRow', 'removeRow-'+index); 
+	}
+
+	function onClickSave() {
+		// http://techslides.com/30-code-playgrounds-and-sharing-tools/
+		var store = amplify.store("localSets");
+		if (store == undefined)
+			store = {sets: []};
+
+		var name = $("#txtSetName").val();
+		var desc = $("#txtSetDescription").val();
+
+		var posSet = [];
+		for (var i=0; i<posArray.length; i++) {
+			posSet.unshift( {label: posArray[i].label, latlon: posArray[i].latlon} );
+		}
+		var set = {name: name,
+					description: desc,
+					created: new Date().getTime(),
+					modified: new Date().getTime(),
+					set: posSet
+			};
+		store.sets.push(set);
+		amplify.store("localSets", store);
+	}
+
+	function onClickLoad(elem) {
+		var index = $(elem).closest("tr").index();
+		var store = amplify.store("localSets");
+		var set = store.sets[index].set;
+
+		clearLocations();
+		for (var i=0; i<set.length; i++) {
+			var location = set[i];
+			var label = location.label;
+			var pos = location.latlon;
+			var latlon = new geoLatLon(pos.lat, pos.lon);
+			var utm = geoconverter.LatLonToUTM(latlon);
+		
+			addLocation(null, latlon, utm, label);
+		}
 	}
 
 	// Ask browser for location
@@ -656,6 +717,38 @@
 		$("#chkDisplayLabels").attr("checked", config.map.displayLabalsInMap);
 	}
 
+
+	function generateSetsTable() {
+		var store = amplify.store("localSets");
+		if (store == undefined || store.sets == undefined)
+			return;
+
+		var sets = store.sets;
+
+		if (sets.length > 0) {
+			tbSets.empty();
+			for (var i=0; i<sets.length; i++) {
+				var str = generateSetRowStr(i, sets[i]);
+				tbSets.append("<tr>"+str+"</tr>");
+			}
+
+		}
+	}
+	function generateSetRowStr(index, set) {
+		var name = set.name;
+		var desc = set.description;
+		var modified = new Date(set.modified).toISOString().replace("T", " ").substring(0,16);
+
+			// add desctiption as a tooltip
+		var str = "<td>"+name+"</td>" + 
+					"<td>"+modified+"</td>" +
+					"<td >"+'<i>-not shared-</i>'+"</td>" +
+					'<td style="text-align:center;">' +
+						'<button onclick="onClickLoad(this)">Load</button>' +
+						'<img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveSet(this)">'+
+					'</td>';
+		return str;
+	}
 
 	function approxUtm(utm) {
 		var round = 1000; //  in meters

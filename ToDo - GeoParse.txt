@@ -2,9 +2,9 @@ ToDo - Store and Share
 ==== ==================
 
 v1.1
-- GUI: Save locations in localStorage
 - GUI: Give a location set a name
 - GUI: Display a list with stored locations
+- maintain a modified flag
 
 
 v1.2
@@ -32,6 +32,9 @@ Backlog
 
 Done
 ====
+v1.1
+- GUI: Save locations in localStorage
+
 v1.0.1
 - GUI: Center on one location in table, display distance to each other location (center icon)
 - Fix: Click in input box, with selection, does not allow setting position

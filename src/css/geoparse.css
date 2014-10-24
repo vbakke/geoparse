@@ -141,7 +141,10 @@ input {
 {
  background-color: #E8F1FF;
  border-color: #A5BCE2;
- padding:6px;
+ padding-top:4px;
+ padding-bottom:4px;
+ padding-left:6px;
+ padding-right:6px;
 
  border-radius: 4px 4px 4px 4px;
  -ms-border-radius: 4px 4px 4px 4px;
