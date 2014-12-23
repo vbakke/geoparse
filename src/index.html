@@ -17,9 +17,10 @@
 	<script src="./js/geoconverter.js"></script>
 	<script src="./js/geoparse.js"></script>
 	<script src="./js/geotools.js"></script>
+	<script src="./js/storage.js"></script>
 	<script src="./js/norgeskart.js"></script>
-	<script src="./lib/jquery-1.11.1.js"></script>
-	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+	<script src="//maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
 	<script src="./lib/amplify.min.js"></script>
 	<script src="./lib/markerwithlabel.js"></script>
 	<title>Convert and view your UTM coordinates</title>
@@ -129,6 +130,7 @@
 </div>
  
 <script type="text/javascript">
+	var googleIsOffline = false;
 	var posArray = [];
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
@@ -157,7 +159,8 @@
 	var txtCoordinate = $("#txtCoordinate");
 
 	function initialize() {
-		initMap("divMap2");
+		if (!googleIsOffline)
+			initMap("divMap2");
 		clearLocations();
 		generateSetsTable();
 
@@ -443,29 +446,6 @@
 		ga('send', 'event', 'user-click', 'removeRow', 'removeRow-'+index); 
 	}
 
-	function onClickSave() {
-		// http://techslides.com/30-code-playgrounds-and-sharing-tools/
-		var store = amplify.store("localSets");
-		if (store == undefined)
-			store = {sets: []};
-
-		var name = $("#txtSetName").val();
-		var desc = $("#txtSetDescription").val();
-
-		var posSet = [];
-		for (var i=0; i<posArray.length; i++) {
-			posSet.unshift( {label: posArray[i].label, latlon: posArray[i].latlon} );
-		}
-		var set = {name: name,
-					description: desc,
-					created: new Date().getTime(),
-					modified: new Date().getTime(),
-					set: posSet
-			};
-		store.sets.push(set);
-		amplify.store("localSets", store);
-	}
-
 	function onClickLoad(elem) {
 		var index = $(elem).closest("tr").index();
 		var store = amplify.store("localSets");
@@ -481,6 +461,90 @@
 		
 			addLocation(null, latlon, utm, label);
 		}
+	}
+
+	function onClickSave() {
+		var name = $("#txtSetName").val();
+		var desc = $("#txtSetDescription").val();
+
+		var posSet = [];
+		for (var i=0; i<posArray.length; i++) {
+			posSet.unshift( {label: posArray[i].label, latlon: posArray[i].latlon} );
+		}
+		var set = {name: name,
+					description: desc,
+					created: new Date().getTime(),
+					modified: new Date().getTime(),
+					set: posSet
+			};
+		saveSetLocally(set);
+	}
+
+	// Store the set locally
+	function createSetLocally(set, index) {
+		// http://techslides.com/30-code-playgrounds-and-sharing-tools/
+		var store = amplify.store("localSets");
+		if (store == undefined)
+			store = {sets: []};
+
+		store.sets.push(set);
+		amplify.store("localSets", store);
+	}
+
+	function onClickShare(elem) {
+		var store = amplify.store("localSets");
+		var index = $(elem).closest("tr").index();
+		var set = store.sets[index];
+		if ("Create New Share") {
+			createSet(set);
+		} else {
+			// LOAD
+			var result = getSet("shareCode");
+
+		}
+	}
+
+	function createSet(set) {
+		var shareCode;
+
+		var result ;
+
+		var request = $.ajax({
+	        url: "./ws/index.php/set",
+	        type: "post",
+	        data: JSON.stringify(set)
+	    });
+		request.done( function (data) {
+			alert("OK: "+data);
+			var result = data;
+			set['sharecode'] = result;
+		})
+		request.fail( function (jqxhr, textStatus, error ) {
+			var err = textStatus + ", " + error;
+			alert( "DBG: Request Failed: " + err );
+			window.console && console.log( "Request Failed: " + err );
+		});
+		return shareCode;
+	}
+
+	function getSet(shareCode) {
+		var shareCode;
+
+		var result = undefined;
+		var returnVal = $.getJSON("./ws/index.php/set/aa")
+					.done( function (data) 
+						{
+							alert("OK: "+data);
+							result = data;
+						})
+					.fail( function (jqxhr, textStatus, error ) {
+							var err = textStatus + ", " + error;
+    						alert( "Request Failed: " + err );
+    						console.log( "Request Failed: " + err );
+						});
+
+		alert("getSet(): ReturnVal: "+returnVal)
+		return result;
 	}
 
 	// Ask browser for location
@@ -810,7 +874,7 @@
 			// add desctiption as a tooltip
 		var str = "<td>"+name+"</td>" + 
 					"<td>"+modified+"</td>" +
-					"<td >"+'<i>-not shared-</i>'+"</td>" +
+					"<td >"+JSON.stringify(set)+'<button onclick="onClickShare(this)">Share</button></td>' +
 					'<td style="text-align:center;">' +
 						'<button onclick="onClickLoad(this)">Load</button>' +
 						'<img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveSet(this)">'+
@@ -844,7 +908,10 @@
 	}
 
 	// Add on load event to initialize the whole shebang
-	google.maps.event.addDomListener(window, 'load', initialize);
+	if (googleIsOffline)
+		$(document).ready(initialize);
+	else
+		google.maps.event.addDomListener(window, 'load', initialize);
 </script>
 <script>
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

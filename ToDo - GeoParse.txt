@@ -2,9 +2,38 @@ ToDo - Store and Share
 ==== ==================
 
 v1.1
-- GUI: Give a location set a name
-- GUI: Display a list with stored locations
-- maintain a modified flag
+- WS: Hello world
+- WS: Read DB for GET
+- WS: Create (POST) INSERT
+
+- WS+GUI: Integrate with Geo
+    - Read WS from GUI
+    - What fields are stored locally
+    - Store, the correct fields
+    - Adapt the php createSet
+
+    - GUI: Mark Shared set, and update localStore
+
+    - Adapt the php getSet
+    - Load, the same fields
+
+    - WS: Improve RandomGenerator for Sharecode
+
+- WS: Create (PUT) UPDATE
+- WS: GET Handle not found ShareCode
+- WS: POST Handle not created, (already exists)
+- WS: PUT Handle not updated, (Version not latest)
+
+- GUI remove from local storage
+
+- GUI: Maintain a modified flag
+
+v1.3
+- Share: Store coordinates in DB, generate bit.ly like url vafe.net/g?FX3E
+  Algorithm: D:\Slettes\Py\Gen.py
+- Share: Allow modifications, store history, add comment and/or username
+
+- REFACTOR! Split in Model,  View and Service
 
 
 v1.2
@@ -19,10 +48,6 @@ v1.2
 - Norgeskart: Fix isInNorway to use boundingbox with latlon
 
 
-v1.3
-- Share: Store coordinates in DB, generate bit.ly like url vafe.net/g?FX3E
-  Algorithm: D:\Slettes\Py\Gen.py
-- Share: Allow modifications, store history, add comment and/or username
 
 
 Backlog
@@ -33,6 +58,7 @@ Backlog
 Done
 ====
 v1.1
+- GUI: Display a list with stored locations
 - GUI: Save locations in localStorage
 
 v1.0.1

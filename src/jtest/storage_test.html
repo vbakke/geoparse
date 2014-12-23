@@ -1,0 +1,103 @@
+<html>
+<head>
+	<meta charset="UTF-8">
+	<!-- <META HTTP-EQUIV="Pragma" CONTENT="no-cache"> -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+	<script src="../lib/amplify.min.js"></script>
+	<script src="../js/storage.js"></script>
+	<script src="../js/geoparse.js"></script>
+	<title>Test STORAGE.js</title>
+</head>
+<body>
+	<div>
+		<p>
+		<button onclick="onClickGetLocal()">Get local sets</button>
+		<button onclick="onClickGet()">Get from WS</button>
+		<button onclick="onClickShare()">Share/Fork</button>
+		<button onclick="onClickStore()">Store</button>
+		</p>
+		<p><input id="txtName"></p>
+	</div>
+	<div id="divSet"></div>
+	<div id="divStore"></div>
+	<div id="divAll">Div. jQuery not running</div>
+	<script type="text/javascript">
+
+		var sharecode = "aa";	
+		var div;
+		var nl = '<br/>\n';
+		var data;
+		var data_index;
+		var store;
+
+		function testStorage() {
+			div = $("#divAll");
+			div.empty();
+			div.append("Sharecode: "+sharecode+nl);
+
+			onClickGetLocal();			
+
+		}
+
+		function onClickGetLocal() {
+			store = storage.getAllLocalSets();
+			$("#divStore").empty();
+			$("#divStore").append("<table border=1><tbody></tbody></table>");
+			for (var i = 0; i < store.sets.length; i++) {
+				var set = store.sets[i];
+				$("#divStore").find("tbody").append(setString(i, set));
+			};
+		}
+
+		function setString(i, set) {
+			var str = '<tr><td onclick="loadSet('+i+')">'+set.name+"</td><td>"+i+"</td><td>"+set.sharecode+"</td><td>"+JSON.stringify(set)+"</td></tr>";
+			return str;
+		}
+
+		function loadSet(index) {
+			data = store.sets[index];
+			data_index = index;
+			displaySet(index);
+			$("#txtName").val(data.name);
+		}
+
+		function displaySet(index) {
+			var set = store.sets[index];
+			$("#divSet").empty();
+			$("#divSet").append("<table border=1><tbody></tbody></table>");
+			$("#divSet").find("tbody").append(setString(index, set));
+		}
+
+
+
+		function onClickGet() {
+			storage.getSharedSet(sharecode, function(dataSet) {
+				data = dataSet;
+				div.append("<p>User click: Got '"+data.sharecode+"_v"+data.version+"' '"+data.set.name+"' with "+data.set.locations.length+" locations</p>");
+				$("#txtName").val(data.set.name);
+			});
+		}
+
+		function onClickShare() {
+			data.name = $("#txtName").val();
+
+			storage.createShare(data_index, data, function(dataSet) {
+				data = dataSet;
+				div.append("<p>User click: Shared '"+data.sharecode+"_v"+data.version+"' '"+data.name+"' with "+data.locations.length+" locations</p>");
+			});
+		}
+		function onClickStore() {
+			data.name = $("#txtName").val();
+
+			storage.storeSet(data_index, data, function(dataSet) {
+				data = dataSet;
+				div.append("<p>User click: Stored '"+data.sharecode+"_v"+data.version+"' '"+data.name+"' with "+data.locations.length+" locations</p>");
+			});
+		}
+
+		$(document).ready(testStorage);
+	</script>
+</body>
+</html>
