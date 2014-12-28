@@ -10,6 +10,7 @@ Backlog
 - GUI: Add myLocation on page, in writing
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 - Parse: Allow shorthand for parsing UTM
+- GUI: Show difference in altitude between positions
 - GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
 - Parse: Test 32V, 31V, and 31-37X
