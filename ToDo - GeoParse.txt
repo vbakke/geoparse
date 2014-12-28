@@ -26,6 +26,8 @@ Backlog
 
 - Parse: Handle MGRS coordinates
 
+- GUI: Draw 1km squares (optionally)
+   - Draw optionaly 100m, or 10m according to scale
 
 
 Done
