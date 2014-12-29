@@ -21,6 +21,90 @@
 
 	var _self = {};
 	
+	_self.parse = function (str) {
+		// Try parsing (tokenizing)
+		var utm = _self.parseUtm(str);
+		var latlon = _self.parseLatLon(str);
+	
+		// Evaluate
+		var attempts = {pos: {"utm": utm, "latlon": latlon}};
+		var attempts = _self.findBestMatch(attempts);
+
+
+		// Need more info
+		attempts.needMoreInfo = (attempts.eval[attempts.bestMatch] >= 100);
+
+		// Return:
+		//    - tokenized position
+		//    - missing info (need location)
+		return attempts;
+	}
+
+	_self.findBestMatch = function (attempts) {
+		attempts.eval = {utm: 0, latlon: 0};
+		if (attempts.pos.utm) {
+			attempts.eval.utm = _self.evalUtm(attempts.pos.utm);
+		}
+		if (attempts.pos.latlon) {
+			attempts.eval.latlon = _self.evalLatLon(attempts.pos.latlon);
+		}
+
+		attempts.bestMatch = (attempts.eval.utm > attempts.eval.latlon) ? 'utm' : 'latlon';
+
+		return attempts;
+	}
+
+	_self.addLocation = function (str) {
+	}
+
+	_self.evalUtm = function (utm) {
+		var val = 0;
+
+
+		if (utm.easting) {
+			if (Math.abs(utm.easting) < 180)
+				val += -5;
+			else
+				if (Math.abs(utm.easting) < 999999)
+					val += 45;
+				else
+					val += 10;
+		}
+		if (utm.northing) {
+			if (Math.abs(utm.northing) < 180)
+				val += -5;
+			else
+				if (Math.abs(utm.northing) < 9999999)
+					val += 45;
+				else
+					val += 10;
+		}
+
+		return val;
+	}
+
+	_self.evalLatLon = function (latlon) {
+		var val = 0;
+
+
+		if (latlon.lat) {
+			if (Math.abs(latlon.lat) > 90)
+				val += -5;
+			else
+				val += 45;
+		}
+
+		if (latlon.lon) {
+			if (Math.abs(latlon.lon) > 180)
+				val += -5;
+			else
+				val += 45;
+		}
+
+		return val;
+	}
+
+
 	// =====================================================
 	// Parse string containing latitude and longitude
 	//

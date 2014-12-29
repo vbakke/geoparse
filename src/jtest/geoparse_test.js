@@ -8,35 +8,51 @@
 		["59.1 N 10.5 E", [59.1, 10.5]],
 		["59º 45' 04.51\" N 10º 5' 12,5\" E", [59.7512527,10.086805555555555]],
 		["59.4, 10.5", [59.4,10.5]],
+		["59,4, 10,5", [59.4,10.5]],
+		["59,4 10,5", [59.4,10.5]],
 		["59º 10.51' N 10º 5' E", [59.17516666666667,10.083333333333334]],
-		["" [0,0]]];
+		["58°58'21.6\"N 9°37'26.5\"E", [58.972667, 9.624023]],
+		["58 58 21.6  9°37'26.5", [58.972667, 9.624023]],
+		["58 58 21.6  9°37'26.5", [58.972667, 9.624023]],
+		["59 45 55.2 10 07 08.8", [59.765333, 10.119111]],
+		["59 45 55,2 10 07 08,8", [59.765333, 10.119111]],
+		["", [0,0]]];
 	
 	
-	_self.createTable = function () {
-		var html = ""
+	_self.createTable = function (div) {
+		div.append('<table	border="1"></table>');
+		var table = div.find("table");
 		for (var i=0; i<_testdata.length; i++) {
-			html += _self.createTableRow(_testdata[i]);
+			var tr = _self.createTableRow(_testdata[i], i);
+			table.append(tr);			
 		}
-		
-		html = "<table border=1>\n" + html + "\n</table>";
-		return html;
 	}
 	
 	
-	_self.createTableRow = function (testdata) {
+	_self.createTableRow = function (testdata, index) {
 		var teststr = testdata[0];
 		var expectedPos = testdata[1];
 		
-		var html = "";
+		var html = "<td>"+index+"</td>";
 		html += "<td>"+teststr+"</td>\n";
-		var latlon = geoparse.parseLatLon(teststr);
-		if (latlon == null) {
-			html += '<td colspan="2">null</td>';
+		var attempts = geoparse.parse(teststr);
+
+		if (attempts == null) {
+			html += '<td colspan="6" class="null">parse retuend NULL</td>';
+		} else if (attempts.bestMatch != 'latlon') {
+			html += '<td colspan="6" class="null">Not identified as LatLon</td>';
+		} else if (attempts.pos.latlon == undefined) {
+			html += '<td colspan="6" class="null">LatLon is NULL</td>';
 		} else {
-			html += "<td>"+latlon.lat+"</td>\n";
+			var latlon = attempts.pos.latlon;
+			html += '<td>'+latlon.lat+"</td>\n";
 			html += "<td>"+latlon.lon+"</td>\n";
 			if (expectedPos && expectedPos.length==2) {
-				html += "<td>"+_self.geoDiff([latlon.lat, latlon.lon], expectedPos)+"</td>\n";
+				var diff = _self.geoDiff([latlon.lat, latlon.lon], expectedPos);
+				if (diff)
+					html += '<td class="error">'+diff+"</td>\n";
+				else
+					html += "<td></td>\n";
 			}
 		}
 		html = "<tr>"+html+"</tr>";

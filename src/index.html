@@ -26,19 +26,21 @@
 <body>
 <div id="divAll">
 	<div id="divPanel">
-		<div id="divHeader"><span class="header">EARTH</span></div>
+		<div id="divHeader"><span class="header">EARTH</span> - Parsing branch</div>
 		<div id="divInput">
+			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
+			<form id="convertPos" name="convertPos" target="dummy_iframe">
 			<div style="float:left;">
-		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" ><!--autofocus-->  
+		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" >
+			</div>
+			<div style="float:left;">
+				  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickConvertPos()" tabindex="2">Convert</button>
 			</div>
 			<div id="divMyLocation" style="float:right">
 					<div id="sMyLocation"></div>
-					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="4">My location</button>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3">My location</button>
 			</div>
-			<div style="float:left;">
-				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()" tabindex="2">Convert UTM</button>
-				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()" tabindex="3">Convert lat/long</button>
-			</div>
+			</form>
 			<div style="clear: both"></div>
 		</div>
 		<div id="divTable">
@@ -225,34 +227,41 @@
 		txtCoordinate.select();
 	}
 
-	function onClickConvertGeo() {
+	function onClickConvertPos() {
 		var orgStr = txtCoordinate.val();
-		ga('send', 'event', 'debug-click', 'convertLatLon', 'convertLatLon-'+orgStr); 
-		ga('send', 'event', 'user-click', 'convertLatLon', 'convertLatLon-'+orgStr.replace(/[0-8]/g,'9'));
+		ga('send', 'event', 'debug-click', 'dbg-convertPos', 'dbg-convertPos-'+orgStr); 
+		ga('send', 'event', 'user-click', 'convertPos', 'convertPos-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
-				'page': '/geoparse/convertLatLon',
+				'page': '/geoparse/convertPos',
 				'title': orgStr.replace(/[0-8]/g,'9')
 		});
-		var latlon = geoparse.parseLatLon(orgStr);
-		var utm = geoconverter.LatLonToUTM(latlon);
-		
-		addLocation(orgStr, latlon, utm);
+		var attempts = geoparse.parse(orgStr);
+		var latlon, utm;
+
+		if (attempts.bestMatch == "latlon") {
+			latlon = attempts.pos.latlon;
+			utm = geoconverter.LatLonToUTM(latlon);
+		}
+		else if (attempts.bestMatch == "utm") {
+			utm = attempts.pos.utm;
+			latlon = geoconverter.UTMToLatLon(utm);
+			// Convert back again to UTM to normalize according to config
+			geoconverter.LatLonToUTM(latlon, utm); 
+		}
+		else {
+			// Unknown format
+		}
+
+		if (latlon && utm) {
+			addLocation(orgStr, latlon, utm);
+		} else {
+			// What to do
+		}
+
+		// Return false to avoid page reload
+		return false;
 	}
-	function onClickConvertUtm() {
-		var orgStr = txtCoordinate.val();
-		ga('send', 'event', 'debug-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
-		ga('send', 'event', 'user-click', 'convertUtm', 'convertUtm-'+orgStr.replace(/[0-8]/g,'9'));
-		ga('send', 'pageview', {
-				'page': '/geoparse/convertUtm',
-				'title': orgStr.replace(/[0-8]/g,'9')
-		});
-		var utm = geoparse.parseUtm(orgStr);
-		var latlon = geoconverter.UTMToLatLon(utm);
-		geoconverter.LatLonToUTM(latlon, utm);
-		
-		addLocation(orgStr, latlon, utm);
-	}
-	
+
 	
 	function onClickOpenNorgeskart() {
 		var viewport = {w: $(window).width(), h: $(window).height()};
