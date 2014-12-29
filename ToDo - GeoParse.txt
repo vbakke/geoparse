@@ -30,6 +30,16 @@ Backlog
 - GUI: Draw 1km squares (optionally)
    - Draw optionaly 100m, or 10m according to scale
 
+- GUI: Enable Browser AutoComplete
+    http://www.webmasterworld.com/javascript/4532397.htm
+- Put 'Convert' inside <input> 
+    http://stackoverflow.com/questions/15314407/how-to-add-button-inside-input
+- Add image for Add My Location
+
+- Bug: Drag pointer to far North between band X and Y
+- Possible bug: No band B in the far South (jumps from A to C)
+
+
 
 Done
 ====
