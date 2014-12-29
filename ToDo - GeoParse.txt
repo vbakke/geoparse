@@ -2,10 +2,18 @@ ToDo
 ====  
 
 v1.0.2
-
+- Merge UTM and LatLon parsing
+- Parse: Add heuristics for choosing UTM and LatLong 
+- GUI: Enable Browser AutoComplete
+- GUI: Added text decoration on clickable cells
 
 Backlog
 =======
+- Bug: Drag pointer to far North between band X and Y
+- Possible bug: No band B in the far South (jumps from A to C)
+- GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
+- Parse: Test 32V, 31V, and 31-37X
+
 - GUI: Zoom to one location, from click in the table
 - GUI: Add myLocation on page, in writing
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
@@ -13,14 +21,11 @@ Backlog
 - GUI: Show difference in altitude between positions
 - GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
-- Parse: Test 32V, 31V, and 31-37X
 - Parse: Test all formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
 - Parse: Fix: parseUtm() to allow the 'm' as in '555555mE'
 - GUI/Parse: Allow swap northing/easting if no directional letter is present
 - Parse UTM: If no NSEW is present, use the number with 6 digits as easting
 
-
-- Parse: Add heuristics for choosing UTM and LatLong 
 
 - GUI: Gracefully handle zone band S (South and/or S) 
   - Identify ambiguous S northings, and their opposites.  
@@ -30,14 +35,9 @@ Backlog
 - GUI: Draw 1km squares (optionally)
    - Draw optionaly 100m, or 10m according to scale
 
-- GUI: Enable Browser AutoComplete
-    http://www.webmasterworld.com/javascript/4532397.htm
 - Put 'Convert' inside <input> 
     http://stackoverflow.com/questions/15314407/how-to-add-button-inside-input
 - Add image for Add My Location
-
-- Bug: Drag pointer to far North between band X and Y
-- Possible bug: No band B in the far South (jumps from A to C)
 
 
 

@@ -95,6 +95,7 @@ body {
 table {
        width:100%;
            border:solid;
+           border-color:#5A80BB;
            border-width:3px;
            border-collapse:collapse;
            border-radius: 10px;
@@ -112,6 +113,7 @@ th {
    vertical-align:middle;
    padding:5px;
 }
+
 td {
    background-color:#C4D9FA;
    border:medium;
@@ -137,6 +139,11 @@ input {
  font-size:2em;
 }
 
+.dotted
+{
+  color: #385074;
+  border-bottom: 1px dashed #385074;
+}
 .hand
 {
   cursor: pointer;

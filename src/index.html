@@ -21,24 +21,26 @@
 	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
 	<script src="./lib/amplify.min.js"></script>
 	<script src="./lib/markerwithlabel.js"></script>
-	<title>Convert and view your UTM coordinates</title>
+	<title>Convert and view your GPS and UTM coordinates</title>
 </head>
 <body>
 <div id="divAll">
 	<div id="divPanel">
-		<div id="divHeader"><span class="header">EARTH</span></div>
+		<div id="divHeader"><span class="header">EARTH</span><br/><p style="font-size:0.7em;margin-top:0;">Convert between GPS and UTM coordinates</p></div>
 		<div id="divInput">
+			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
+			<form id="convertPos" name="convertPos" target="dummy_iframe">
+			<div style="float:left;margin-right:5px;">
+		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" >
+			</div>
 			<div style="float:left;">
-		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" ><!--autofocus-->  
+				  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickConvertPos()" tabindex="2">Convert</button>
 			</div>
 			<div id="divMyLocation" style="float:right">
 					<div id="sMyLocation"></div>
-					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="4">My location</button>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3">My location</button>
 			</div>
-			<div style="float:left;">
-				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()" tabindex="2">Convert UTM</button>
-				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()" tabindex="3">Convert lat/long</button>
-			</div>
+			</form>
 			<div style="clear: both"></div>
 		</div>
 		<div id="divTable">
@@ -46,7 +48,7 @@
 			  		 <thead>
 			  		 <!-- <tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr> -->
 				  		 <tr>
-				  		 	<th></th>
+				  		 	<th>&nbsp;</th>
 				  		 	<th>Latitude / longitude</th>
 				  		 	<th>UTM</th>
 				  		 	<th>km</th>
@@ -285,41 +287,48 @@
 	function onExitLabelEdit(event) {
 		var input = $(event.currentTarget);
 		var label = updateLabelFromInput(input, true);
-	
+		var formattedLabel = '<span class="dotted hand">'+label+'</span>';
+		
 		var td = input.closest("td");
 		td.empty();
-		td.text(label);
+		td.append(formattedLabel);
 	}
 
+	function onClickConvertPos() {
+		var orgStr = txtCoordinate.val();
+		ga('send', 'event', 'debug-click', 'dbg-convertPos', 'dbg-convertPos-'+orgStr); 
+		ga('send', 'event', 'user-click', 'convertPos', 'convertPos-'+orgStr.replace(/[0-8]/g,'9'));
+		ga('send', 'pageview', {
+				'page': '/geoparse/convertPos',
+				'title': orgStr.replace(/[0-8]/g,'9')
+		});
+		var attempts = geoparse.parse(orgStr);
+		var latlon, utm;
 
-	function onClickConvertGeo() {
-		var orgStr = txtCoordinate.val();
-		ga('send', 'event', 'debug-click', 'convertLatLon', 'convertLatLon-'+orgStr); 
-		ga('send', 'event', 'user-click', 'convertLatLon', 'convertLatLon-'+orgStr.replace(/[0-8]/g,'9'));
-		ga('send', 'pageview', {
-				'page': '/geoparse/convertLatLon',
-				'title': orgStr.replace(/[0-8]/g,'9')
-		});
-		var latlon = geoparse.parseLatLon(orgStr);
-		var utm = geoconverter.LatLonToUTM(latlon);
-		
-		addLocation(orgStr, latlon, utm);
+		if (attempts.bestMatch == "latlon") {
+			latlon = attempts.pos.latlon;
+			utm = geoconverter.LatLonToUTM(latlon);
+		}
+		else if (attempts.bestMatch == "utm") {
+			utm = attempts.pos.utm;
+			latlon = geoconverter.UTMToLatLon(utm);
+			// Convert back again to UTM to normalize according to config
+			geoconverter.LatLonToUTM(latlon, utm); 
+		}
+		else {
+			// Unknown format
+		}
+
+		if (latlon && utm) {
+			addLocation(orgStr, latlon, utm);
+		} else {
+			// What to do
+		}
+
+		// Return false to avoid page reload
+		return false;
 	}
-	function onClickConvertUtm() {
-		var orgStr = txtCoordinate.val();
-		ga('send', 'event', 'debug-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
-		ga('send', 'event', 'user-click', 'convertUtm', 'convertUtm-'+orgStr.replace(/[0-8]/g,'9'));
-		ga('send', 'pageview', {
-				'page': '/geoparse/convertUtm',
-				'title': orgStr.replace(/[0-8]/g,'9')
-		});
-		var utm = geoparse.parseUtm(orgStr);
-		var latlon = geoconverter.UTMToLatLon(utm);
-		geoconverter.LatLonToUTM(latlon, utm);
-		
-		addLocation(orgStr, latlon, utm);
-	}
-	
+
 	
 	function onClickOpenNorgeskart() {
 		var viewport = {w: $(window).width(), h: $(window).height()};
@@ -557,13 +566,13 @@
 		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ');
 		
 		var distStr = (dist == undefined) ? "&nbsp;&bull;" : (dist/1000).toFixed(1);
-		var distStyle = (dist == undefined) ? "" : 'class="hand"';
+		var distStyle = (dist == undefined) ? "" : 'class="hand dotted"';
 
 
-		var str = "<td class=\"hand\" onclick=\"onClickLabelCell(this)\">"+labelStr+"</td>" + 
-					"<td class=\"hand\" onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
-					"<td class=\"hand\" onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
-					"<td "+distStyle+"   onclick=\"onClickCellDistance(this)\">"+distStr+"</td>" +
+		var str = "<td onclick=\"onClickLabelCell(this)\"><span class='hand dotted'>"+labelStr+"</span></td>" + 
+					"<td onclick=\"onClickTableCell(this)\"><span class='hand dotted'>"+latlonStr+"</span></td>" +
+					"<td onclick=\"onClickTableCell(this)\"><span class='hand dotted'>"+utmStr+"</span></td>" +
+					"<td onclick=\"onClickCellDistance(this)\"><span "+distStyle+">"+distStr+"</span></td>" +
 					'<td style="text-align:center;"><img class=\"hand\"  src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}

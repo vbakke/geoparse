@@ -4,18 +4,31 @@
 <script src="..\js\geoparse.js"></script>
 <script src=".\geoparse_test.js"></script>
 <script src=".\utmparse_test.js"></script>
+<script src="..\lib\jquery-1.11.1.js"></script>
+<style>
+	body {
+		font-family: sans-serif;
+	}
+	.null {
+		background-color: #ffaaaa;
+		font-weight: bold;
+	}
+	.error {
+		background-color: #ffccaa;
+	}
+</style>
 </head>
 <body>
-<div id="utmDiv">Hei</div>
-<div id="geoDiv">Hei</div>
+<div id="utmDiv">UTM</div>
+<div id="geoDiv">LatLong</div>
 <div id="dbgDiv">Debug</div>
 <script type="text/javascript">
-	utmDiv = document.getElementById("utmDiv");
-	geoDiv = document.getElementById("geoDiv");
+	var utmDiv = $("#utmDiv");
+	var geoDiv = $("#geoDiv");
 	
 	geoparse.setDebugDiv("dbgDiv");
-	utmDiv.innerHTML += utmparse_test.createTable();
-	geoDiv.innerHTML += geoparse_test.createTable();
+	utmparse_test.createTable(utmDiv);
+	geoparse_test.createTable(geoDiv);
 </script>
 </body>
 </html>
