@@ -6,11 +6,11 @@ v1.0.2
 - Parse: Add heuristics for choosing UTM and LatLong 
 - GUI: Enable Browser AutoComplete
 - GUI: Added text decoration on clickable cells
+- Bug: Drag pointer to far North between band X and Y
+
 
 Backlog
 =======
-- Bug: Drag pointer to far North between band X and Y
-- Possible bug: No band B in the far South (jumps from A to C)
 - GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
 - Parse: Test 32V, 31V, and 31-37X
 
