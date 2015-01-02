@@ -1,30 +1,22 @@
 ToDo
 ====  
 
-v1.0.2
-- Merge UTM and LatLon parsing
-- Parse: Add heuristics for choosing UTM and LatLong 
-- GUI: Enable Browser AutoComplete
-- GUI: Added text decoration on clickable cells
-- Bug: Drag pointer to far North between band X and Y
+Bug: Current location: 
+  - Firefox
+  - Android Chrome
 
 
 Backlog
 =======
 - GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
-- Parse: Test 32V, 31V, and 31-37X
-
 - GUI: Zoom to one location, from click in the table
 - GUI: Add myLocation on page, in writing
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
-- Parse: Allow shorthand for parsing UTM
 - GUI: Show difference in altitude between positions
 - GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
 - Parse: Test all formats: http://resources.arcgis.com/en/help/main/10.1/index.html#//001700000186000000
-- Parse: Fix: parseUtm() to allow the 'm' as in '555555mE'
 - GUI/Parse: Allow swap northing/easting if no directional letter is present
-- Parse UTM: If no NSEW is present, use the number with 6 digits as easting
 
 
 - GUI: Gracefully handle zone band S (South and/or S) 
@@ -43,6 +35,13 @@ Backlog
 
 Done
 ====
+v1.0.2
+- Merge UTM and LatLon parsing
+- Parse: Add heuristics for choosing UTM and LatLong 
+- GUI: Enable Browser AutoComplete
+- GUI: Added text decoration on clickable cells
+- Bug: Drag pointer to far North between band X and Y
+
 v1.0.1
 - GUI: Edit labels
 - GUI: Center on one location in table, display distance to each other location (center icon)
