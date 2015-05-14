@@ -31,6 +31,7 @@ Backlog
     http://stackoverflow.com/questions/15314407/how-to-add-button-inside-input
 - Add image for Add My Location
 
+ - AndroidApp: Log position
 
 
 Done
