@@ -8,6 +8,8 @@ Bug: Current location:
 
 Backlog
 =======
+- GUI: Add checkbox 'Leading zero'
+- GUI: Display 2 decimals id distance in < 1km
 - GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
 - GUI: Zoom to one location, from click in the table
 - GUI: Add myLocation on page, in writing
