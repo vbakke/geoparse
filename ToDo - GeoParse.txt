@@ -1,5 +1,6 @@
 ToDo
-====  
+====
+- Merge UTM and LatLon parsing into Trunk
 
 Bug: Current location: 
   - Firefox
@@ -38,6 +39,15 @@ Backlog
 
 Done
 ====
+v1.1.0
+- Parse UTM: Add parsing based on last row / current location
+- Parse LatLon:  Add parsing based on last row / current location
+- Parse UTM: Handle missing grid zone
+- Parse UTM: Handle missing zone band letter
+- Parse UTM: If no NSEW is present, use the number with 6 digits (excl leading zeros) as easting
+- Parse UTM: Fix: parseUtm() to allow the 'm' as in '555555mE'
+- Parse GoogleMaps URLS (https://www.google.no/maps/@59.7598951,10.1830872,14z)
+
 v1.0.2
 - Merge UTM and LatLon parsing
 - Parse: Add heuristics for choosing UTM and LatLong 
