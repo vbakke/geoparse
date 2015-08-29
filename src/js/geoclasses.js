@@ -146,7 +146,7 @@ function geoUtm(zone, band, easting, northing) {
 	this.easting = easting;
 	this.northing = northing;
 	
-	this.toString = function (useStrictUtm, showEastBeforeNorth, delim) {	
+	this.toString = function (useStrictUtm, showEastBeforeNorth, delim, htmlKmStyle) {
 		useStrictUtm = (typeof useStrictUtm === "undefined") ? false : useStrictUtm;
 		showEastBeforeNorth = (typeof showEastBeforeNorth === "undefined") ? false : showEastBeforeNorth;
 		delim = (typeof delim === "undefined") ? " " : delim;
@@ -155,6 +155,10 @@ function geoUtm(zone, band, easting, northing) {
 		
 		var strE = this.easting.toFixed(0);
 		var strN = this.northing.toFixed(0);
+		if (htmlKmStyle)  {
+			strE = this._addKmHtmlStyle(strE, htmlKmStyle);
+			strN = this._addKmHtmlStyle(strN, htmlKmStyle);
+		}
 		
 		if (showEastBeforeNorth) {
 			str += " " + strE+"E" + delim + strN+"N";
@@ -164,7 +168,15 @@ function geoUtm(zone, band, easting, northing) {
 		
 		return str;
 	};
-	
+
+	this._addKmHtmlStyle = function (str, styleClass) {
+		var pre, km, post;
+		pre = str.slice(0, -5);
+		km = str.slice(-5, -3);
+		post = str.slice(-3);
+		var html = pre + '<span class="'+styleClass+'">' + km + '</span>' + post;
+		return html;
+	}
 	
 	this.getGridZone = function () {
 		return this.zone + this.band;

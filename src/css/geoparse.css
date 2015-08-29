@@ -91,6 +91,11 @@ body {
     padding-bottom:6px;
 }
 
+.utmKmText
+{
+    font-size: 1.25em;
+}
+
 #divFeedback
 {
     font-size: 0.8em;
