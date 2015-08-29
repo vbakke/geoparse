@@ -5,11 +5,9 @@ Bug: Input box keeps focus
 Bug: Current location: 
   - Firefox
   - Android Chrome
-
-- GUI: Display 2 decimals id distance in < 1km
-- GUI: Create new, closer zoom level when first point is added
-- GUI: Make Map digits bigger
-- GUI: Add checkbox 'Leading zero'
+ 
+- GUI: Add checkbox UTM: 'Bigger km'
+- GUI: Add checkbox UTM: 'Leading zero'
 - GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
 - GUI: Display "distance lines" when changing "focus point"
 
@@ -34,6 +32,12 @@ Backlog
 
 Done
 ====
+v1.1.1
+- GUI: Display 2 decimals id distance in < 1km
+- GUI: Create new, closer zoom level when first point is added
+- GUI: Make Map digits bigger
+
+
 v1.1.0
 - Parse UTM: Add parsing based on last row / current location
 - Parse LatLon:  Add parsing based on last row / current location
