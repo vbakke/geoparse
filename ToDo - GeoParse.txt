@@ -1,21 +1,22 @@
 ToDo - Improve parsing
 =======================
+- Merge UTM and LatLon parsing into Trunk
 
-v1.0.1
-- Merge UTM and LatLon parsing
+
+v1parse
 
 - GUI/Parse: Provide feedback as you type, coord type / ambigous formatting
-- Parse UTM: Handle missing grid zone
-- Parse UTM: Handle missing zone band letter
-- Parse UTM: If no NSEW is present, use the number with 6 digits as easting
-- Parse UTM: Fix: parseUtm() to allow the 'm' as in '555555mE'
+
 - Parse: Allow shorthand for parsing UTM
-- Parse UTM: Add parsing based on last row / current location
-- Parse LatLon:  Add parsing based on last row / current location
-- Parse GoogleMaps URLS
-  (https://www.google.no/maps/@59.7598951,10.1830872,14z,
+- Parse: Allow parsing / convertion without Google API accessible (offline) 
+
+- Parse: Algorithm is confued with many numbers
    https://www.google.no/maps/place/10%C2%B000'05.4%22N+59%C2%B045'43.0%22E/@8.2677148,91.1359189,3z/data=!4m2!3m1!1s0x0:0x0,
    https://www.google.no/maps/place/Bi%C3%B8rnsborgbakken+5,+3770+Krager%C3%B8/@58.8722125,9.4118788,17z/data=!3m1!4b1!4m2!3m1!1s0x4647040c72d13b79:0xae7231669d220bd4)
+
+
+- Parse: Map coordinates - Norwegian
+- Parse: Map coordinates - UK - SD 900626
 
 
 
@@ -26,6 +27,16 @@ Backlog
 
 Done
 ====
+vParsing
+- Parse UTM: Add parsing based on last row / current location
+- Parse LatLon:  Add parsing based on last row / current location
+- Parse UTM: Handle missing grid zone
+- Parse UTM: Handle missing zone band letter
+- Parse UTM: If no NSEW is present, use the number with 6 digits (excl leading zeros) as easting
+- Parse UTM: Fix: parseUtm() to allow the 'm' as in '555555mE'
+- Parse GoogleMaps URLS (https://www.google.no/maps/@59.7598951,10.1830872,14z)
+
+
 v1.0.1
 - GUI: Center on one location in table, display distance to each other location (center icon)
 - Fix: Click in input box, with selection, does not allow setting position

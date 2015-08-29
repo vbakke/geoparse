@@ -30,7 +30,7 @@
 		<div id="divInput">
 			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
 			<form id="convertPos" name="convertPos" target="dummy_iframe">
-			<div style="float:left;">
+			<div id="divEnterPos" style="float:left;">
 		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" >
 			</div>
 			<div style="float:left;">
@@ -112,6 +112,7 @@
 </div>
  
 <script type="text/javascript">
+	var googleIsOffline = true;
 	var posArray = [];
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
@@ -235,8 +236,20 @@
 				'page': '/geoparse/convertPos',
 				'title': orgStr.replace(/[0-8]/g,'9')
 		});
-		var attempts = geoparse.parse(orgStr);
+		var hint = undefined;
+		if (posArray && posArray.length>0)
+			hint = geoparse.makeHint(posArray[posArray.length-1], 'latest coordinate');
+		else if (myLocation)
+			hint = geoparse.makeHint(myLocation, 'your device location');
+		var options = { delimiters: ',;|', units: {degrees: '°°ºo^~\*', minutes: "'", seconds: '"'}};
+		var tokens = geoparse.tokenizeString(orgStr, options);
+		var attempts = geoparse.parseTokens(tokens, options, hint);
+
+		//var attempts = geoparse.parse(orgStr);
 		var latlon, utm;
+
+		if (attempts.feedback)
+			feedback(attempts.feedback + ": "+orgStr);
 
 		if (attempts.bestMatch == "latlon") {
 			latlon = attempts.pos.latlon;
@@ -246,10 +259,14 @@
 			utm = attempts.pos.utm;
 			latlon = geoconverter.UTMToLatLon(utm);
 			// Convert back again to UTM to normalize according to config
-			geoconverter.LatLonToUTM(latlon, utm); 
+			geoconverter.LatLonToUTM(latlon, utm);
+
+			if (utm.feedback && utm.feedback.length>0)
+				feedback(utm.feedback);
 		}
 		else {
 			// Unknown format
+			feedback("Sorry, I don't recognize that coordinate");
 		}
 
 		if (latlon && utm) {
@@ -262,6 +279,16 @@
 		return false;
 	}
 
+	function feedback(str) {
+		var div = $("#divEnterPos");
+		var feedback = div.find("#divFeedback");
+		if (feedback.length>0) {
+			feedback.text(str);
+		}
+		else {
+			div.append('<div id="divFeedback">'+str+'</div>');
+		}
+	}
 	
 	function onClickOpenNorgeskart() {
 		var viewport = {w: $(window).width(), h: $(window).height()};
@@ -692,7 +719,10 @@
 	}
 
 	// Add on load event to initialize the whole shebang
-	google.maps.event.addDomListener(window, 'load', initialize);
+    if (googleIsOffline)
+        $(document).ready(initialize);
+    else
+        google.maps.event.addDomListener(window, 'load', initialize);
 </script>
 <script>
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

@@ -1,7 +1,8 @@
-﻿<html>
+<html>
 <head>
 <script src="..\js\geoclasses.js"></script>
 <script src="..\js\geoparse.js"></script>
+<script src="..\js\geoconverter.js"></script>
 <script src=".\geoparse_test.js"></script>
 <script src=".\utmparse_test.js"></script>
 <script src="..\lib\jquery-1.11.1.js"></script>
@@ -19,14 +20,30 @@
 </style>
 </head>
 <body>
+<div id="parseDiv">parse</div>
 <div id="utmDiv">UTM</div>
 <div id="geoDiv">LatLong</div>
 <div id="dbgDiv">Debug</div>
 <script type="text/javascript">
+	var parseDiv = $("#parseDiv");
 	var utmDiv = $("#utmDiv");
 	var geoDiv = $("#geoDiv");
-	
-	geoparse.setDebugDiv("dbgDiv");
+	var str = "#";
+	var line = "Koord: UTM32N, 32+, 59,2, 10.7°  .5mN ";
+	line = "";
+
+	var options = { delimiters: ',;', units: {'°':'deg'}};
+	var start = 0;
+	var token = geoparse.readToken(line, start, options);
+	parseDiv.append('<table border="2" style="border-collapse:collapse;"></table>');
+	parseDiv = parseDiv.find("table");
+	while (token.value) {
+		parseDiv.append("<tr><td>Read "+token.type+"</td><td>'"+token.value+"'</td><td>pos "+token.start+"-"+token.end+"</td></tr>");
+		start = token.end;
+		token = geoparse.readToken(line, start, options);
+	}
+
+	//geoparse.setDebugDiv("dbgDiv");
 	utmparse_test.createTable(utmDiv);
 	geoparse_test.createTable(geoDiv);
 </script>
