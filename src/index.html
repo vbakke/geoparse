@@ -116,7 +116,7 @@
 	var posArray = [];
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
-	var firstZoomLevel = 7;
+	var firstZoomLevel = 11;
 	var latlonFormats = { d: "d°N", dm: "d° m'N", dms: "d° m' s\"N"};
 	var config_default = {utm: {strict: false, orderEN: true, zone: null},
 						 latlon: {format: "dms",  orderNE: true, useNeg: false},
@@ -591,9 +591,10 @@
 		var labelStr = location.label;
 		var format = latlonFormats[config.latlon.format];
 		var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
-		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ');
-		
-		var distStr = (dist == undefined) ? "&nbsp;&bull;" : (dist/1000).toFixed(1);
+		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ', 'utmKmText');
+
+		var distPrecision = (dist < 1000) ? 2 : 1;
+		var distStr = (dist == undefined) ? "&nbsp;&bull;" : (dist/1000).toFixed(distPrecision);
 		var distStyle = (dist == undefined) ? "" : 'class="hand dotted"';
 
 
