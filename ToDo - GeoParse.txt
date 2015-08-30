@@ -1,24 +1,39 @@
 ToDo
 ====
 
+Bug: Ony show Norgeskart button if one of the markers are within Norway.
 Bug: Input box keeps focus
 Bug: Current location: 
   - Firefox
   - Android Chrome
  
+- GUI/Parsing: Improve feedback
+  - GUI: Hint source: "from you last coordinate '<name>'"
+  
 - GUI: Add checkbox UTM: 'Bigger km'
 - GUI: Add checkbox UTM: 'Leading zero'
+- GUI: Rename checkbox UTM: 'Strict UTM'
 - GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
 - GUI: Display "distance lines" when changing "focus point"
+- GUI: Remove (/update) disclaimer (and its dynamic 32V)
+
+- GUI: Button: Not onverted directly? Report here!
+
 
 Backlog
 =======
+- GUI: Add function for explaining prose text
 - GUI: Zoom to one location, from click in the table
 - GUI: Add myLocation on page, in writing
-- GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
+- GUI: Make check boxes nicer
 - GUI: Show difference in altitude between positions
 - GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
+- GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
+
+- GUI: Make table width drggable
+- GUI: Make columns selectable
+
 
 - GUI: Draw 1km squares (optionally)
    - Draw optionaly 100m, or 10m according to scale
@@ -33,12 +48,12 @@ Backlog
 Done
 ====
 v1.1.1
+- Bug: Correctly written coordinates used _hint, due to incoreect weighting in eval functions
+
+v1.1.0
 - GUI: Display 2 decimals id distance in < 1km
 - GUI: Create new, closer zoom level when first point is added
 - GUI: Make Map digits bigger
-
-
-v1.1.0
 - Parse UTM: Add parsing based on last row / current location
 - Parse LatLon:  Add parsing based on last row / current location
 - Parse UTM: Handle missing grid zone

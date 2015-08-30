@@ -144,6 +144,7 @@
 	}
 
 	_self.evalUtm = function (utm) {
+		// ToDo: Must evalute NSEW
 		var val = 0;
 
 
@@ -151,17 +152,19 @@
 			if (Math.abs(utm.easting) < 180)
 				val += -5;
 			else
-				if (Math.abs(utm.easting) < 999999)
-					val += 45;
-				else
-					val += 10;
+			if (utm.easting > 100000)
+				val += 25;
+			if (utm.easting < 999999)
+				val += 25;
 		}
 		if (utm.northing) {
+			// If Northing matches zoneband
+
 			if (Math.abs(utm.northing) < 180)
 				val += -5;
 			else
 				if (Math.abs(utm.northing) < 9999999)
-					val += 45;
+					val += 50;
 				else
 					val += 10;
 		}
@@ -170,6 +173,7 @@
 	}
 
 	_self.evalLatLon = function (latlon) {
+		// ToDo: Must evalute NSEW
 		var val = 0;
 
 
@@ -177,14 +181,14 @@
 			if (Math.abs(latlon.lat) > 90)
 				val += -5;
 			else
-				val += 45;
+				val += 50;
 		}
 
 		if (latlon.lon) {
 			if (Math.abs(latlon.lon) > 180)
 				val += -5;
 			else
-				val += 45;
+				val += 50;
 		}
 
 		return val;
