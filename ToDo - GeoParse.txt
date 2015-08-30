@@ -1,7 +1,8 @@
 ToDo - Improve parsing
 =======================
 
-- GUI/Parse: Provide better feedback, coord type / ambigous formatting
+! GUI/Parse: Provide better feedback, coord type / ambigous formatting
+! Parse: Eval need to be refactored. It must use NSEW, and utilize the tokens.
 
 - Parse: Gracefully handle zone band S (South and/or S) 
   - Identify ambiguous S northings, and their opposites.  
