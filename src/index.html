@@ -12,6 +12,7 @@
 	<meta property="og:description" content="Enter UTM or latitude/lonigitude coordinates, in the format you like. View them formatted in the writing style you prefer, as well as on the map. Easily convert between UTM zones if you need to."/>
 	<meta property="og:url" content="http://vafe.net/geo/"/>
 	<meta property="og:image" content="http://vafe.net/geo/img/site-sample-2.jpg"/>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="./css/geoparse.css">
 	<script src="./js/geoclasses.js"></script>
 	<script src="./js/geoconverter.js"></script>
@@ -31,7 +32,7 @@
 			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
 			<form id="convertPos" name="convertPos" target="dummy_iframe">
 			<div id="divEnterPos" style="float:left;margin-right:5px;">
-		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" >
+		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
 			</div>
 			<div style="float:left;">
 				  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickConvertPos()" tabindex="2">Convert</button>
@@ -85,7 +86,7 @@
 				
 		<div id="divUsage">
 			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
-			The current version requires that you fill in the UTM grid zone (such as %gridZone%), and that you specify at the directions (NSEW) of the latitude/longitude.  Planning a solution where you don't need this... :)
+			Update: 2015-09-01: Many parsing bugs have been fixed.
 			</p>
 			<!--p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
@@ -112,7 +113,7 @@
 </div>
  
 <script type="text/javascript">
-	var googleIsOffline = false;
+	var googleIsOffline = true;
 	var posArray = [];
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
@@ -322,6 +323,11 @@
 		if (attempts.bestMatch == "latlon") {
 			latlon = attempts.pos.latlon;
 			utm = geoconverter.LatLonToUTM(latlon);
+
+			if (latlon.feedback && latlon.feedback.length>0)
+				feedback(latlon.feedback);
+			else
+				feedback(''); // Clear feedback
 		}
 		else if (attempts.bestMatch == "utm") {
 			utm = attempts.pos.utm;
@@ -331,6 +337,8 @@
 
 			if (utm.feedback && utm.feedback.length>0)
 				feedback(utm.feedback);
+			else
+				feedback(''); // Clear feedback
 		}
 		else {
 			// Unknown format
@@ -594,7 +602,7 @@
 		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ', 'utmKmText');
 
 		var distPrecision = (dist < 1000) ? 2 : 1;
-		var distStr = (dist == undefined) ? "&nbsp;&bull;" : (dist/1000).toFixed(distPrecision);
+		var distStr = (dist == undefined) ? '&nbsp;<i class="fa fa-dot-circle-o"></i>' : (dist/1000).toFixed(distPrecision);
 		var distStyle = (dist == undefined) ? "" : 'class="hand dotted"';
 
 

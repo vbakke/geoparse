@@ -6,18 +6,21 @@ Bug: Input box keeps focus
 Bug: Current location: 
   - Firefox
   - Android Chrome
- 
-- GUI/Parsing: Improve feedback
-  - GUI: Hint source: "from you last coordinate '<name>'"
+
+Pri1: Buggy convertsions in parsing
+Pri2: 
+
   
+- GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
 - GUI: Add checkbox UTM: 'Bigger km'
 - GUI: Add checkbox UTM: 'Leading zero'
-- GUI: Rename checkbox UTM: 'Strict UTM'
-- GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
+- GUI: Click on fa-icon: Zoom to point
+- GUI: If two point are < 10m appart, zoom to firstZoomLevel
 - GUI: Display "distance lines" when changing "focus point"
-- GUI: Remove (/update) disclaimer (and its dynamic 32V)
+- GUI: Remove marker, should reposition map?
 
-- GUI: Button: Not onverted directly? Report here!
+- GUI: Button: Not converted directly? Report here!
+- GUI: Provide feedback button
 
 
 Backlog
@@ -47,6 +50,16 @@ Backlog
 
 Done
 ====
+v1.1.2
+- Feedback: Clear when a point is converted ok
+- Parse: Fixed bug: 'deg min', where min was interpreted as sec
+- Parse: Fixed bug: Negative degrees were incorrect
+- Parse: Fixed bug: N58.90313 9.456E, trailing 'E' killed the "splitCoordinate" function
+- Parse: Fixed bug: Missing zone and band fails: 0498237 7769796
+- GUI: Add hotkey for enter coordinate
+- GUI: Swap bullet point, with fa-icon
+- GUI: Rename checkbox UTM: 'Strict UTM'
+
 v1.1.1
 - Bug: Correctly written coordinates used _hint, due to incoreect weighting in eval functions
 
