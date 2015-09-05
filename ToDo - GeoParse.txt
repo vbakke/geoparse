@@ -6,19 +6,16 @@ Bug: Input box keeps focus
 Bug: Current location: 
   - Firefox
   - Android Chrome
+Bug: Adding more than 26 points, gives no-name labels
 
-Pri1: Buggy convertsions in parsing
-Pri2: 
-
-  
-- GUI: Add tooltip on Distance: "Click to measure distances form this point 'A'"
+- GUI: Add tooltip on Distance: "Measure distances form point 'A'"
 - GUI: Add checkbox UTM: 'Bigger km'
 - GUI: Add checkbox UTM: 'Leading zero'
-- GUI: Click on fa-icon: Zoom to point
-- GUI: If two point are < 10m appart, zoom to firstZoomLevel
+- GUI: Click on fa-icon: Zoom to point (tooltip)
 - GUI: Display "distance lines" when changing "focus point"
 - GUI: Remove marker, should reposition map?
 
+- GUI: Facebook link
 - GUI: Button: Not converted directly? Report here!
 - GUI: Provide feedback button
 
@@ -50,6 +47,10 @@ Backlog
 
 Done
 ====
+- New URL  http://geo.vafe.net/
+- GUI: Ensure that point too close together does not zoom too far in
+
+
 v1.1.2
 - Feedback: Clear when a point is converted ok
 - Parse: Fixed bug: 'deg min', where min was interpreted as sec

@@ -117,7 +117,8 @@
 	var posArray = [];
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
-	var firstZoomLevel = 11;
+	var initKnownLocationZoomLevel = 10;
+	var firstZoomLevel = 13;
 	var latlonFormats = { d: "d°N", dm: "d° m'N", dms: "d° m' s\"N"};
 	var config_default = {utm: {strict: false, orderEN: true, zone: null},
 						 latlon: {format: "dms",  orderNE: true, useNeg: false},
@@ -185,7 +186,7 @@
 				myLocation = new geoLatLon(lat, lon);
 
 				map.setCenter(new google.maps.LatLng(lat, lon));
-				map.setZoom(firstZoomLevel);
+				map.setZoom(initKnownLocationZoomLevel);
 				// Display the location
 				var tmp = myLocation.toString();
 				span.innerText = tmp;
@@ -307,10 +308,12 @@
 
 
 		var hint = undefined;
-		if (posArray && posArray.length>0)
-			hint = geoparse.makeHint(posArray[posArray.length-1], 'latest coordinate');
-		else if (myLocation)
+		if (posArray && posArray.length>0) {
+			var lastLoation = posArray[posArray.length-1];
+			hint = geoparse.makeHint(lastLoation, "last coordinate ('"+lastLoation.label+"')");
+		} else if (myLocation) {
 			hint = geoparse.makeHint(myLocation, 'your device location');
+		}
 		var options = { delimiters: ',;|', units: {degrees: '°°ºo^~\*', minutes: "'", seconds: '"'}};
 		var tokens = geoparse.tokenizeString(orgStr, options);
 		var attempts = geoparse.parseTokens(tokens, options, hint);
@@ -656,7 +659,9 @@
 		location.marker = marker;
 		boundingbox.extend(markerPos); // Always add new marker to bounding box
 		bbCount++;
-		
+
+
+
 		// Resize and zoom to boundingbox
 		if (!freezeMap) {
 			if (bbCount == 1) {
@@ -665,7 +670,27 @@
 				if (!map.getBounds().contains(markerPos))
 					map.setCenter(markerPos);
 			} else {
+				// Zoom in/put, and store zoom levels
+				var preZoom = map.getZoom();
 				map.fitBounds(boundingbox);
+				var autoZoom = map.getZoom();
+
+				// If we are zooming in, make sure we don't zoom in on a micro area
+				if (preZoom < autoZoom) {
+					// Add a minimum size to the boundingbox
+					var minimumBBoxWidth = 100;  // meters
+					boundingbox.extend(google.maps.geometry.spherical.computeOffset(markerPos, minimumBBoxWidth / 2, 45));
+					boundingbox.extend(google.maps.geometry.spherical.computeOffset(markerPos, minimumBBoxWidth / 2, -135));
+
+					// Zoom to the enlarged boundingbox
+					map.fitBounds(boundingbox);
+					var maxAllowedZoom = map.getZoom();
+
+					// However, if we had already zoomed in closer than the maximum allowed zoom, revert back to the last zoom level that was used
+					if (preZoom > maxAllowedZoom) {
+						map.setZoom(Math.min(preZoom, autoZoom));
+					}
+				}
 			}
 		}
 
