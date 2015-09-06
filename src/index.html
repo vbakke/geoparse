@@ -326,16 +326,16 @@
 		var latlon, utm;
 
 		if (attempts.feedback)
-			feedback(attempts.feedback + ": "+orgStr);
+			showFeedback(attempts.feedback + ": "+orgStr);
 
 		if (attempts.bestMatch == "latlon") {
 			latlon = attempts.pos.latlon;
 			utm = geoconverter.LatLonToUTM(latlon);
 
 			if (latlon.feedback && latlon.feedback.length>0)
-				feedback(latlon.feedback);
+				showFeedback(latlon.feedback);
 			else
-				feedback(''); // Clear feedback
+				showFeedback(''); // Clear feedback
 		}
 		else if (attempts.bestMatch == "utm") {
 			utm = attempts.pos.utm;
@@ -344,13 +344,13 @@
 			geoconverter.LatLonToUTM(latlon, utm);
 
 			if (utm.feedback && utm.feedback.length>0)
-				feedback(utm.feedback);
+				showFeedback(utm.feedback);
 			else
-				feedback(''); // Clear feedback
+				showFeedback(''); // Clear feedback
 		}
 		else {
 			// Unknown format
-			feedback("Sorry, I don't recognize that coordinate");
+			showFeedback("Sorry, I don't recognize that coordinate");
 		}
 
 		if (latlon && utm) {
@@ -363,11 +363,23 @@
 		return false;
 	}
 
-	function feedback(str) {
+	function showFeedback(feedback) {
+		var str = "";
+		if (typeof feedback === 'string') {
+			str = feedback;
+		} else {
+			for (var i = 0; i < feedback.length; i++) {
+				if (str.length > 0)
+					str += '<br/>';
+
+				str += feedback[i];
+			}
+		}
+
 		var div = $("#divEnterPos");
-		var feedback = div.find("#divFeedback");
-		if (feedback.length>0) {
-			feedback.text(str);
+		var feedbackDiv = div.find("#divFeedback");
+		if (feedbackDiv.length>0) {
+			feedbackDiv.text(str);
 		}
 		else {
 			div.append('<div id="divFeedback">'+str+'</div>');
@@ -735,7 +747,7 @@
 				zoom = Math.min(zoom, maxZoomLevel);
 				map.setZoom(zoom);
 			} else {
-				// MArker is outside map, just pan, don't zoom
+				// Marker is outside map, just pan, don't zoom
 				map.setCenter(latlon);
 			}
 		}

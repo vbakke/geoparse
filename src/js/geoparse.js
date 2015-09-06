@@ -323,8 +323,8 @@
 		// If no directions are used, guess that that 6 digit position is easting
 		if (dir1 == undefined && dir2 == undefined && pos1 != undefined && pos2 != undefined) {
 			if (_self.numPositiveDigits(pos1) != 6 && _self.numPositiveDigits(pos2) == 6) {
+				feedback.push("You did not specify any directions (NSEW). Assuming '"+pos2+"' that has 6 digits is the Easting, since '"+pos1+"' doesn't."); // Must be executed before swapping
 				var tempPos=pos1; pos1=pos2; pos2=tempPos;
-				feedback.push("You did not specify any directions (NSEW). Since '"+pos2+"' has 6 digits, and '"+pos1+"' has not, I swapped them around.");
 			}
 		}
 		
