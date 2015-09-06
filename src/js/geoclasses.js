@@ -34,8 +34,8 @@ function geoLatLon(lat, lon) {
 		
 		if (!minDefined) {
 			// No minutes, use decimal degrees
-			degLat = remainingLat.toFixed(6);  // Maximum error of 11 cm
-			degLon = remainingLon.toFixed(6);  
+			degLat = remainingLat.toFixed(5);  // Maximum error of 1,1 m
+			degLon = remainingLon.toFixed(5);
 		} else {
 			// Minutes are defined
 			degLat = Math.floor(remainingLat);
@@ -45,14 +45,14 @@ function geoLatLon(lat, lon) {
 			
 			if (!secDefined) {
 				// No seconds, use decimal minutes
-				minLat = remainingLat.toFixed(4); // Maximum error of 19 cm
-				minLon = remainingLon.toFixed(4);
+				minLat = remainingLat.toFixed(3); // Maximum error of 1.9 m
+				minLon = remainingLon.toFixed(3);
 			} else {
 				// Seconds are defined
 				minLat = Math.floor(remainingLat);
 				minLon = Math.floor(remainingLon);
-				secLat = ((remainingLat - minLat)*60.0).toFixed(2); // Maximum error of 31 cm
-				secLon = ((remainingLon - minLon)*60.0).toFixed(2);
+				secLat = ((remainingLat - minLat)*60.0).toFixed(1); // Maximum error of 3,1 m
+				secLon = ((remainingLon - minLon)*60.0).toFixed(1);
 			}
 		}
 
