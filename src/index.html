@@ -119,6 +119,7 @@
 	var initZoomLevel = 2;
 	var initKnownLocationZoomLevel = 10;
 	var firstZoomLevel = 13;
+	var maxZoomLevel = 21;
 	var latlonFormats = { d: "d°N", dm: "d° m'N", dms: "d° m' s\"N"};
 	var config_default = {utm: {strict: false, orderEN: true, zone: null},
 						 latlon: {format: "dms",  orderNE: true, useNeg: false},
@@ -201,7 +202,7 @@
 
 	}
 	function onClickInMap() {	
-		if(tmpMapZoom == map.getZoom()){
+		if(tmpMapZoom == map.getZoom() && clickedMapPos){
 			var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, true);
 			clickedMapPos = null;
 
@@ -222,7 +223,11 @@
 			centerLocationIndex = index;
 			updateAllDistancesInTable(tb);
 		}
-
+	}
+	function onClickCellDistanceZoom(elem) {
+		if (centerLocationIndex != undefined) {
+			zoomInOnPoint(centerLocationIndex);
+		}
 	}
 
 	function onClickTableCell(elem) {
@@ -599,20 +604,30 @@
 		tableRow.innerHTML = str;
 	}
 	function generateTableRowStr(index, location, dist) {
+		var distPrecision, distStr, distStyle, distTooltip, distFunction;
 		var labelStr = location.label;
 		var format = latlonFormats[config.latlon.format];
 		var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ', 'utmKmText');
 
-		var distPrecision = (dist < 1000) ? 2 : 1;
-		var distStr = (dist == undefined) ? '&nbsp;<i class="fa fa-dot-circle-o"></i>' : (dist/1000).toFixed(distPrecision);
-		var distStyle = (dist == undefined) ? "" : 'class="hand dotted"';
+		if (dist == undefined) {
+			distFunction = 'onClickCellDistanceZoom(this)';
+			distStr = '&nbsp;<i class="fa fa-dot-circle-o"></i>';
+			distStyle = "";
+			distTooltip = "Click to zoom in on this point";
+		} else {
+			distFunction = 'onClickCellDistance(this)';
+			distPrecision = (dist < 1000) ? 2 : 1;
+			distStr = (dist/1000).toFixed(distPrecision);
+			distStyle = 'class="hand dotted"';
+			distTooltip = "Measure all distances from point '"+labelStr+"'";
+		}
 
 
 		var str = "<td onclick=\"onClickLabelCell(this)\"><span class='hand dotted'>"+labelStr+"</span></td>" + 
 					"<td onclick=\"onClickTableCell(this)\"><span class='hand dotted'>"+latlonStr+"</span></td>" +
 					"<td onclick=\"onClickTableCell(this)\"><span class='hand dotted'>"+utmStr+"</span></td>" +
-					"<td onclick=\"onClickCellDistance(this)\"><span "+distStyle+">"+distStr+"</span></td>" +
+					"<td onclick=\""+distFunction+"\"><span "+distStyle+' title="'+distTooltip+'">'+distStr+"</span></td>" +
 					'<td style="text-align:center;"><img class=\"hand\"  src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}
@@ -709,7 +724,23 @@
 		clearLocationsFromTable();
 		posArray = [];
 	}
-	
+
+	function zoomInOnPoint(index) {
+		if (index < posArray.length) {
+			var latlon = posArray[index].marker.getPosition();
+			if (map.getBounds().contains(latlon)) {
+				map.setCenter(latlon);
+				var zoom = map.getZoom();
+				zoom += 2;
+				zoom = Math.min(zoom, maxZoomLevel);
+				map.setZoom(zoom);
+			} else {
+				// MArker is outside map, just pan, don't zoom
+				map.setCenter(latlon);
+			}
+		}
+	}
+
 	function removeLocation(index) {
 		removeLocationFromMap(index);
 		removeLocationFromTable(index);

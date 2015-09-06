@@ -8,10 +8,8 @@ Bug: Current location:
   - Android Chrome
 Bug: Adding more than 26 points, gives no-name labels
 
-- GUI: Add tooltip on Distance: "Measure distances form point 'A'"
 - GUI: Add checkbox UTM: 'Bigger km'
 - GUI: Add checkbox UTM: 'Leading zero'
-- GUI: Click on fa-icon: Zoom to point (tooltip)
 - GUI: Display "distance lines" when changing "focus point"
 - GUI: Remove marker, should reposition map?
 
@@ -31,7 +29,7 @@ Backlog
 - JS: Load JS asynchronously
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 
-- GUI: Make table width drggable
+- GUI: Make table width draggable
 - GUI: Make columns selectable
 
 
@@ -49,6 +47,11 @@ Done
 ====
 - New URL  http://geo.vafe.net/
 - GUI: Ensure that point too close together does not zoom too far in
+- GUI/Parse: Provide better feedback, coord type / ambigous formatting
+ - GUI: Feedback: Hint source: "from you last coordinate '<name>'"
+ - GUI: Feedback: Better wording for: DBG: I SWAPPED. It it a lot closer to home  
+- GUI: Add tooltip on Distance: "Measure distances form point 'A'"
+- GUI: Click on fa-icon: Zoom to point (tooltip)
 
 
 v1.1.2

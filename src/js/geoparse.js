@@ -140,12 +140,13 @@
 
 	_self.addLatLonHintLocation = function (latlon, hintLocation) {
 		hintLocation = hintLocation.latlon;
-		if ("has no direction letters")
+		//if (latlon.isWithoutNSEW) {}
 		var diff = Math.abs(latlon.lat-hintLocation.lat) + Math.abs(latlon.lon-hintLocation.lon);
 		var diffReverse = Math.abs(latlon.lat-hintLocation.lon) + Math.abs(latlon.lon-hintLocation.lat);
 		if (diffReverse < diff*2)  {
 			// swap lat and lon
 			var tempDeg=latlon.lat; latlon.lat=latlon.lon; latlon.lon=tempDeg;
+			_self.addFeedback('')
 		}
 		return latlon;
 	}
@@ -227,7 +228,7 @@
 			if (hintLocation) {
 				attempts = _self.addHintLocation(attempts, hintLocation);
 			} else {
-				attempts.feedback = ["Not enough info"];
+				attempts.feedback = ["Sorry, I do not understand what coordinate you have written."];
 			}
 		}
 
@@ -262,7 +263,7 @@
 		if (tokens[i] && tokens[i].value <= 60) {
 			zone = tokens[i].value;
 			i++;
-			if (zoneBandRe.exec(tokens[i].value)) {
+			if (tokens[i] && zoneBandRe.exec(tokens[i].value)) {
 				band = tokens[i].value;
 				i++;
 			}
@@ -323,7 +324,7 @@
 		if (dir1 == undefined && dir2 == undefined && pos1 != undefined && pos2 != undefined) {
 			if (_self.numPositiveDigits(pos1) != 6 && _self.numPositiveDigits(pos2) == 6) {
 				var tempPos=pos1; pos1=pos2; pos2=tempPos;
-				feedback.push("SWAP: Swapped Northing and Easting, since '"+pos2+"' has 6 digits, and '"+pos1+"' has not. ");
+				feedback.push("You did not specify any directions (NSEW). Since '"+pos2+"' has 6 digits, and '"+pos1+"' has not, I swapped them around.");
 			}
 		}
 		
