@@ -35,11 +35,11 @@
 		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
 			</div>
 			<div style="float:left;">
-				  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickConvertPos()" tabindex="2">Convert</button>
+				  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickConvertPos()" tabindex="2" title="Add coordinate to the map">Add</button>
 			</div>
 			<div id="divMyLocation" style="float:right">
 					<div id="sMyLocation"></div>
-					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3">My location</button>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 			</div>
 			</form>
 			<div style="clear: both"></div>
@@ -219,6 +219,7 @@
 	function onClickCellDistance(elem) {
 		var tr = $(elem).closest("tr");
 		var index = tr.index();
+		ga('send', 'event', 'user-click', 'changeDistanceCenter', 'changeDistanceCenter-'+centerLocationIndex+'-'+index);
 		if (index != centerLocationIndex) {
 			centerLocationIndex = index;
 			updateAllDistancesInTable(tb);
@@ -747,9 +748,11 @@
 				zoom += 2;
 				zoom = Math.min(zoom, maxZoomLevel);
 				map.setZoom(zoom);
+				ga('send', 'event', 'user-click', 'centerZoomIn', 'centerZoomIn-'+index+'-z'+zoom);
 			} else {
 				// Marker is outside map, just pan, don't zoom
 				map.setCenter(latlon);
+				ga('send', 'event', 'user-click', 'centerPanTo', 'centerPanTo-'+index);
 			}
 		}
 	}
@@ -772,7 +775,7 @@
 
 			}
 		}
-		setTimeout(function () {fadeOutDistanceLines(distanceLines, 100, 700, centerIndex);}, 1000);
+		setTimeout(function () {fadeOutDistanceLines(distanceLines, 100, 700, centerIndex);}, 2000);
 	}
 
 	function fadeOutDistanceLines(distanceLines, steptime, totaltime, centerIndex) {
