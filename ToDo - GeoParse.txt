@@ -1,6 +1,6 @@
 ToDo
 ====
-
+---
 Bug: Ony show Norgeskart button if one of the markers are within Norway.
 Bug: Input box keeps focus
 Bug: Current location: 
@@ -8,9 +8,11 @@ Bug: Current location:
   - Android Chrome
 Bug: Adding more than 26 points, gives no-name labels
 
+- Parse: Allow EØ VW osv
 - GUI: Add checkbox UTM: 'Bigger km'
 - GUI: Add checkbox UTM: 'Leading zero'
-- GUI: Display "distance lines" when changing "focus point"
+- GUI: Draw 1km squares (optionally)
+   - Draw optionaly 100m, or 10m according to scale
 - GUI: Remove marker, should reposition map?
 
 - GUI: Facebook link
@@ -21,7 +23,6 @@ Bug: Adding more than 26 points, gives no-name labels
 Backlog
 =======
 - GUI: Add function for explaining prose text
-- GUI: Zoom to one location, from click in the table
 - GUI: Add myLocation on page, in writing
 - GUI: Make check boxes nicer
 - GUI: Show difference in altitude between positions
@@ -33,8 +34,6 @@ Backlog
 - GUI: Make columns selectable
 
 
-- GUI: Draw 1km squares (optionally)
-   - Draw optionaly 100m, or 10m according to scale
 
 - Put 'Convert' inside <input> 
     http://stackoverflow.com/questions/15314407/how-to-add-button-inside-input
@@ -45,6 +44,7 @@ Backlog
 
 Done
 ====
+- GUI: Display "distance lines" when changing "focus point"
 - New URL  http://geo.vafe.net/
 - GUI: Ensure that point too close together does not zoom too far in
 - GUI/Parse: Provide better feedback, coord type / ambigous formatting

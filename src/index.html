@@ -222,6 +222,7 @@
 		if (index != centerLocationIndex) {
 			centerLocationIndex = index;
 			updateAllDistancesInTable(tb);
+			fadeInOutDistanceLines(index);
 		}
 	}
 	function onClickCellDistanceZoom(elem) {
@@ -752,6 +753,49 @@
 			}
 		}
 	}
+
+
+
+	function fadeInOutDistanceLines(centerIndex) {
+		var distanceLines = [];
+		for (var i=0; i<posArray.length; i++) {
+			if (i != centerIndex) {
+				var path = [ {lat: posArray[i].latlon.lat, lng: posArray[i].latlon.lon}, {lat: posArray[centerIndex].latlon.lat, lng: posArray[centerIndex].latlon.lon} ];
+				var line = new google.maps.Polyline({
+					path: path,
+					strokeColor: '#5A80BB',
+					strokeOpacity: 1.0,
+					strokeWeight: 3
+				});
+				line.setMap(map);
+				distanceLines.push(line);
+
+			}
+		}
+		setTimeout(function () {fadeOutDistanceLines(distanceLines, 100, 700, centerIndex);}, 1000);
+	}
+
+	function fadeOutDistanceLines(distanceLines, steptime, totaltime, centerIndex) {
+		var delta = (steptime+1)/totaltime; // Add one to avoid rounding error the "wrong" way
+		var fadeout = setInterval(function(){
+
+			if(distanceLines && distanceLines.length>1 && distanceLines[0].strokeOpacity > 0.0) {
+				for (var i=0; i<distanceLines.length; i++) {
+					distanceLines[i].setOptions({
+						'strokeOpacity': Math.max(0, distanceLines[i].strokeOpacity-delta)
+					});
+				}
+			} else {
+				clearInterval(fadeout);
+				if (distanceLines) {
+					for (var i = 0; i < distanceLines.length; i++) {
+						distanceLines[i].setMap(null);
+					}
+				}
+			}
+		}, steptime);
+	}
+
 
 	function removeLocation(index) {
 		removeLocationFromMap(index);
