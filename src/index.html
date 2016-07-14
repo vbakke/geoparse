@@ -19,9 +19,7 @@
 	<script src="./js/geoparse.js"></script>
 	<script src="./js/norgeskart.js"></script>
 	<script src="./lib/jquery-1.11.1.js"></script>
-	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
 	<script src="./lib/amplify.min.js"></script>
-	<script src="./lib/markerwithlabel.js"></script>
 	<title>Convert and view your GPS and UTM coordinates</title>
 </head>
 <body>
@@ -46,11 +44,12 @@
 			</div>
 			<form id="convertPos" name="convertPos" target="dummy_iframe">
 				<div style="float:left;margin-right:5px;margin-top:4px;">
-					Enter coordinate:
+					Enter coordinate / address:
 				</div>
 				<div id="divEnterPos" style="float:left;margin-right:5px;">
 					  <input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
-					  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickConvertPos()" tabindex="2" title="Add coordinate to the map">Add</button>
+					  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
+					  <button id="btnAddMyAddress" type="submit" class="rounded-corners"  onclick="onClickAddMyAddress()" tabindex="4" title="Add address">Add address</button>
 				</div>
 			</form>
 			<div style="clear: both"></div>
@@ -98,7 +97,7 @@
 				
 		<div id="divUsage">
 			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
-			Update: 2015-09-01: Many parsing bugs have been fixed.
+			Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
 			<!--p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
@@ -125,7 +124,7 @@
 </div>
  
 <script type="text/javascript">
-	var googleIsOffline = true;
+	var googleIsOffline = false;
 	var posArray = [];
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
@@ -154,6 +153,20 @@
 	var tb = $("#posTable tbody");
 	var txtCoordinate = $("#txtCoordinate");
 
+	// Add on load event to initialize the whole shebang
+	if (googleIsOffline)
+		$(document).ready(initialize);
+	else
+		loadGoogleApi(initialize);
+
+	function loadGoogleApi(initFunc) {
+		$.get("./conf/gkey.txt", null, function (data) {
+			var apiUrl = "https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry&key=" + data.trim();
+			$.getScript(apiUrl, function () {
+				$.getScript("./lib/markerwithlabel.js", initFunc);
+			});
+		}, "text");
+	}
 	function initialize() {
 		initMap("divMap2");
 		clearLocations();
@@ -316,15 +329,70 @@
 		td.append(formattedLabel);
 	}
 
-	function onClickConvertPos() {
+	function onClickAdd() {
 		var orgStr = txtCoordinate.val();
-		ga('send', 'event', 'debug-click', 'dbg-convertPos', 'dbg-convertPos-'+orgStr); 
+		clearFeedback();
+
+		ga('send', 'event', 'debug-click', 'dbg-convertPos', 'dbg-convertPos-'+orgStr);
 		ga('send', 'event', 'user-click', 'convertPos', 'convertPos-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
-				'page': '/geoparse/convertPos',
-				'title': orgStr.replace(/[0-8]/g,'9')
+			'page': '/geoparse/convertPos',
+			'title': orgStr.replace(/[0-8]/g,'9')
 		});
 
+		var digitCount = orgStr.replace(/[^0-9]/g, "").length;
+		var charCount = orgStr.replace(/[^a-zA-Z]/g, "").length;
+		if (charCount > digitCount) {
+			addAddress(orgStr);
+		} else {
+			addConvertedPos(orgStr);
+		}
+
+		// Return false to avoid page reload
+		return false;
+	}
+
+	function addAddress(address) {
+		var url = "https://maps.googleapis.com/maps/api/geocode/json";
+		url += "?address="+encodeURIComponent(address);
+
+		var bbox = map.getBounds();
+		if (bbox) {
+			var sw = bbox.getSouthWest();
+			var ne = bbox.getNorthEast();
+			var bounds = sw.lat() + "," + sw.lng() + "|" + ne.lat() + "," + ne.lng();
+			url += "&bounds=" + bounds;
+		}
+		$.get(url,
+				null,
+				function (data) {
+					if (data.status == "ZERO_RESULTS") {
+						ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-'+encodeURIComponent(address));
+						showFeedback("Sorry, Google Maps doesn't find a matching address");
+					} else if (data.status == "OK") {
+						if (data.results.length >= 1) {
+							var location = data.results[0].geometry.location;
+							//var name = data.results[0].address_components[1].short_name;
+							var name = data.results[0].formatted_address;
+							var index = name.indexOf(",");
+							if (index >= 0)
+								name = name.substring(0, index);
+							addLatLonLocation(location.lat, location.lng, name);
+						} else {
+							ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-'+encodeURIComponent(address));
+							showFeedback("Sorry, Google Maps doesn't find a matching address");
+						}
+					} else {
+						ga('send', 'event', 'debug-error', 'dbg-adr-error', 'dbg-adr-error-'+data.status+'-'+encodeURIComponent(address));
+						showFeedback("Sorry, Google Maps returned an error looking up the address");
+					}
+				},
+				"json"
+		);
+	}
+
+
+	function addConvertedPos(positionStr) {
 
 		var hint = undefined;
 		if (posArray && posArray.length>0) {
@@ -334,13 +402,13 @@
 			hint = geoparse.makeHint(myLocation, 'your device location');
 		}
 		var options = { delimiters: ',;|', units: {degrees: '°°ºo^~\*', minutes: "'", seconds: '"'}};
-		var tokens = geoparse.tokenizeString(orgStr, options);
+		var tokens = geoparse.tokenizeString(positionStr, options);
 		var attempts = geoparse.parseTokens(tokens, options, hint);
 
 		var latlon, utm;
 
 		if (attempts.feedback)
-			showFeedback(attempts.feedback + ": "+orgStr);
+			showFeedback(attempts.feedback + ": "+positionStr);
 
 		if (attempts.bestMatch == "latlon") {
 			latlon = attempts.pos.latlon;
@@ -349,7 +417,7 @@
 			if (latlon.feedback && latlon.feedback.length>0)
 				showFeedback(latlon.feedback);
 			else
-				showFeedback(''); // Clear feedback
+				clearFeedback();
 		}
 		else if (attempts.bestMatch == "utm") {
 			utm = attempts.pos.utm;
@@ -360,7 +428,7 @@
 			if (utm.feedback && utm.feedback.length>0)
 				showFeedback(utm.feedback);
 			else
-				showFeedback(''); // Clear feedback
+				clearFeedback();
 		}
 		else {
 			// Unknown format
@@ -368,15 +436,17 @@
 		}
 
 		if (latlon && utm) {
-			addLocation(orgStr, latlon, utm);
+			addLocation(positionStr, latlon, utm);
 		} else {
 			// What to do
 		}
 
-		// Return false to avoid page reload
-		return false;
 	}
 
+
+	function clearFeedback() {
+		showFeedback('');
+	}
 	function showFeedback(feedback) {
 		var str = "";
 		if (typeof feedback === 'string') {
@@ -507,6 +577,7 @@
 			span.innerHTML = "Geolocation is not supported by this browser.";
 		}
 	}
+
 	function addMyLocation(pos) {
 		if (pos == undefined) {
 			var span = $("#sMyLocation");
@@ -919,11 +990,6 @@
 		
 	}
 
-	// Add on load event to initialize the whole shebang
-    if (googleIsOffline)
-        $(document).ready(initialize);
-    else
-        google.maps.event.addDomListener(window, 'load', initialize);
 </script>
 <script id="_webengage_script_tag" type="text/javascript">
 	var _weq = _weq || {};

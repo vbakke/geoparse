@@ -2,12 +2,9 @@ ToDo
 ====
 ---
 Bug: Ony show Norgeskart button if one of the markers are within Norway.
-Bug: Input box keeps focus
-Bug: Current location: 
-  - Firefox
-  - Android Chrome
-Bug: Adding more than 26 points, gives no-name labels
 Bug: Center icon disappears when changing coordinate format
+Bug: Input box keeps focus
+Bug: Adding more than 26 points, gives no-name labels
 
 - Parse: Allow EØ VW osv
 - GUI: Add checkbox UTM: 'Bigger km'
@@ -23,6 +20,7 @@ Bug: Center icon disappears when changing coordinate format
 
 Backlog
 =======
+- Parse: Handle more than one address result
 - GUI: Add function for explaining prose text
 - GUI: Add myLocation on page, in writing
 - GUI: Make check boxes nicer
@@ -45,6 +43,10 @@ Backlog
 
 Done
 ====
+2016
+- Parse: Lookup Address
+- Bug: Install HTTPS to allow Current location
+2015
 - GUI: Display "distance lines" when changing "focus point"
 - New URL  http://geo.vafe.net/
 - GUI: Ensure that point too close together does not zoom too far in
