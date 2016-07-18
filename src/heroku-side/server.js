@@ -52,7 +52,7 @@ app.post("/groups", function(req, res) {
     newGroup.createdTime = new Date();
 
     if (!(req.body.name)) {
-        handleError(res, "Invalid user input", "Must provide a name.", 400);
+        handleError(res, "Invalid user input", "Must provide a name. Body: "+req.body, 400);
     }
 
     // Store to database
