@@ -3,17 +3,21 @@
 require "db_conf.php";
 
 $NL = "<br/>\n";
-$debugMode = true&&false;
+$debugMode = true;
 
 
 $TestDB = true&&false;
 function TestModuleDB() {
 	global $NL;
 	
-	
+	print "Start:".$NL;
 	// GET
-	$row = getSet("aa");
-	print "Row: [".$row['ShareCode']."] v".$row['Version'].": ".$row['Json'].$NL;
+	$group = getGroup("1001-1");
+	print "Group: [".$group['groupId']."] Code ".$group['groupCode'].": ".$group['groupName'].$NL;
+	foreach ($group["locations"] as $location) {
+		print " - Location ".$location["posName"].$NL;
+	}
+	
 /*
 	// CREATE
 	$shareCode = rand(10, 99);
@@ -28,16 +32,57 @@ function TestModuleDB() {
 	$result = createSet($jsonSet);
 	print "CREATE: returned: ".$result.$NL;
 */
-	print "Random Key".$NL;
-	print "Rnd U, 3, '': ".randomKey(1, 3).$NL;
-	print "Rnd U, 5, '': ".randomKey(1, 5).$NL;
-	print "Rnd L, 3, '': ".randomKey(0, 3).$NL;
-	print "Rnd L, 3, 'S': ".randomKey(0, 3, "S").$NL;
-	print "Rnd L, 3, 'For lang': ".randomKey(0, 3, "For lang").$NL;
 
 	print "Done Testing.".$NL.$NL;
 	
 }
+
+// 2016-version start
+function getGroup($groupId) {
+	global $NL, $debugMode;
+
+	$ids = explode("-", $groupId, 2);
+	$set = array("groupRandId" => $ids[0], "groupRowId" => $ids[1]);
+
+	if ($debugMode)
+		print "Searching for '".$groupId."': '".$ids[0]."' - '".$ids[1]."'".$NL;
+	$con = connectDb();
+	
+	// Get Group
+	$sql = "SELECT CONCAT(groupRowId, '-', groupRandId) as groupId, groupCode, groupName, groupDescription FROM vafe.geoGroups WHERE groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' Limit 1";
+	$sql = replaceFields($con, $sql, $set);
+	
+	print $NL."GROUP SQL: ".$sql.$NL.$NL;
+	$result = executeSql($sql, $con);
+	if ($result !== FALSE) {
+		$group = mysqli_fetch_array($result);
+		
+		// Get Locations
+		$sql = "SELECT posName, lat, lng FROM vafe.geoLocations WHERE groupRowId = '$(groupRowId)'";
+		$sql = replaceFields($con, $sql, $set);
+		
+		print $NL."LOCATIONS SQL: ".$sql.$NL.$NL;
+		$result = executeSql($sql, $con);
+		$locations = array();
+
+		do {
+			$location = mysqli_fetch_array($result);
+			var_dump($location);
+			print $NL;
+			if ($location)
+				array_push($locations, $location);
+		} while ($location);
+
+		$group["locations"] = $locations;
+	}
+
+	closeConnection($con);
+	return $group;
+}
+
+// 2016-version end
+
+
 
 // Return the lastest version of a given shareCode
 function getSet($shareCode) {
@@ -309,13 +354,14 @@ function closeConnection($con) {
 function executeSql($sql, $con=null) {
 	global $NL;
 	$closeConnection = false;
-
+	print "Execute SQL: ".$sql.$NL.$NL;
 	if ($con == null)  {
 		$con = connectDb();
 		$closeConnection = true;
 	}
 
 	$result = mysqli_query($con, $sql);
+	print "SQL executed".$NL;
 	if ($result === FALSE) {
 		print "Failed to execute SQL: " . mysqli_error($con).$NL;
 	}

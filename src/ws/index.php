@@ -15,6 +15,16 @@ $app->get('/hello/:name', function ($name) {
 });
 
 
+$app->get('/group/:groupId', function ($groupId) {
+	global $NL;
+	header('Content-Type: application/json;charset=utf-8');
+	$row = getGroup($groupId);
+	print '{ "sharecode": "'.$row['ShareCode'].'", "version":'.$row['Version'].', "modified": "'.$row['CreatedTime'].'", "set": '.$row['Json']."}".$NL;
+    //echo "{ label: 'REST-test', version: 1 set: [11,12,13]}";
+	print json_encode($row);
+});
+
+
 $app->get('/set/:code', function ($code) {
 	global $NL;
 	$row = getSet($code);
