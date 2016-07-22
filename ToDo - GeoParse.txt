@@ -1,5 +1,9 @@
 ToDo
 ====
+v2
+--
+- Share locations
+
 ---
 Bug: "555555, 6666666" failes if utm zone is unavailable
 Bug: Ony show Norgeskart button if one of the markers are within Norway.
