@@ -476,7 +476,7 @@ var geoconverter = (function () {
 	*
 	*/
 	function GetBandLetter(latlon) {
-		var bandLetters = "CDEFGHJKLMNPQRSTUVWX";
+		var bandLetters = "CDEFGHJKLMNPQRSTUVWXX"; // Double X, since X is wider than a normal band
         var band;
 
 		if (latlon.lat < -80) {

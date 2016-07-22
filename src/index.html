@@ -12,43 +12,57 @@
 	<meta property="og:description" content="Enter UTM or latitude/lonigitude coordinates, in the format you like. View them formatted in the writing style you prefer, as well as on the map. Easily convert between UTM zones if you need to."/>
 	<meta property="og:url" content="http://vafe.net/geo/"/>
 	<meta property="og:image" content="http://vafe.net/geo/img/site-sample-2.jpg"/>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="./css/geoparse.css">
 	<script src="./js/geoclasses.js"></script>
 	<script src="./js/geoconverter.js"></script>
 	<script src="./js/geoparse.js"></script>
-	<script src="./js/geotools.js"></script>
 	<script src="./js/storage.js"></script>
 	<script src="./js/norgeskart.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
-	<script src="//maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry"></script>
 	<script src="./lib/amplify.min.js"></script>
-	<script src="./lib/markerwithlabel.js"></script>
-	<title>Convert and view your UTM coordinates</title>
+	<title>Convert and view your GPS and UTM coordinates</title>
 </head>
 <body>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id)) return;
+		js = d.createElement(s); js.id = id;
+		js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.4&appId=407181112820036";
+		fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+</script>
 <div id="divAll">
 	<div id="divPanel">
-		<div id="divHeader"><span class="header">EARTH</span> - Storage branch</div>
+		<div style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
+		<div id="divHeader"><span class="header">EARTH</span> - Storage branch<br/>
+		<p style="font-size:0.7em;margin-top:0;">Convert between GPS and UTM coordinates</p>
+		</div>
 		<div id="divInput">
-			<div style="float:left;">
-		    	  Enter coordinate: <input id="txtCoordinate" autofocus class="inputText" tabindex="1" ><!--autofocus-->  
-			</div>
+			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
 			<div id="divMyLocation" style="float:right">
 					<div id="sMyLocation"></div>
-					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="4">My location</button>
+				<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 			</div>
-			<div style="float:left;">
-				  <button id="btnConvertUtm" class="rounded-corners" onclick="onClickConvertUtm()" tabindex="2">Convert UTM</button>
-				  <button id="btnConvertGeo" class="rounded-corners"  onclick="onClickConvertGeo()" tabindex="3">Convert lat/long</button>
+			<form id="convertPos" name="convertPos" target="dummy_iframe">
+				<div style="float:left;margin-right:5px;margin-top:4px;">
+					Enter coordinate / address:
+				</div>
+				<div id="divEnterPos" style="float:left;margin-right:5px;">
+					  <input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
+					  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
 			</div>
+			</form>
 			<div style="clear: both"></div>
+			<div id="divFeedback"></div>
 		</div>
 		<div id="divTable">
 			 <table id="posTable">
 			  		 <thead>
 			  		 <!-- <tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr> -->
 				  		 <tr>
-				  		 	<th></th>
+				  		 	<th>&nbsp;</th>
 				  		 	<th>Latitude / longitude</th>
 				  		 	<th>UTM</th>
 				  		 	<th>km</th>
@@ -85,7 +99,7 @@
 				
 		<div id="divUsage">
 			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
-			The current version requires that you fill in the UTM grid zone (such as %gridZone%), and that you specify at the directions (NSEW) of the latitude/longitude.  Planning a solution where you don't need this... :)
+			Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
 			<!--p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
@@ -96,7 +110,7 @@
 			</p-->
 		</div>
 		<div id="divStorage">
-			<button id="btnSave" class="rounded-corners" onclick="onClickSave()">Save</button><br/>
+			<button id="btnSave" class="rounded-corners" onclick="onClickShare()">Share</button><br/>
 			Name: <input id="txtSetName" style="width:15%">
 			Description: <input id="txtSetDescription" style="width:60%">
 			<div id="divStorageTable">
@@ -134,7 +148,9 @@
 	var posArray = [];
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
-	var firstZoomLevel = 7;
+	var initKnownLocationZoomLevel = 10;
+	var firstZoomLevel = 13;
+	var maxZoomLevel = 21;
 	var latlonFormats = { d: "d°N", dm: "d° m'N", dms: "d° m' s\"N"};
 	var config_default = {utm: {strict: false, orderEN: true, zone: null},
 						 latlon: {format: "dms",  orderNE: true, useNeg: false},
@@ -158,8 +174,21 @@
 	var tbSets = $("#setsTable tbody");
 	var txtCoordinate = $("#txtCoordinate");
 
+	// Add on load event to initialize the whole shebang
+	if (googleIsOffline)
+		$(document).ready(initialize);
+	else
+		loadGoogleApi(initialize);
+
+	function loadGoogleApi(initFunc) {
+		$.get("./conf/gkey.txt", null, function (data) {
+			var apiUrl = "https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry&key=" + data.trim();
+			$.getScript(apiUrl, function () {
+				$.getScript("./lib/markerwithlabel.js", initFunc);
+			});
+		}, "text");
+	}
 	function initialize() {
-		if (!googleIsOffline)
 			initMap("divMap2");
 		clearLocations();
 		generateSetsTable();
@@ -205,7 +234,7 @@
 				myLocation = new geoLatLon(lat, lon);
 
 				map.setCenter(new google.maps.LatLng(lat, lon));
-				map.setZoom(firstZoomLevel);
+				map.setZoom(initKnownLocationZoomLevel);
 				// Display the location
 				var tmp = myLocation.toString();
 				span.innerText = tmp;
@@ -220,7 +249,7 @@
 
 	}
 	function onClickInMap() {	
-		if(tmpMapZoom == map.getZoom()){
+		if(tmpMapZoom == map.getZoom() && clickedMapPos){
 			var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, true);
 			clickedMapPos = null;
 
@@ -237,11 +266,17 @@
 	function onClickCellDistance(elem) {
 		var tr = $(elem).closest("tr");
 		var index = tr.index();
+		ga('send', 'event', 'user-click', 'changeDistanceCenter', 'changeDistanceCenter-'+centerLocationIndex+'-'+index);
 		if (index != centerLocationIndex) {
 			centerLocationIndex = index;
 			updateAllDistancesInTable(tb);
+			fadeInOutDistanceLines(index);
 		}
-
+	}
+	function onClickCellDistanceZoom(elem) {
+		if (centerLocationIndex != undefined) {
+			zoomInOnPoint(centerLocationIndex);
+		}
 	}
 
 	function onClickTableCell(elem) {
@@ -309,41 +344,149 @@
 	function onExitLabelEdit(event) {
 		var input = $(event.currentTarget);
 		var label = updateLabelFromInput(input, true);
+		var formattedLabel = '<span class="dotted hand">'+label+'</span>';
 	
 		var td = input.closest("td");
 		td.empty();
-		td.text(label);
+		td.append(formattedLabel);
 	}
 
-
-	function onClickConvertGeo() {
+	function onClickAdd() {
 		var orgStr = txtCoordinate.val();
-		ga('send', 'event', 'debug-click', 'convertLatLon', 'convertLatLon-'+orgStr); 
-		ga('send', 'event', 'user-click', 'convertLatLon', 'convertLatLon-'+orgStr.replace(/[0-8]/g,'9'));
+		clearFeedback();
+
+		ga('send', 'event', 'debug-click', 'dbg-convertPos', 'dbg-convertPos-'+orgStr);
+		ga('send', 'event', 'user-click', 'convertPos', 'convertPos-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
-				'page': '/geoparse/convertLatLon',
+			'page': '/geoparse/convertPos',
 				'title': orgStr.replace(/[0-8]/g,'9')
 		});
-		var latlon = geoparse.parseLatLon(orgStr);
-		var utm = geoconverter.LatLonToUTM(latlon);
 		
-		addLocation(orgStr, latlon, utm);
+		var digitCount = orgStr.replace(/[^0-9]/g, "").length;
+		var charCount = orgStr.replace(/[^a-zA-Z]/g, "").length;
+		if (charCount > digitCount) {
+			addAddress(orgStr);
+		} else {
+			addConvertedPos(orgStr);
 	}
-	function onClickConvertUtm() {
-		var orgStr = txtCoordinate.val();
-		ga('send', 'event', 'debug-click', 'convertUtm', 'convertUtm-'+orgStr); // .replace(/[0-8]/g,'9'));
-		ga('send', 'event', 'user-click', 'convertUtm', 'convertUtm-'+orgStr.replace(/[0-8]/g,'9'));
-		ga('send', 'pageview', {
-				'page': '/geoparse/convertUtm',
-				'title': orgStr.replace(/[0-8]/g,'9')
-		});
-		var utm = geoparse.parseUtm(orgStr);
-		var latlon = geoconverter.UTMToLatLon(utm);
+
+		// Return false to avoid page reload
+		return false;
+	}
+
+	function addAddress(address) {
+		var url = "https://maps.googleapis.com/maps/api/geocode/json";
+		url += "?address="+encodeURIComponent(address);
+
+		var bbox = map.getBounds();
+		if (bbox) {
+			var sw = bbox.getSouthWest();
+			var ne = bbox.getNorthEast();
+			var bounds = sw.lat() + "," + sw.lng() + "|" + ne.lat() + "," + ne.lng();
+			url += "&bounds=" + bounds;
+		}
+		$.get(url,
+				null,
+				function (data) {
+					if (data.status == "ZERO_RESULTS") {
+						ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-'+encodeURIComponent(address));
+						showFeedback("Sorry, Google Maps doesn't find a matching address");
+					} else if (data.status == "OK") {
+						if (data.results.length >= 1) {
+							var location = data.results[0].geometry.location;
+							//var name = data.results[0].address_components[1].short_name;
+							var name = data.results[0].formatted_address;
+							var index = name.indexOf(",");
+							if (index >= 0)
+								name = name.substring(0, index);
+							addLatLonLocation(location.lat, location.lng, name);
+						} else {
+							ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-'+encodeURIComponent(address));
+							showFeedback("Sorry, Google Maps doesn't find a matching address");
+						}
+					} else {
+						ga('send', 'event', 'debug-error', 'dbg-adr-error', 'dbg-adr-error-'+data.status+'-'+encodeURIComponent(address));
+						showFeedback("Sorry, Google Maps returned an error looking up the address");
+					}
+				},
+				"json"
+		);
+	}
+
+
+	function addConvertedPos(positionStr) {
+
+		var hint = undefined;
+		if (posArray && posArray.length>0) {
+			var lastLoation = posArray[posArray.length-1];
+			hint = geoparse.makeHint(lastLoation, "last coordinate ('"+lastLoation.label+"')");
+		} else if (myLocation) {
+			hint = geoparse.makeHint(myLocation, 'your device location');
+		}
+		var options = { delimiters: ',;|', units: {degrees: '°°ºo^~\*', minutes: "'", seconds: '"'}};
+		var tokens = geoparse.tokenizeString(positionStr, options);
+		var attempts = geoparse.parseTokens(tokens, options, hint);
+
+		var latlon, utm;
+
+		if (attempts.feedback)
+			showFeedback(attempts.feedback + ": "+positionStr);
+
+		if (attempts.bestMatch == "latlon") {
+			latlon = attempts.pos.latlon;
+			utm = geoconverter.LatLonToUTM(latlon);
+
+			if (latlon.feedback && latlon.feedback.length>0)
+				showFeedback(latlon.feedback);
+			else
+				clearFeedback();
+		}
+		else if (attempts.bestMatch == "utm") {
+			utm = attempts.pos.utm;
+			latlon = geoconverter.UTMToLatLon(utm);
+			// Convert back again to UTM to normalize according to config
 		geoconverter.LatLonToUTM(latlon, utm);
 		
-		addLocation(orgStr, latlon, utm);
+			if (utm.feedback && utm.feedback.length>0)
+				showFeedback(utm.feedback);
+			else
+				clearFeedback();
+		}
+		else {
+			// Unknown format
+			showFeedback("Sorry, I don't recognize that coordinate");
+		}
+
+		if (latlon && utm) {
+			addLocation(positionStr, latlon, utm);
+		} else {
+			// What to do
+		}
+
 	}
 	
+	
+	function clearFeedback() {
+		showFeedback('');
+	}
+	function showFeedback(feedback) {
+		var str = "";
+		if (typeof feedback === 'string') {
+			str = feedback;
+		} else {
+			for (var i = 0; i < feedback.length; i++) {
+				if (str.length > 0)
+					str += '<br/>';
+
+				str += feedback[i];
+			}
+		}
+
+		var feedbackDiv = $("#divFeedback");
+		if (feedbackDiv.length>0) {
+			feedbackDiv.html(str);
+		}
+	}
 	
 	function onClickOpenNorgeskart() {
 		var viewport = {w: $(window).width(), h: $(window).height()};
@@ -492,7 +635,7 @@
 	}
 
 	function onClickShare(elem) {
-		var store = amplify.store("localSets");
+		//var store = amplify.store("localSets");
 		var index = $(elem).closest("tr").index();
 		var set = store.sets[index];
 		if ("Create New Share") {
@@ -557,6 +700,7 @@
 			span.innerHTML = "Geolocation is not supported by this browser.";
 		}
 	}
+
 	function addMyLocation(pos) {
 		if (pos == undefined) {
 			var span = $("#sMyLocation");
@@ -676,19 +820,30 @@
 		tableRow.innerHTML = str;
 	}
 	function generateTableRowStr(index, location, dist) {
+		var distPrecision, distStr, distStyle, distTooltip, distFunction;
 		var labelStr = location.label;
 		var format = latlonFormats[config.latlon.format];
 		var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
-		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ');
+		var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ', 'utmKmText');
 		
-		var distStr = (dist == undefined) ? "&nbsp;-" : (dist/1000).toFixed(1);
-		var distStyle = (dist == undefined) ? "" : 'class="hand"';
+		if (dist == undefined) {
+			distFunction = 'onClickCellDistanceZoom(this)';
+			distStr = '&nbsp;<i class="fa fa-dot-circle-o"></i>';
+			distStyle = "";
+			distTooltip = "Click to zoom in on this point";
+		} else {
+			distFunction = 'onClickCellDistance(this)';
+			distPrecision = (dist < 1000) ? 2 : 1;
+			distStr = (dist/1000).toFixed(distPrecision);
+			distStyle = 'class="hand dotted"';
+			distTooltip = "Measure all distances from point '"+labelStr+"'";
+		}
 
 
-		var str = "<td class=\"hand\" onclick=\"onClickLabelCell(this)\">"+labelStr+"</td>" + 
-					"<td class=\"hand\" onclick=\"onClickTableCell(this)\">"+latlonStr+"</td>" +
-					"<td class=\"hand\" onclick=\"onClickTableCell(this)\">"+utmStr+"</td>" +
-					"<td "+distStyle+"   onclick=\"onClickCellDistance(this)\">"+distStr+"</td>" +
+		var str = "<td onclick=\"onClickLabelCell(this)\"><span class='hand dotted'>"+labelStr+"</span></td>" + 
+					"<td onclick=\"onClickTableCell(this)\"><span class='hand dotted'>"+latlonStr+"</span></td>" +
+					"<td onclick=\"onClickTableCell(this)\"><span class='hand dotted'>"+utmStr+"</span></td>" +
+					"<td onclick=\""+distFunction+"\"><span "+distStyle+' title="'+distTooltip+'">'+distStr+"</span></td>" +
 					'<td style="text-align:center;"><img class=\"hand\"  src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 		return str;
 	}
@@ -724,7 +879,7 @@
 								position: markerPos,
 								locationObj: location,
 								labelContent: location.label,
-								labelAnchor: new google.maps.Point(8, -1),
+								labelAnchor: new google.maps.Point(-14, 40),
 								labelClass: "markerlabel", // the CSS class for the label
 								labelStyle: {opacity: 0.95},
 								labelVisible: labelVisible
@@ -736,6 +891,8 @@
 		boundingbox.extend(markerPos); // Always add new marker to bounding box
 		bbCount++;
 		
+
+
 		// Resize and zoom to boundingbox
 		if (!freezeMap) {
 			if (bbCount == 1) {
@@ -744,7 +901,27 @@
 				if (!map.getBounds().contains(markerPos))
 					map.setCenter(markerPos);
 			} else {
+				// Zoom in/put, and store zoom levels
+				var preZoom = map.getZoom();
 				map.fitBounds(boundingbox);
+				var autoZoom = map.getZoom();
+
+				// If we are zooming in, make sure we don't zoom in on a micro area
+				if (preZoom < autoZoom) {
+					// Add a minimum size to the boundingbox
+					var minimumBBoxWidth = 100;  // meters
+					boundingbox.extend(google.maps.geometry.spherical.computeOffset(markerPos, minimumBBoxWidth / 2, 45));
+					boundingbox.extend(google.maps.geometry.spherical.computeOffset(markerPos, minimumBBoxWidth / 2, -135));
+
+					// Zoom to the enlarged boundingbox
+					map.fitBounds(boundingbox);
+					var maxAllowedZoom = map.getZoom();
+
+					// However, if we had already zoomed in closer than the maximum allowed zoom, revert back to the last zoom level that was used
+					if (preZoom > maxAllowedZoom) {
+						map.setZoom(Math.min(preZoom, autoZoom));
+					}
+				}
 			}
 		}
 
@@ -764,6 +941,67 @@
 		posArray = [];
 	}
 	
+	function zoomInOnPoint(index) {
+		if (index < posArray.length) {
+			var latlon = posArray[index].marker.getPosition();
+			if (map.getBounds().contains(latlon)) {
+				map.setCenter(latlon);
+				var zoom = map.getZoom();
+				zoom += 2;
+				zoom = Math.min(zoom, maxZoomLevel);
+				map.setZoom(zoom);
+				ga('send', 'event', 'user-click', 'centerZoomIn', 'centerZoomIn-'+index+'-z'+zoom);
+			} else {
+				// Marker is outside map, just pan, don't zoom
+				map.setCenter(latlon);
+				ga('send', 'event', 'user-click', 'centerPanTo', 'centerPanTo-'+index);
+			}
+		}
+	}
+
+
+
+	function fadeInOutDistanceLines(centerIndex) {
+		var distanceLines = [];
+		for (var i=0; i<posArray.length; i++) {
+			if (i != centerIndex) {
+				var path = [ {lat: posArray[i].latlon.lat, lng: posArray[i].latlon.lon}, {lat: posArray[centerIndex].latlon.lat, lng: posArray[centerIndex].latlon.lon} ];
+				var line = new google.maps.Polyline({
+					path: path,
+					strokeColor: '#5A80BB',
+					strokeOpacity: 1.0,
+					strokeWeight: 3
+				});
+				line.setMap(map);
+				distanceLines.push(line);
+
+			}
+		}
+		setTimeout(function () {fadeOutDistanceLines(distanceLines, 100, 700, centerIndex);}, 2000);
+	}
+
+	function fadeOutDistanceLines(distanceLines, steptime, totaltime, centerIndex) {
+		var delta = (steptime+1)/totaltime; // Add one to avoid rounding error the "wrong" way
+		var fadeout = setInterval(function(){
+
+			if(distanceLines && distanceLines.length>1 && distanceLines[0].strokeOpacity > 0.0) {
+				for (var i=0; i<distanceLines.length; i++) {
+					distanceLines[i].setOptions({
+						'strokeOpacity': Math.max(0, distanceLines[i].strokeOpacity-delta)
+					});
+				}
+			} else {
+				clearInterval(fadeout);
+				if (distanceLines) {
+					for (var i = 0; i < distanceLines.length; i++) {
+						distanceLines[i].setMap(null);
+					}
+				}
+			}
+		}, steptime);
+	}
+
+
 	function removeLocation(index) {
 		removeLocationFromMap(index);
 		removeLocationFromTable(index);
@@ -907,11 +1145,20 @@
 		
 	}
 
-	// Add on load event to initialize the whole shebang
-	if (googleIsOffline)
-		$(document).ready(initialize);
-	else
-		google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+<script id="_webengage_script_tag" type="text/javascript">
+	var _weq = _weq || {};
+	_weq['webengage.licenseCode'] = '~71680da9';
+	_weq['webengage.widgetVersion'] = "4.0";
+
+	(function(d){
+		var _we = d.createElement('script');
+		_we.type = 'text/javascript';
+		_we.async = true;
+		_we.src = (d.location.protocol == 'https:' ? "https://ssl.widgets.webengage.com" : "http://cdn.widgets.webengage.com") + "/js/widget/webengage-min-v-4.0.js";
+		var _sNode = d.getElementById('_webengage_script_tag');
+		_sNode.parentNode.insertBefore(_we, _sNode);
+	})(document);
 </script>
 <script>
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

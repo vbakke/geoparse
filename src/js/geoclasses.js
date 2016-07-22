@@ -34,8 +34,8 @@ function geoLatLon(lat, lon) {
 		
 		if (!minDefined) {
 			// No minutes, use decimal degrees
-			degLat = remainingLat.toFixed(6);  // Maximum error of 11 cm
-			degLon = remainingLon.toFixed(6);  
+			degLat = remainingLat.toFixed(5);  // Maximum error of 1,1 m
+			degLon = remainingLon.toFixed(5);
 		} else {
 			// Minutes are defined
 			degLat = Math.floor(remainingLat);
@@ -45,14 +45,14 @@ function geoLatLon(lat, lon) {
 			
 			if (!secDefined) {
 				// No seconds, use decimal minutes
-				minLat = remainingLat.toFixed(4); // Maximum error of 19 cm
-				minLon = remainingLon.toFixed(4);
+				minLat = remainingLat.toFixed(3); // Maximum error of 1.9 m
+				minLon = remainingLon.toFixed(3);
 			} else {
 				// Seconds are defined
 				minLat = Math.floor(remainingLat);
 				minLon = Math.floor(remainingLon);
-				secLat = ((remainingLat - minLat)*60.0).toFixed(2); // Maximum error of 31 cm
-				secLon = ((remainingLon - minLon)*60.0).toFixed(2);
+				secLat = ((remainingLat - minLat)*60.0).toFixed(1); // Maximum error of 3,1 m
+				secLon = ((remainingLon - minLon)*60.0).toFixed(1);
 			}
 		}
 
@@ -146,7 +146,7 @@ function geoUtm(zone, band, easting, northing) {
 	this.easting = easting;
 	this.northing = northing;
 	
-	this.toString = function (useStrictUtm, showEastBeforeNorth, delim) {	
+	this.toString = function (useStrictUtm, showEastBeforeNorth, delim, htmlKmStyle) {
 		useStrictUtm = (typeof useStrictUtm === "undefined") ? false : useStrictUtm;
 		showEastBeforeNorth = (typeof showEastBeforeNorth === "undefined") ? false : showEastBeforeNorth;
 		delim = (typeof delim === "undefined") ? " " : delim;
@@ -155,6 +155,10 @@ function geoUtm(zone, band, easting, northing) {
 		
 		var strE = this.easting.toFixed(0);
 		var strN = this.northing.toFixed(0);
+		if (htmlKmStyle)  {
+			strE = this._addKmHtmlStyle(strE, htmlKmStyle);
+			strN = this._addKmHtmlStyle(strN, htmlKmStyle);
+		}
 		
 		if (showEastBeforeNorth) {
 			str += " " + strE+"E" + delim + strN+"N";
@@ -164,7 +168,15 @@ function geoUtm(zone, band, easting, northing) {
 		
 		return str;
 	};
-	
+
+	this._addKmHtmlStyle = function (str, styleClass) {
+		var pre, km, post;
+		pre = str.slice(0, -5);
+		km = str.slice(-5, -3);
+		post = str.slice(-3);
+		var html = pre + '<span class="'+styleClass+'">' + km + '</span>' + post;
+		return html;
+	}
 	
 	this.getGridZone = function () {
 		return this.zone + this.band;
