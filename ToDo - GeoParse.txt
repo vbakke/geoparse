@@ -24,7 +24,8 @@ v1.1
 - WS: POST Handle not created, (already exists)
 - WS: PUT Handle not updated, (Version not latest)
 
-- GUI remove from local storage
+
+- GUI remove support for local storage
 
 - GUI: Maintain a modified flag
 
