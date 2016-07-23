@@ -3,19 +3,22 @@
 require "db_conf.php";
 
 $NL = "<br/>\n";
-$debugMode = true;
-
+$debugMode = true&&false;
 
 $TestDB = true&&false;
 function TestModuleDB() {
 	global $NL;
 	
 	print "Start:".$NL;
+	// Random Key
+	print "Random Key: ".randomKey(3).$NL;
+	print "Random Key: ".randomKey(3).$NL;
+	print "Random Key: ".randomKey(5).$NL.$NL;
 	// GET
 	$group = getGroup("1001-1");
 	print "Group: [".$group['groupId']."] Code ".$group['groupCode'].": ".$group['groupName'].$NL;
 	foreach ($group["locations"] as $location) {
-		print " - Location ".$location["posName"].$NL;
+		print " - Location ".$location["label"].$NL;
 	}
 	
 /*
@@ -49,31 +52,33 @@ function getGroup($groupId) {
 	$con = connectDb();
 	
 	// Get Group
-	$sql = "SELECT CONCAT(groupRowId, '-', groupRandId) as groupId, groupCode, groupName, groupDescription FROM vafe.geoGroups WHERE groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' Limit 1";
+	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, groupCode, groupName, groupDescription FROM vafe.geoGroups WHERE groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' Limit 1";
 	$sql = replaceFields($con, $sql, $set);
 	
-	print $NL."GROUP SQL: ".$sql.$NL.$NL;
+	if ($debugMode)
+		print $NL."GROUP SQL: ".$sql.$NL.$NL;
 	$result = executeSql($sql, $con);
 	if ($result !== FALSE) {
-		$group = mysqli_fetch_array($result);
+		$group = mysqli_fetch_assoc($result);
+		$group["testInt"] = 2;
+		$group["testDec"] = 59.3000;
 		
 		// Get Locations
-		$sql = "SELECT posName, lat, lng FROM vafe.geoLocations WHERE groupRowId = '$(groupRowId)'";
+		$sql = "SELECT label, lat, lng FROM vafe.geoLocations WHERE groupRowId = '$(groupRowId)'";
 		$sql = replaceFields($con, $sql, $set);
 		
-		print $NL."LOCATIONS SQL: ".$sql.$NL.$NL;
+		if ($debugMode)
+			print $NL."LOCATIONS SQL: ".$sql.$NL.$NL;
 		$result = executeSql($sql, $con);
 		$locations = array();
 
-		do {
-			$location = mysqli_fetch_array($result);
-			var_dump($location);
-			print $NL;
-			if ($location)
-				array_push($locations, $location);
-		} while ($location);
-
-		$group["locations"] = $locations;
+		while($location = mysqli_fetch_assoc($result)) {
+			$location["lat"] = floatval($location["lat"]);
+			$location["lng"] = floatval($location["lng"]);
+			array_push($locations, $location);
+		} 
+		if ($locations)
+			$group["locations"] = $locations;
 	}
 
 	closeConnection($con);
@@ -354,14 +359,14 @@ function closeConnection($con) {
 function executeSql($sql, $con=null) {
 	global $NL;
 	$closeConnection = false;
-	print "Execute SQL: ".$sql.$NL.$NL;
+
 	if ($con == null)  {
 		$con = connectDb();
 		$closeConnection = true;
 	}
 
 	$result = mysqli_query($con, $sql);
-	print "SQL executed".$NL;
+
 	if ($result === FALSE) {
 		print "Failed to execute SQL: " . mysqli_error($con).$NL;
 	}
@@ -373,8 +378,13 @@ function executeSql($sql, $con=null) {
 	return $result;
 }
 
-function randomKey($case, $maxlength, $base="") {
+
+function randomKey($maxlength, $base="", $case=0) {
+	global $NL;
 	$str = $base;
+	print "Rand: Case: ".$case.$NL;
+	if ($case != 1 && $case != 2)
+		$case = rand(1,2);
 
 	for ($i=strlen($base); $i<$maxlength; $i++) {
 		$str = $str . randomChar($case);
@@ -385,13 +395,14 @@ function randomKey($case, $maxlength, $base="") {
 function randomChar($case) {
 	$randBaseLowerCase = "23456789abcdefghijkmnrty";
 	$randBaseUpperCase = "23456789ABDEFGHJKLMNPQRSTUVWXYZ";
-	$randBase = array(0 => $randBaseLowerCase, 1 => $randBaseUpperCase);
+	$randBase = array(1 => $randBaseLowerCase, 2 => $randBaseUpperCase);
 
 	$max = strlen($randBase[$case])-1;
 
 	return $randBase[$case][rand(0, $max)];
 }
 
+// quote
 function q($str) {
 	return "'".str_replace("'", "''", $str)."'";
 }

@@ -1,6 +1,13 @@
 ToDo - Store and Share
 ==== ==================
 
+
+- Allow HTTPS for PHP
+- FIX WS_BASE back to relative path!!!
+
+
+
+
 v1.1
 - WS: Hello world
 - WS: Read DB for GET

@@ -7,8 +7,10 @@ var storage = (function () {
 	var CREATED = "created";
 	var VERSION = "version";
 
-	var WS_BASE = "../ws/index.php";
-	var WS_SET = WS_BASE+"/set";
+	var WS_BASE = "../ws";
+	var WS_BASE = "http://vafe.net/geo/ws"; // ToDo-Release: Revert
+	var WS_GROUP = WS_BASE+"/groups";
+	var WS_SET = WS_BASE+"/set";  // DEL
 
 	var _self = {};
 
@@ -63,6 +65,29 @@ var storage = (function () {
 		onFinished(set);
 	}
 
+
+	// ============
+	//  GROUP CRUD
+	// ============
+
+	_self.getSharedGroup = function (groupId, onFinished, onFail) {
+		var shareCode;
+		var result = undefined;
+		var url = WS_GROUP + "/" + encodeURIComponent(groupId);
+		var returnVal = $.getJSON(url)
+			.done( function (data)
+			{
+
+				onFinished(data);
+			})
+			.fail( function (jqxhr, textStatus, error ) {
+				var err = textStatus + ", " + error;
+				alert( "Request Failed: " + err );
+				console.log( "Request Failed: " + err );
+				onFail(err);
+			});
+	}
+
 	/** Creates a new share of the set.
 	* 
 	* If the set has already been shared, a new share code is created (forked).
@@ -76,15 +101,15 @@ var storage = (function () {
 		var result = undefined;
 		var url = WS_SET + "/" + encodeURIComponent(shareCode);
 		var returnVal = $.getJSON(url)
-					.done( function (data) 
-						{
-							onFinished(data);
-						})
-					.fail( function (jqxhr, textStatus, error ) {
-							var err = textStatus + ", " + error;
-    						alert( "Request Failed: " + err );
-    						console.log( "Request Failed: " + err );
-						});
+			.done( function (data)
+			{
+				onFinished(data);
+			})
+			.fail( function (jqxhr, textStatus, error ) {
+				var err = textStatus + ", " + error;
+				alert( "Request Failed: " + err );
+				console.log( "Request Failed: " + err );
+			});
 	}
 
 

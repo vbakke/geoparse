@@ -81,12 +81,12 @@
 										 <option value="dms">d°m's"</option>
 								 </select>
 								 <!-- ToDo: Ala http://proto.io/freebies/onoff/ -->
-							 	 <div><input id="chkLatlonOrderNE" type="checkbox" onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N before E</div>
+							 	 <div><input id="chkLatlonOrderNE" type="checkbox" onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N&nbsp;before&nbsp;E</div>
 							 	 <div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
 							 </td>
 							 <td>
 								 <div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
-								 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
+								 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E&nbsp;before&nbsp;N</div>
 								 <div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
 							 </td>
 							 <td colspan="2" style="text-align:center;">
@@ -110,7 +110,8 @@
 			</p-->
 		</div>
 		<div id="divStorage">
-			<button id="btnSave" class="rounded-corners" onclick="onClickShare()">Share</button><br/>
+			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button><br/>
+			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
 			Name: <input id="txtSetName" style="width:15%">
 			Description: <input id="txtSetDescription" style="width:60%">
 			<div id="divStorageTable">
@@ -634,6 +635,37 @@
 		amplify.store("localSets", store);
 	}
 
+	function onClickLoadDBG() {
+		var groupId = $("#txtSetName").val();
+		if (groupId == "")
+			groupId = "1001-1";
+
+		storage.getSharedGroup(groupId,
+			function (data) {
+				console.log(data);
+				if (!data) {
+					showFeedback("Could not find '" + groupId + "'");
+				} else if (!data.locations) {
+						showFeedback("No locations for '" + groupId + "'");
+				} else {
+					$("#txtSetName").val(data.groupName);
+					$("#txtSetDescription").val(data.groupDescription);
+					clearLocations();
+					for (var i = 0; i < data.locations.length; i++) {
+						var location = data.locations[i];
+						console.log(location.label);
+						addLatLonLocation(location.lat, location.lng, location.label, true);
+					}
+					zoomToLocations();
+				}
+
+			},
+			function (err) {
+				console.log(err);
+			}
+		);
+
+	}
 	function onClickShare(elem) {
 		//var store = amplify.store("localSets");
 		var index = $(elem).closest("tr").index();
@@ -901,7 +933,7 @@
 				if (!map.getBounds().contains(markerPos))
 					map.setCenter(markerPos);
 			} else {
-				// Zoom in/put, and store zoom levels
+				// Zoom in/out, and store zoom levels
 				var preZoom = map.getZoom();
 				map.fitBounds(boundingbox);
 				var autoZoom = map.getZoom();
@@ -925,6 +957,27 @@
 			}
 		}
 
+	}
+	function zoomToLocations() {
+		var data, markerPos;
+		var boundingbox = new google.maps.LatLngBounds();
+
+		for (var i = 0; i < posArray.length; i++) {
+			data = posArray[i];
+			markerPos = new google.maps.LatLng(data.latlon.lat, data.latlon.lon);
+			boundingbox.extend(markerPos);
+		}
+		if (posArray.length == 1) {
+			map.setZoom(firstZoomLevel);
+			map.setCenter(markerPos);
+		} else {
+			// Add a minimum size to the boundingbox
+			var minimumBBoxWidth = 100;  // meters
+			boundingbox.extend(google.maps.geometry.spherical.computeOffset(markerPos, minimumBBoxWidth / 2, 45));
+			boundingbox.extend(google.maps.geometry.spherical.computeOffset(markerPos, minimumBBoxWidth / 2, -135));
+
+			map.fitBounds(boundingbox);
+		}
 	}
 	function markerDragEnd(event) {
 		var posStr = this.position.lat().toFixed(5)+"N "+this.position.lng().toFixed(5)+"E";

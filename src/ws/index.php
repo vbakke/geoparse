@@ -7,21 +7,39 @@ require 'db.php';
 $NL = "<br/>\n";
 
 $app = new \Slim\Slim(array(
-    'debug' => true
+    'debug' => false
 ));
+
+if (new DateTime() <= new Datetime("2016-07-24"))
+	$app->response->headers->set('Access-Control-Allow-Origin', 'http://localhost');
+$app->response->headers->set('Content-Type', 'application/json;charset=utf-8');
 
 $app->get('/hello/:name', function ($name) {
     echo "Hello, $name";
 });
 
 
-$app->get('/group/:groupId', function ($groupId) {
+$app->get('/freeShareCode/:groupId', function ($groupId) {
 	global $NL;
-	header('Content-Type: application/json;charset=utf-8');
+	$row = array(free => true);  // ToDo: Check if sahrecode is used in db
+	echo(json_encode($row));
+});
+$app->post('/freeShareCode', function () {
+	global $NL;
+	$free = randomKey(4,"D-");
+	$row = array(shareCode => $free);
+	echo(json_encode($row));
+});
+
+$app->get('/groups/:groupId', function ($groupId) {
+	global $NL;
+	//http_response_code(500);
+	//header('Content-Type: application/json;charset=utf-8');
 	$row = getGroup($groupId);
-	print '{ "sharecode": "'.$row['ShareCode'].'", "version":'.$row['Version'].', "modified": "'.$row['CreatedTime'].'", "set": '.$row['Json']."}".$NL;
-    //echo "{ label: 'REST-test', version: 1 set: [11,12,13]}";
-	print json_encode($row);
+	echo(json_encode($row));
+	//echo '{"error": "TEST"}';
+	//$result = array(msg2 => "My test");
+	
 });
 
 
