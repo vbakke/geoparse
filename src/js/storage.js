@@ -88,6 +88,27 @@ var storage = (function () {
 			});
 	}
 
+	_self.createNewShare = function (group, onFinished, onFail) {
+		var request = $.ajax({
+			url: WS_GROUP,
+			type: "post",
+			data: JSON.stringify(group)
+		});
+		request.done( function (data) {
+			alert("OK: "+data);
+			var result = data;
+			//set['sharecode'] = result;
+			onFinished(data);
+		})
+		request.fail( function (jqxhr, textStatus, error ) {
+			var err = textStatus + ", " + error;
+			alert( "DBG: Request Failed: " + err );
+			window.console && console.log( "Request Failed: " + err );
+			onFail(err);
+		});
+		return shareCode;
+	}
+
 	/** Creates a new share of the set.
 	* 
 	* If the set has already been shared, a new share code is created (forked).

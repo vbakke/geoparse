@@ -14,35 +14,60 @@ if (new DateTime() <= new Datetime("2016-07-24"))
 	$app->response->headers->set('Access-Control-Allow-Origin', 'http://localhost');
 $app->response->headers->set('Content-Type', 'application/json;charset=utf-8');
 
-$app->get('/hello/:name', function ($name) {
-    echo "Hello, $name";
+
+
+$app->get('/ping', function () {
+	echo "Ping!";
 });
 
+$app->get('/hello/:name', function ($name) {
+	echo "Hello! <br/>\n";
+    echo "How are you, $name?";
+});
 
-$app->get('/freeShareCode/:groupId', function ($groupId) {
+// -------------------
+// ROUTE FREESHARECODE
+// -------------------
+
+$app->get('/freeShareCode/:shareCode', function ($shareCode) {
 	global $NL;
-	$row = array(free => true);  // ToDo: Check if sahrecode is used in db
+	$row = array(free => isShareCodeFree($shareCode));  // ToDo: Check if sharecode is used in db
 	echo(json_encode($row));
 });
 $app->post('/freeShareCode', function () {
 	global $NL;
-	$free = randomKey(4,"D-");
+	$free = getFreeShareCode(4,"D-");
+	
 	$row = array(shareCode => $free);
 	echo(json_encode($row));
 });
 
+
+// -----------
+// ROUTE GROUP
+// -----------
+
 $app->get('/groups/:groupId', function ($groupId) {
 	global $NL;
-	//http_response_code(500);
-	//header('Content-Type: application/json;charset=utf-8');
+	//print "Searching for group: ".$groupId.$NL;
 	$row = getGroup($groupId);
-	echo(json_encode($row));
-	//echo '{"error": "TEST"}';
-	//$result = array(msg2 => "My test");
 	
+	echo(json_encode($row));
+});
+
+$app->post('/groups', function () {
+	global $NL;
+	$body = file_get_contents('php://input');
+	$result = createGroup($body);
+	echo(json_encode($result));
 });
 
 
+
+// -------------
+// OBSOLETE SET
+// -------------
+/*
 $app->get('/set/:code', function ($code) {
 	global $NL;
 	$row = getSet($code);
@@ -59,7 +84,7 @@ $app->post('/set', function () {
 	print $result;
     //echo "{ label: 'REST-test', version: 1 set: [11,12,13]}";
 });
-
+*/
 
 $app->run();
 

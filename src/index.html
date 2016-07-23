@@ -110,8 +110,9 @@
 			</p-->
 		</div>
 		<div id="divStorage">
-			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button><br/>
+			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button>
 			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
+			ShareCode: <input id="txtSetShareCode" style="width:15%">
 			Name: <input id="txtSetName" style="width:15%">
 			Description: <input id="txtSetDescription" style="width:60%">
 			<div id="divStorageTable">
@@ -636,9 +637,9 @@
 	}
 
 	function onClickLoadDBG() {
-		var groupId = $("#txtSetName").val();
+		var groupId = $("#txtSetShareCode").val();
 		if (groupId == "")
-			groupId = "1001-1";
+			groupId = "18-13";
 
 		storage.getSharedGroup(groupId,
 			function (data) {
@@ -648,8 +649,8 @@
 				} else if (!data.locations) {
 						showFeedback("No locations for '" + groupId + "'");
 				} else {
-					$("#txtSetName").val(data.groupName);
-					$("#txtSetDescription").val(data.groupDescription);
+					$("#txtSetName").val(data.name);
+					$("#txtSetDescription").val(data.description);
 					clearLocations();
 					for (var i = 0; i < data.locations.length; i++) {
 						var location = data.locations[i];
@@ -667,11 +668,8 @@
 
 	}
 	function onClickShare(elem) {
-		//var store = amplify.store("localSets");
-		var index = $(elem).closest("tr").index();
-		var set = store.sets[index];
 		if ("Create New Share") {
-			createSet(set);
+			createNewShare();
 		} else {
 			// LOAD
 			var result = getSet("shareCode");
@@ -679,6 +677,29 @@
 		}
 	}
 
+	function createNewShare() {
+		var group = {"name": $("#txtSetName").val()
+			, description: $("#txtSetDescription").val()
+			, shareCode: $("#txtSetShareCode").val()
+		};
+		if (posArray.length > 0) {
+			group.locations = [];
+			for (var i= 0; i<posArray.length; i++) {
+				var location = {
+					label: posArray[i].label
+					, lat: posArray[i].latlon.lat
+					, lng: posArray[i].latlon.lon
+				};
+				group.locations.unshift(location);  // append()
+			}
+		}
+		storage.createNewShare(group, function (data) {
+			alert("index.html: data: "+data);
+			// Store sharecode in local storage
+		}, function (error) {
+			alert("index.html: ERROR: "+err);
+		});
+	}
 	function createSet(set) {
 		var shareCode;
 
@@ -1165,7 +1186,7 @@
 			// add desctiption as a tooltip
 		var str = "<td>"+name+"</td>" + 
 					"<td>"+modified+"</td>" +
-					"<td >"+JSON.stringify(set)+'<button onclick="onClickShare(this)">Share</button></td>' +
+					"<td >"+JSON.stringify(set)+'<button onclick="onClickShareSet(this)">Share</button></td>' +
 					'<td style="text-align:center;">' +
 						'<button onclick="onClickLoad(this)">Load</button>' +
 						'<img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveSet(this)">'+

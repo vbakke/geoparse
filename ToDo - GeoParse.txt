@@ -7,14 +7,45 @@ ToDo - Store and Share
 
 
 
-
-v1.1
+--- Done ---
 - WS: Hello world
 - WS: Read DB for GET
+- WS: Group + Locations READ
+- GUI: Share button
+- WS: Group + Locations CREATE
+
+--- Påbegynt ---
+
+--- Gjenstår ---
+- WS: Group + Locations UPDATE
+- WS: Locations UPDATE
+
+- GUI: Store all locations when Share Group
+- GUI: Store new location when Add Location
+- GUI: Save location when Update Location: Loc name / Loc pos moves
+- WS: Delete location when Delete Location
+- GUI: Share button, Name popup
+
+- GUI: Open ID geo/?q=ID
+
+- Clean server log
+
+- Add .Code 
+	- Lag Code
+	- Sjekk om det er ledig
+	- Tillate manuell inntasting?
+
+
+- WS: Group DELETE: Mark as Deleted, GET/POST/PUT ignore if deleted
+
+- Share: By Email & SMS
+
+
+v1.1
 - WS: Create (POST) INSERT
 
 - WS+GUI: Integrate with Geo
-    - Read WS from GUI
+    ! Read WS from GUI
     - What fields are stored locally
     - Store, the correct fields
     - Adapt the php createSet

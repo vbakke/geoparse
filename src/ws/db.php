@@ -4,7 +4,6 @@ require "db_conf.php";
 
 $NL = "<br/>\n";
 $debugMode = true&&false;
-
 $TestDB = true&&false;
 function TestModuleDB() {
 	global $NL;
@@ -21,26 +20,24 @@ function TestModuleDB() {
 		print " - Location ".$location["label"].$NL;
 	}
 	
-/*
-	// CREATE
-	$shareCode = rand(10, 99);
-	print "Create: ".$shareCode.$NL;
-	$set = array("set" => "{set: [$shareCode, 22, 33, 44], label: 'My test'}",
-			"CreatedIp" => "127.0.0.1",
-			"CreatedPos" => "32 V");
-	$jsonSet = json_encode($set);
-
-	print "JSON: ".$jsonSet.$NL;
-
-	$result = createSet($jsonSet);
-	print "CREATE: returned: ".$result.$NL;
-*/
 
 	print "Done Testing.".$NL.$NL;
 	
 }
 
 // 2016-version start
+function isShareCodeFree($sharecode) {
+	return true;
+}
+function getFreeShareCode($maxlength, $base="", $case=0) {
+	$sharecode = randomKey($maxlength, $base, $case);
+	return $sharecode;
+}
+
+
+// --------------------
+// READ GROUP - GET :id
+// --------------------
 function getGroup($groupId) {
 	global $NL, $debugMode;
 
@@ -51,8 +48,8 @@ function getGroup($groupId) {
 		print "Searching for '".$groupId."': '".$ids[0]."' - '".$ids[1]."'".$NL;
 	$con = connectDb();
 	
-	// Get Group
-	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, groupCode, groupName, groupDescription FROM vafe.geoGroups WHERE groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' Limit 1";
+	// --- Get Group ---
+	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, shareCode, name, description FROM vafe.geoGroups WHERE groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' Limit 1";
 	$sql = replaceFields($con, $sql, $set);
 	
 	if ($debugMode)
@@ -60,10 +57,8 @@ function getGroup($groupId) {
 	$result = executeSql($sql, $con);
 	if ($result !== FALSE) {
 		$group = mysqli_fetch_assoc($result);
-		$group["testInt"] = 2;
-		$group["testDec"] = 59.3000;
 		
-		// Get Locations
+		// --- Get Locations ---
 		$sql = "SELECT label, lat, lng FROM vafe.geoLocations WHERE groupRowId = '$(groupRowId)'";
 		$sql = replaceFields($con, $sql, $set);
 		
@@ -85,7 +80,53 @@ function getGroup($groupId) {
 	return $group;
 }
 
+// -------------------
+// CREATE GROUP - POST
+// -------------------
+function createGroup($jsonGroup) {
+	global $NL, $debugMode;
+	if ($debugMode) print "createGroup(): ".$jsonGroup.$NL;
+	$groupObj = json_decode($jsonGroup, true);
+
+	$groupObj['groupRandId'] = rand(0, 99);
+	$groupObj['createdIp'] = $_SERVER['REMOTE_ADDR'];
+	if (!$groupObj['shareCode'])
+		$groupObj['shareCode'] = getFreeShareCode(4, "X-");
+
+
+	$con = connectDb();
+	
+	// -- Create Group ---
+	$sql = "INSERT INTO vafe.geoGroups ".
+			"(groupRandId, shareCode, name, description, createdIp) ".
+			"VALUES ($(groupRandId), '$(shareCode)', '$(name)', '$(description)', '$(createdIp)')";
+	$sql = replaceFields($con, $sql, $groupObj);
+	if ($debugMode) print "SQL: ".$sql.$NL;
+	
+	$result = executeSql($sql, $con);
+	$groupRowId = mysqli_insert_id($con);
+	
+	// -- Create Locations ---
+	foreach ($groupObj["locations"] as $location) {
+		$sql = "INSERT INTO vafe.geoLocations ".
+				"(groupRowId, label, lat, lng) ".
+				"VALUES (".$groupRowId.", '$(label)', '$(lat)', '$(lng)')";
+		$sql = replaceFields($con, $sql, $location);
+		if ($debugMode) print "SQL: ".$sql.$NL;
+		
+		$result = executeSql($sql, $con);
+	}
+	
+	closeConnection($con);
+
+	// Tidy ID
+	$groupObj["groupId"] = $groupObj["groupRandId"]."-".$groupRowId;
+	unset($groupObj->$groupRandId);
+	return $groupObj;
+}
+
 // 2016-version end
+
 
 
 
@@ -106,8 +147,6 @@ function getSet($shareCode) {
 	return $row;
 }
 
-/*
-*/
 function createSet($jsonSet) {
 	global $NL, $debugMode;
 	if ($debugMode) print "createSet(): ".$jsonSet.$NL;
@@ -146,8 +185,6 @@ function createSet($jsonSet) {
 	return $setObj;
 }
 
-/*
-*/
 function updateSet($jsonSet) {
 	global $NL, $debugMode;
 	if ($debugMode) print "updateSet(): ".$jsonSet.$NL;
@@ -369,7 +406,7 @@ function executeSql($sql, $con=null) {
 
 	if ($result === FALSE) {
 		print "Failed to execute SQL: " . mysqli_error($con).$NL;
-	}
+	} 
 	
 	if ($closeConnection) {
 		closeConnection($con);
@@ -382,11 +419,11 @@ function executeSql($sql, $con=null) {
 function randomKey($maxlength, $base="", $case=0) {
 	global $NL;
 	$str = $base;
-	print "Rand: Case: ".$case.$NL;
+	
 	if ($case != 1 && $case != 2)
 		$case = rand(1,2);
 
-	for ($i=strlen($base); $i<$maxlength; $i++) {
+	for ($i=0; $i<$maxlength; $i++) {
 		$str = $str . randomChar($case);
 	}
 	return $str;
@@ -406,4 +443,5 @@ function randomChar($case) {
 function q($str) {
 	return "'".str_replace("'", "''", $str)."'";
 }
+
 ?>
