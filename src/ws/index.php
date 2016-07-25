@@ -10,11 +10,17 @@ $app = new \Slim\Slim(array(
     'debug' => false
 ));
 
-if (new DateTime() <= new Datetime("2016-07-24"))
+if (new DateTime() <= new Datetime("2016-07-26"))
 	$app->response->headers->set('Access-Control-Allow-Origin', 'http://localhost');
 $app->response->headers->set('Content-Type', 'application/json;charset=utf-8');
 
 
+function safe_json($object) {
+	if (!$object) {
+		$object = array(errorCode => "NO_DATA", error => "No data");
+	}
+	return json_encode($object);
+}
 
 $app->get('/ping', function () {
 	echo "Ping!";
@@ -32,14 +38,14 @@ $app->get('/hello/:name', function ($name) {
 $app->get('/freeShareCode/:shareCode', function ($shareCode) {
 	global $NL;
 	$row = array(free => isShareCodeFree($shareCode));  // ToDo: Check if sharecode is used in db
-	echo(json_encode($row));
+	echo(safe_json($row));
 });
 $app->post('/freeShareCode', function () {
 	global $NL;
 	$free = getFreeShareCode(4,"D-");
 	
 	$row = array(shareCode => $free);
-	echo(json_encode($row));
+	echo(safe_json($row));
 });
 
 
@@ -52,14 +58,14 @@ $app->get('/groups/:groupId', function ($groupId) {
 	//print "Searching for group: ".$groupId.$NL;
 	$row = getGroup($groupId);
 	
-	echo(json_encode($row));
+	echo(safe_json($row));
 });
 
 $app->post('/groups', function () {
 	global $NL;
 	$body = file_get_contents('php://input');
 	$result = createGroup($body);
-	echo(json_encode($result));
+	echo(safe_json($result));
 });
 
 

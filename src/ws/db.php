@@ -3,8 +3,18 @@
 require "db_conf.php";
 
 $NL = "<br/>\n";
-$debugMode = true&&false;
+if ( !"debug")
+	$debugMode = true;
+else
+	$debugMode = false;
+
 $TestDB = true&&false;
+
+$table = array("groups" => "vafe.".$db_tb_pre."Groups"
+				,"locations" => "vafe.".$db_tb_pre."Locations"
+				);
+
+
 function TestModuleDB() {
 	global $NL;
 	
@@ -26,12 +36,56 @@ function TestModuleDB() {
 }
 
 // 2016-version start
-function isShareCodeFree($sharecode) {
-	return true;
+
+// --------------------
+// SHARE_CODE functions
+// --------------------
+
+function isShareCodeFree($con, $shareCode) {
+	global $NL;
+	
+	$ids = getIdFromShareCode($con, $shareCode);
+	if (!$ids) {
+		return true;
+	} else {
+		return false;
+	}
 }
-function getFreeShareCode($maxlength, $base="", $case=0) {
-	$sharecode = randomKey($maxlength, $base, $case);
-	return $sharecode;
+function getFreeShareCode($con, $length, $prefix="") {
+	global $NL;
+
+	$attempts = 2;
+	$maxlength = 2*$length;
+	
+	for ($len=$length; $len<$maxlength; $len++) {  //Safe-guard to avoid infinit loops
+		for ($i=0; $i<$attempts; $i++) {
+			$shareCode = randomKey($len, $prefix);
+			
+			if (isShareCodeFree($con, $shareCode)) {
+				return $shareCode;
+			} 
+		}
+	}
+	return null;
+}
+
+function getIdFromShareCode($con, $shareCode) {
+	global $table, $NL, $debugMode;
+	
+	$vars['shareCode'] = $shareCode;
+	$sql = "SELECT groupRandId, groupRowId FROM ".$table['groups']." WHERE shareCode = '$(shareCode)' ORDER BY CreatedDate DESC";
+	$sql = replaceFields($con, $sql, $vars);
+	
+	if ($debugMode)
+		print $NL."GROUP SQL testing shareCode: ".$sql.$NL;
+	$result = executeSql($sql, $con);
+	
+	if ($result !== FALSE) {
+		$group = mysqli_fetch_assoc($result);
+		if ($group)
+			$ids = array($group['groupRandId'],$group['groupRowId']);
+	}
+	return $ids;
 }
 
 
@@ -39,17 +93,23 @@ function getFreeShareCode($maxlength, $base="", $case=0) {
 // READ GROUP - GET :id
 // --------------------
 function getGroup($groupId) {
-	global $NL, $debugMode;
+	global $table, $NL, $debugMode;
 
-	$ids = explode("-", $groupId, 2);
+	$con = connectDb();
+
+	// Testing if groupId is a used ShareCode first
+	$ids = getIdFromShareCode($con, $groupId);
+	if (!$ids) {
+		$ids = explode("-", $groupId, 2);
+	}
 	$set = array("groupRandId" => $ids[0], "groupRowId" => $ids[1]);
 
+	// Try looking up 
 	if ($debugMode)
 		print "Searching for '".$groupId."': '".$ids[0]."' - '".$ids[1]."'".$NL;
-	$con = connectDb();
 	
 	// --- Get Group ---
-	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, shareCode, name, description FROM vafe.geoGroups WHERE groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' Limit 1";
+	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, shareCode, name, description FROM ".$table['groups']." WHERE groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' ORDER BY CreatedDate DESC Limit 1";
 	$sql = replaceFields($con, $sql, $set);
 	
 	if ($debugMode)
@@ -59,7 +119,7 @@ function getGroup($groupId) {
 		$group = mysqli_fetch_assoc($result);
 		
 		// --- Get Locations ---
-		$sql = "SELECT label, lat, lng FROM vafe.geoLocations WHERE groupRowId = '$(groupRowId)'";
+		$sql = "SELECT label, lat, lng FROM ".$table['locations']." WHERE groupRowId = '$(groupRowId)'";
 		$sql = replaceFields($con, $sql, $set);
 		
 		if ($debugMode)
@@ -84,20 +144,21 @@ function getGroup($groupId) {
 // CREATE GROUP - POST
 // -------------------
 function createGroup($jsonGroup) {
-	global $NL, $debugMode;
+	global $table, $NL, $debugMode;
 	if ($debugMode) print "createGroup(): ".$jsonGroup.$NL;
 	$groupObj = json_decode($jsonGroup, true);
+
+	$con = connectDb();
 
 	$groupObj['groupRandId'] = rand(0, 99);
 	$groupObj['createdIp'] = $_SERVER['REMOTE_ADDR'];
 	if (!$groupObj['shareCode'])
-		$groupObj['shareCode'] = getFreeShareCode(4, "X-");
+		$groupObj['shareCode'] = getFreeShareCode($con, 2);
 
 
-	$con = connectDb();
 	
 	// -- Create Group ---
-	$sql = "INSERT INTO vafe.geoGroups ".
+	$sql = "INSERT INTO ".$table['groups']." ".
 			"(groupRandId, shareCode, name, description, createdIp) ".
 			"VALUES ($(groupRandId), '$(shareCode)', '$(name)', '$(description)', '$(createdIp)')";
 	$sql = replaceFields($con, $sql, $groupObj);
@@ -108,9 +169,9 @@ function createGroup($jsonGroup) {
 	
 	// -- Create Locations ---
 	foreach ($groupObj["locations"] as $location) {
-		$sql = "INSERT INTO vafe.geoLocations ".
+		$sql = "INSERT INTO ".$table['locations']." ".
 				"(groupRowId, label, lat, lng) ".
-				"VALUES (".$groupRowId.", '$(label)', '$(lat)', '$(lng)')";
+				"VALUES (".$groupRowId.", '$(label)', '$(lat)', '$(lng)')";  // $groupRowId cannot have SQL injections. Can be inserted directly
 		$sql = replaceFields($con, $sql, $location);
 		if ($debugMode) print "SQL: ".$sql.$NL;
 		
@@ -416,27 +477,36 @@ function executeSql($sql, $con=null) {
 }
 
 
-function randomKey($maxlength, $base="", $case=0) {
+function randomKey($maxlength, $prefix="") {
 	global $NL;
-	$str = $base;
+	$str = $prefix;
 	
-	if ($case != 1 && $case != 2)
-		$case = rand(1,2);
+	if ($digit != 1 && $digit != 2)
+		$digit = rand(0,1);
 
-	for ($i=0; $i<$maxlength; $i++) {
-		$str = $str . randomChar($case);
+	$str = $str . randomChar(0);
+	for ($i=1; $i<$maxlength; $i++) {
+		$str = $str . randomChar($digit);
 	}
 	return $str;
 }
 
-function randomChar($case) {
-	$randBaseLowerCase = "23456789abcdefghijkmnrty";
-	$randBaseUpperCase = "23456789ABDEFGHJKLMNPQRSTUVWXYZ";
-	$randBase = array(1 => $randBaseLowerCase, 2 => $randBaseUpperCase);
+function randomChar($digit) {
+	$randBaseDigits = "23456789";
+	$randBaseLowerCase = "abcdefghijkmnrty";
+	$randBaseUpperCase = "ABDEFGHJKLMNPQRSTUVWXYZ";
+	$randBaseLowerCase = "ab";
+	$randBaseUpperCase = "AB";
+	$randBase = array(0 => $randBaseDigits, 1 => $randBaseLowerCase, 2 => $randBaseUpperCase);
 
-	$max = strlen($randBase[$case])-1;
+	if ($digit)
+		$type = 0;
+	else
+		$type = 2;
+	
+	$max = strlen($randBase[$type])-1;
 
-	return $randBase[$case][rand(0, $max)];
+	return $randBase[$type][rand(0, $max)];
 }
 
 // quote
