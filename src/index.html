@@ -42,7 +42,6 @@
 		<div id="divInput">
 			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
 			<div id="divMyLocation" style="float:right">
-					<div id="sMyLocation"></div>
 				<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 			</div>
 			<form id="convertPos" name="convertPos" target="dummy_iframe">
@@ -99,6 +98,7 @@
 				
 		<div id="divUsage">
 			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
+			Update: 2016-07-25: Work in progress: Storing and Sharing locations.
 			Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
 			<!--p style="margin-bottom:0;">
@@ -112,6 +112,7 @@
 		<div id="divStorage">
 			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button>
 			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
+			GroupId: <input id="txtSetGroupId" style="width:15%">
 			ShareCode: <input id="txtSetShareCode" style="width:15%">
 			Name: <input id="txtSetName" style="width:15%">
 			Description: <input id="txtSetDescription" style="width:60%">
@@ -228,7 +229,6 @@
 
 		// Get current location
 		if (navigator.geolocation) {
-			var span = $("#sMyLocation");
 			navigator.geolocation.getCurrentPosition(function (location) {
 				var lat = location.coords.latitude;
 				var lon = location.coords.longitude;
@@ -237,9 +237,6 @@
 
 				map.setCenter(new google.maps.LatLng(lat, lon));
 				map.setZoom(initKnownLocationZoomLevel);
-				// Display the location
-				var tmp = myLocation.toString();
-				span.innerText = tmp;
 
 				var tmpUtm = geoconverter.LatLonToUTM(myLocation);
 				var gridZone = tmpUtm.getGridZone() || "33W";
@@ -486,7 +483,17 @@
 
 		var feedbackDiv = $("#divFeedback");
 		if (feedbackDiv.length>0) {
-			feedbackDiv.html(str);
+			feedbackDiv.html("");
+			feedbackDiv.removeClass();
+
+			if (str.length > 0) {
+				feedbackDiv.html("&nbsp;");
+				feedbackDiv.addClass('feedback');
+				setTimeout(function () {
+					feedbackDiv.addClass('feedbackError');
+					feedbackDiv.html(str);
+				}, 100);
+			}
 		}
 	}
 	
@@ -637,6 +644,7 @@
 	}
 
 	function onClickLoadDBG() {
+		clearFeedback();
 		var groupId = $("#txtSetShareCode").val();
 		if (groupId == "")
 			groupId = "18-13";
@@ -649,25 +657,27 @@
 				} else if (!data.locations) {
 						showFeedback("No locations for '" + groupId + "'");
 				} else {
+					$("#txtSetGroupId").val(data.groupId);
+					$("#txtSetShareCode").val(data.shareCode);
 					$("#txtSetName").val(data.name);
 					$("#txtSetDescription").val(data.description);
 					clearLocations();
 					for (var i = 0; i < data.locations.length; i++) {
 						var location = data.locations[i];
-						console.log(location.label);
 						addLatLonLocation(location.lat, location.lng, location.label, true);
 					}
 					zoomToLocations();
 				}
 
 			},
-			function (err) {
-				console.log(err);
+			function (errorMsg) {
+				alert("getSharedGroup(): "+errorMsg);
 			}
 		);
 
 	}
 	function onClickShare(elem) {
+		clearFeedback();
 		if ("Create New Share") {
 			createNewShare();
 		} else {
@@ -696,8 +706,8 @@
 		storage.createNewShare(group, function (data) {
 			alert("index.html: data: "+data);
 			// Store sharecode in local storage
-		}, function (error) {
-			alert("index.html: ERROR: "+err);
+		}, function (errorMsg) {
+			alert("createNewShare(): "+errorMsg);
 		});
 	}
 	function createSet(set) {
@@ -745,19 +755,17 @@
 
 	// Ask browser for location
 	function onClickAddMyPos() {
-		var span = $("#sMyLocation");
-		span.innerHTML = "";
+		clearFeedback();
 		if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(addMyLocation);
 		} else {
-			span.innerHTML = "Geolocation is not supported by this browser.";
+			showFeedback("Geolocation is not supported by this browser.");
 		}
 	}
 
 	function addMyLocation(pos) {
 		if (pos == undefined) {
-			var span = $("#sMyLocation");
-			span.innerHTML = "Could not retrieve your location";
+			showFeedback("Could not retrieve your location");
 		} else {
 			var me = $("#btnAddMyPos");
 			//me.prop("disabled", true);

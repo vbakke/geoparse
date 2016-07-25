@@ -13,33 +13,42 @@ ToDo - Store and Share
 - WS: Group + Locations READ
 - GUI: Share button
 - WS: Group + Locations CREATE
+- GUI: Store all locations when Share Group
+- Add .ShareCode 
+- GUI: FIX error and feedback
 
 --- Påbegynt ---
 
---- Gjenstår ---
+--- Skal påbegynnes ---
+- GUI: Save
 - WS: Group + Locations UPDATE
-- WS: Locations UPDATE
 
-- GUI: Store all locations when Share Group
+--- Gjenstår ---
+- GUI: New Share
+- WS: Locations UPDATE
+- WS+GUI: New Share with duplicate ShareCode
+
 - GUI: Store new location when Add Location
 - GUI: Save location when Update Location: Loc name / Loc pos moves
+- GUI: Auto-save?
 - WS: Delete location when Delete Location
 - GUI: Share button, Name popup
+
+- GUI: Store all opened ShareCodes in Local storage
+- GUI: Open and select previous opened Groups from Local Storage
 
 - GUI: Open ID geo/?q=ID
 
 - Clean server log
+- WS: Use mysql_query("START TRANSACTION"); mysql_query("COMMIT"); mysql_query("ROLLBACK");
 
-- Add .Code 
-	- Lag Code
-	- Sjekk om det er ledig
-	- Tillate manuell inntasting?
 
 
 - WS: Group DELETE: Mark as Deleted, GET/POST/PUT ignore if deleted
 
 - Share: By Email & SMS
-
+- Get Backup to Dropbox
+- Read data into QlikView
 
 v1.1
 - WS: Create (POST) INSERT

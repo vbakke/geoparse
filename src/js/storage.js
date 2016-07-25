@@ -70,6 +70,19 @@ var storage = (function () {
 	//  GROUP CRUD
 	// ============
 
+	_self.onAjaxError = function (jqxhr, textStatus, error, callback) {
+		var errorMsg;
+		if (jqxhr.statusText == "error" && jqxhr.status == 0 && jqxhr.readyState == 0 && jqxhr.responseText == "") {
+			errorMsg = "Request failed. Possibly because of a CORS error";
+		} else {
+			errorMsg = jqxhr.status +" - "+jqxhr.statusText+": "+jqxhr.responseText;
+		}
+		console.log("ERROR: "+errorMsg);
+
+		if (callback != undefined)
+			callback(errorMsg);
+	}
+
 	_self.getSharedGroup = function (groupId, onFinished, onFail) {
 		var shareCode;
 		var result = undefined;
@@ -81,10 +94,7 @@ var storage = (function () {
 				onFinished(data);
 			})
 			.fail( function (jqxhr, textStatus, error ) {
-				var err = textStatus + ", " + error;
-				alert( "Request Failed: " + err );
-				console.log( "Request Failed: " + err );
-				onFail(err);
+				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
 	}
 
@@ -100,14 +110,13 @@ var storage = (function () {
 			//set['sharecode'] = result;
 			onFinished(data);
 		})
-		request.fail( function (jqxhr, textStatus, error ) {
-			var err = textStatus + ", " + error;
-			alert( "DBG: Request Failed: " + err );
-			window.console && console.log( "Request Failed: " + err );
-			onFail(err);
+		.fail( function (jqxhr, textStatus, error ) {
+			_self.onAjaxError(jqxhr, textStatus, error, onFail);
 		});
-		return shareCode;
 	}
+
+
+	// -----------------
 
 	/** Creates a new share of the set.
 	* 
