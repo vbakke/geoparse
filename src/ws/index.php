@@ -10,7 +10,7 @@ $app = new \Slim\Slim(array(
     'debug' => false
 ));
 
-if (new DateTime() <= new Datetime("2016-07-26"))
+if (new DateTime() < new Datetime("2016-08-31"))
 	$app->response->headers->set('Access-Control-Allow-Origin', 'http://localhost');
 $app->response->headers->set('Content-Type', 'application/json;charset=utf-8');
 
@@ -62,10 +62,28 @@ $app->get('/groups/:groupId', function ($groupId) {
 });
 
 $app->post('/groups', function () {
-	global $NL;
+	global $app, $NL;
 	$body = file_get_contents('php://input');
 	$result = createGroup($body);
+	if ($result)
+		$app->response()->setStatus(201);
 	echo(safe_json($result));
+});
+
+// ----------------------
+// ROUTE GROUP / LOCATION
+// ----------------------
+
+$app->post('/groups/:groupId/locations', function ($groupId) {
+	global $app, $NL, $debugMode;
+	$body = file_get_contents('php://input');
+	//$result = array("groupId" => $groupId);
+	$status = createLocation($groupId, $body);
+	if ($debugMode) { print "POST location ".$groupId.": "; var_dump($status); }
+	$app->response()->setStatus($status['statuscode']);
+	if ($status['locationId'])
+		echo(safe_json($status));
+	//exit();
 });
 
 

@@ -98,8 +98,9 @@
 				
 		<div id="divUsage">
 			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
-			Update: 2016-07-25: Work in progress: Storing and Sharing locations.
-			Update: 2016-07-14: Now you can enter street addresses and place names.
+				Update: 2016-07-25: Work in progress: Storing and Sharing locations.
+			</p><p style="margin-bottom:0;font-size:0.7em;">
+				Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
 			<!--p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
@@ -112,7 +113,7 @@
 		<div id="divStorage">
 			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button>
 			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
-			GroupId: <input id="txtSetGroupId" style="width:15%">
+			GroupId: <input id="txtSetGroupId" readonly style="width:15%">
 			ShareCode: <input id="txtSetShareCode" style="width:15%">
 			Name: <input id="txtSetName" style="width:15%">
 			Description: <input id="txtSetDescription" style="width:60%">
@@ -149,6 +150,7 @@
 <script type="text/javascript">
 	var googleIsOffline = false;
 	var posArray = [];
+	var sharedId = "";
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
 	var initKnownLocationZoomLevel = 10;
@@ -460,6 +462,7 @@
 			addLocation(positionStr, latlon, utm);
 		} else {
 			// What to do
+			console.log("ERROR: Not adding location");
 		}
 
 	}
@@ -647,7 +650,7 @@
 		clearFeedback();
 		var groupId = $("#txtSetShareCode").val();
 		if (groupId == "")
-			groupId = "18-13";
+			groupId = "1001-2";
 
 		storage.getSharedGroup(groupId,
 			function (data) {
@@ -662,10 +665,12 @@
 					$("#txtSetName").val(data.name);
 					$("#txtSetDescription").val(data.description);
 					clearLocations();
+					sharedId = ""; // Clear to avoid repeatitive insert to DB
 					for (var i = 0; i < data.locations.length; i++) {
 						var location = data.locations[i];
 						addLatLonLocation(location.lat, location.lng, location.label, true);
 					}
+					sharedId = data.groupId; // Add this AFTER addLatLonLocation
 					zoomToLocations();
 				}
 
@@ -706,6 +711,9 @@
 		storage.createNewShare(group, function (data) {
 			alert("index.html: data: "+data);
 			// Store sharecode in local storage
+			sharedId = data.groupId;
+			$("#txtSetGroupId").val(data.groupId);
+			$("#txtSetShareCode").val(data.shareCode);
 		}, function (errorMsg) {
 			alert("createNewShare(): "+errorMsg);
 		});
@@ -773,6 +781,7 @@
 			var label = "Me";
 			var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label);
 
+
 			var utmLogMsg = approxUtm(location.utm);
 			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+utmLogMsg); 
 			ga('send', 'event', 'debug-click', 'addMyPos', 'addMyPos-'+location.utm.toString());
@@ -834,7 +843,18 @@
 		addLocationToTable(tb, location);
 		addLocationToMap(location, freezeMap);
 
-		
+		if (sharedId) {
+			var location2 = {label: label, lat: latlon.lat, lng: latlon.lon};
+			storage.addLocation(sharedId, location2,
+					function (data) {
+						console.log("Added location: "+data);
+					},
+					function (err) {
+						console.log("ERROR: Adding location: "+err);
+					}
+			);
+		}
+
 		posArray.push(location);
 		
 		return location;

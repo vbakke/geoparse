@@ -7,9 +7,11 @@ var storage = (function () {
 	var CREATED = "created";
 	var VERSION = "version";
 
-	var WS_BASE = "../ws";
-	var WS_BASE = "http://vafe.net/geo/ws"; // ToDo-Release: Revert
+	var WS_BASE = "./ws";
+	if (document.URL.indexOf("http://localhost") > -1)
+		WS_BASE = "http://vafe.net/geo/ws"; // ToDo-Release: Revert
 	var WS_GROUP = WS_BASE+"/groups";
+	var WS_LOCATION = WS_BASE+"/groups/:groupId/locations";
 	var WS_SET = WS_BASE+"/set";  // DEL
 
 	var _self = {};
@@ -87,6 +89,7 @@ var storage = (function () {
 		var shareCode;
 		var result = undefined;
 		var url = WS_GROUP + "/" + encodeURIComponent(groupId);
+		console.log("DBG: Get URL: "+url);
 		var returnVal = $.getJSON(url)
 			.done( function (data)
 			{
@@ -115,6 +118,28 @@ var storage = (function () {
 		});
 	}
 
+
+
+	// --------------
+	// LOCATIONS CRUD
+	// --------------
+	_self.addLocation = function (groupId, location, onFinished, onFail) {
+		var url = WS_LOCATION.replace(':groupId', groupId);
+		var request = $.ajax({
+			url: url,
+			type: "post",
+			data: JSON.stringify(location)
+		});
+		request.done( function (data) {
+			alert("OK: "+data);
+			var result = data;
+			//set['sharecode'] = result;
+			onFinished(data);
+		})
+		.fail( function (jqxhr, textStatus, error ) {
+			_self.onAjaxError(jqxhr, textStatus, error, onFail);
+		});
+	}
 
 	// -----------------
 

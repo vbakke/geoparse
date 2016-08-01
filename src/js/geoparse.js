@@ -161,7 +161,7 @@
 		}
 		if (utm.easting) {
 			if (Math.abs(utm.easting) < 180)
-				val += -5;
+				val -= 5;
 			else
 			if (utm.easting > 100000)
 				val += 25;
@@ -172,7 +172,7 @@
 			// ToDo: If Northing matches zoneband
 
 			if (Math.abs(utm.northing) < 180)
-				val += -5;
+				val -= 5;
 			else
 				if (Math.abs(utm.northing) < 9999999)
 					val += 40;
@@ -190,14 +190,14 @@
 
 		if (latlon.lat) {
 			if (Math.abs(latlon.lat) > 90)
-				val += -5;
+				val -= 5;
 			else
 				val += 50;
 		}
 
 		if (latlon.lon) {
 			if (Math.abs(latlon.lon) > 180)
-				val += -5;
+				val -= 5;
 			else
 				val += 50;
 		}
@@ -228,7 +228,11 @@
 			if (hintLocation) {
 				attempts = _self.addHintLocation(attempts, hintLocation);
 			} else {
-				attempts.feedback = ["Sorry, I do not understand what coordinate you have written."];
+				var parsingFeedback = attempts.pos[attempts.bestMatch].feedback;
+				if (parsingFeedback)
+					attempts.feedback = parsingFeedback;
+				else
+					attempts.feedback = ["Sorry, I do not understand what coordinate you have written."];
 			}
 		}
 
@@ -267,7 +271,10 @@
 				band = tokens[i].value;
 				i++;
 			}
+		} else {
+			feedback.push("The coordinate looks like a UTM coordinate, but is missing a UTM zone (e.g. 32N), and I have no previous coordinates or your location to base my guess on.");
 		}
+
 		// First number
 		// ToDo: Fast forward to first number, then skip back one
 		if (tokens[i] && dirRe.exec(tokens[i].value)) {

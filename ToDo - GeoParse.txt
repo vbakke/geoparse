@@ -16,17 +16,30 @@ ToDo - Store and Share
 - GUI: Store all locations when Share Group
 - Add .ShareCode 
 - GUI: FIX error and feedback
+- WS: Locations CREATE
+- GUI: Add new location
 
 --- Påbegynt ---
 
+
 --- Skal påbegynnes ---
-- GUI: Save
+- WS: Split ShareCode starts with #, otherwise groupId is assumed
 - WS: Group + Locations UPDATE
+- GUI: Save (Update same)
 
 --- Gjenstår ---
 - GUI: New Share
 - WS: Locations UPDATE
 - WS+GUI: New Share with duplicate ShareCode
+
+- TestCase: 
+	- Create, Get ID
+	- Get Group ID
+	- Add Location
+	- Get Group ShareCode
+	- Update Location
+	- Delete Location
+	- Delete Group
 
 - GUI: Store new location when Add Location
 - GUI: Save location when Update Location: Loc name / Loc pos moves
@@ -43,8 +56,17 @@ ToDo - Store and Share
 - WS: Use mysql_query("START TRANSACTION"); mysql_query("COMMIT"); mysql_query("ROLLBACK");
 
 
-
 - WS: Group DELETE: Mark as Deleted, GET/POST/PUT ignore if deleted
+
+Functionality:
+ - Share new
+ - Share again / duplicate / Clone
+ - Open (by sharecode)
+ - Open by URL
+ - View previous visited
+ - Close / Start new blank group (not shared)
+
+
 
 - Share: By Email & SMS
 - Get Backup to Dropbox

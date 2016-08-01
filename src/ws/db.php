@@ -38,6 +38,61 @@ function TestModuleDB() {
 // 2016-version start
 
 // --------------------
+// GROUP-ID functions
+// --------------------
+
+// Lookup shareCode/groupId
+function lookupGroupIds($con, $groupCode) {
+	global $table, $NL, $debugMode;
+	
+	if ($debugMode)
+		print "lookupGroupIds(".$groupCode.")".$NL;
+
+	// Testing if groupCode is a used ShareCode first
+	$ids = getIdFromShareCode($con, $groupCode);
+
+	// If not found as a ShareCode, verify that the groupId-pair exists
+	if ($ids) {
+		if ($debugMode)
+			print "lookupGroupIds() is a SHARECODE for id".$ids.$NL;
+		return $ids;
+	} else {
+		$ids = explode("-", $groupCode, 2);
+		$ids[0] = ctype_digit($ids[0]) ? intval($ids[0]) : -1;
+		$ids[1] = ctype_digit($ids[1]) ? intval($ids[1]) : -1;
+		
+		if ($debugMode)
+			print "lookupGroupIds() is NOT a SHARECODE. Using ids: ".$ids.$NL;
+		if (doesExistGroupIds($con, $ids)) {
+			if ($debugMode)
+				print "lookupGroupIds() ids are valid: ".$ids.$NL;
+			return $ids;
+		} else {
+			return null;
+		}
+	}
+}
+
+function doesExistGroupIds($con, $ids) {
+	global $table, $NL;
+	
+	$vars = array("groupRandId" => $ids[0], "groupRowId" => $ids[1]);
+
+	$sql = "SELECT 1 as DoesExist FROM ".$table['groups']." WHERE deletedDate is null AND groupRandId = '$(groupRandId)' AND groupRowId = '$(groupRowId)' ";
+	$sql = replaceFields($con, $sql, $vars);
+	if ($debugMode)
+		print $NL."SQL does ID exist: ".$sql.$NL;
+	$result = executeSql($sql, $con);
+	
+	if ($result !== FALSE) {
+		$group = mysqli_fetch_assoc($result);
+		if ($group)
+			return true;
+	}
+	return false;
+}
+
+// --------------------
 // SHARE_CODE functions
 // --------------------
 
@@ -73,7 +128,7 @@ function getIdFromShareCode($con, $shareCode) {
 	global $table, $NL, $debugMode;
 	
 	$vars['shareCode'] = $shareCode;
-	$sql = "SELECT groupRandId, groupRowId FROM ".$table['groups']." WHERE shareCode = '$(shareCode)' ORDER BY CreatedDate DESC";
+	$sql = "SELECT groupRandId, groupRowId FROM ".$table['groups']." WHERE deletedDate is null AND shareCode = '$(shareCode)' ORDER BY CreatedDate DESC";
 	$sql = replaceFields($con, $sql, $vars);
 	
 	if ($debugMode)
@@ -97,19 +152,15 @@ function getGroup($groupId) {
 
 	$con = connectDb();
 
-	// Testing if groupId is a used ShareCode first
-	$ids = getIdFromShareCode($con, $groupId);
-	if (!$ids) {
-		$ids = explode("-", $groupId, 2);
-	}
+	// Lookup (and validate) shareCode / groupId
+	$ids = lookupGroupIds($con, $groupId);
 	$set = array("groupRandId" => $ids[0], "groupRowId" => $ids[1]);
 
-	// Try looking up 
 	if ($debugMode)
-		print "Searching for '".$groupId."': '".$ids[0]."' - '".$ids[1]."'".$NL;
+		print "Getting '".$groupId."': IDs: '".$ids[0]."' - '".$ids[1]."'".$NL;
 	
 	// --- Get Group ---
-	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, shareCode, name, description FROM ".$table['groups']." WHERE groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' ORDER BY CreatedDate DESC Limit 1";
+	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, shareCode, name, description FROM ".$table['groups']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)' AND groupRandId = '$(groupRandId)' ORDER BY CreatedDate DESC Limit 1";
 	$sql = replaceFields($con, $sql, $set);
 	
 	if ($debugMode)
@@ -118,22 +169,24 @@ function getGroup($groupId) {
 	if ($result !== FALSE) {
 		$group = mysqli_fetch_assoc($result);
 		
-		// --- Get Locations ---
-		$sql = "SELECT label, lat, lng FROM ".$table['locations']." WHERE groupRowId = '$(groupRowId)'";
-		$sql = replaceFields($con, $sql, $set);
-		
-		if ($debugMode)
-			print $NL."LOCATIONS SQL: ".$sql.$NL.$NL;
-		$result = executeSql($sql, $con);
-		$locations = array();
+		if ($group) {
+			// --- Get Locations ---
+			$sql = "SELECT label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)'";
+			$sql = replaceFields($con, $sql, $set);
+			
+			if ($debugMode)
+				print $NL."LOCATIONS SQL: ".$sql.$NL.$NL;
+			$result = executeSql($sql, $con);
+			$locations = array();
 
-		while($location = mysqli_fetch_assoc($result)) {
-			$location["lat"] = floatval($location["lat"]);
-			$location["lng"] = floatval($location["lng"]);
-			array_push($locations, $location);
-		} 
-		if ($locations)
-			$group["locations"] = $locations;
+			while($location = mysqli_fetch_assoc($result)) {
+				$location["lat"] = floatval($location["lat"]);
+				$location["lng"] = floatval($location["lng"]);
+				array_push($locations, $location);
+			} 
+			if ($locations)
+				$group["locations"] = $locations;
+		}
 	}
 
 	closeConnection($con);
@@ -184,6 +237,47 @@ function createGroup($jsonGroup) {
 	$groupObj["groupId"] = $groupObj["groupRandId"]."-".$groupRowId;
 	unset($groupObj->$groupRandId);
 	return $groupObj;
+}
+
+
+// ----------------------
+// CREATE LOCATION - POST
+// ----------------------
+function createLocation($groupCode, $jsonLocation) {
+	global $table, $NL, $debugMode;
+	if ($debugMode) print "createLocation(".$groupCode."): ".$jsonLocation.$NL;
+	$location = json_decode($jsonLocation, true);
+
+	$con = connectDb();
+
+	$ids = lookupGroupIds($con, $groupCode);
+	if (!$ids) {
+		// Return 404
+		return Array(statuscode=>404);
+	}
+	$groupRowId = $ids[1];
+	
+	$locationId = insertLocation($con, $groupRowId, $location);
+	
+	closeConnection($con);
+	return Array(statuscode=>201, locationId=>$locationId);
+}
+
+function insertLocation($con, $groupRowId, $location) {
+	global $table, $debugMode, $NL;
+	
+	// -- Create Location ---
+	$sql = "INSERT INTO ".$table['locations']." ".
+			"(groupRowId, label, lat, lng) ".
+			"VALUES (".$groupRowId.", '$(label)', '$(lat)', '$(lng)')";  // $groupRowId cannot have SQL injections. Can be inserted directly
+	if ($debugMode) print "Insert Location: ".$location.$NL;
+	$sql = replaceFields($con, $sql, $location);
+	if ($debugMode) print "SQL: ".$sql.$NL;
+		
+	$result = executeSql($sql, $con);
+	
+	$locationId = mysqli_insert_id($con);
+	return $locationId;
 }
 
 // 2016-version end
