@@ -53,10 +53,10 @@ $app->post('/freeShareCode', function () {
 // ROUTE GROUP
 // -----------
 
-$app->get('/groups/:groupId', function ($groupId) {
+$app->get('/groups/:groupId', function ($groupCode) {
 	global $NL;
-	//print "Searching for group: ".$groupId.$NL;
-	$row = getGroup($groupId);
+	//print "Searching for group: ".$groupCode.$NL;
+	$row = getGroup($groupCode);
 	
 	echo(safe_json($row));
 });
@@ -74,16 +74,21 @@ $app->post('/groups', function () {
 // ROUTE GROUP / LOCATION
 // ----------------------
 
-$app->post('/groups/:groupId/locations', function ($groupId) {
+$app->post('/groups/:groupId/locations', function ($groupCode) {
 	global $app, $NL, $debugMode;
 	$body = file_get_contents('php://input');
-	//$result = array("groupId" => $groupId);
-	$status = createLocation($groupId, $body);
-	if ($debugMode) { print "POST location ".$groupId.": "; var_dump($status); }
+
+	$status = createLocation($groupCode, $body);
+
+	if ($debugMode) { 
+		print "POST location ".$groupCode.": "; 
+		var_dump($status); 
+	}
+	
 	$app->response()->setStatus($status['statuscode']);
+	
 	if ($status['locationId'])
 		echo(safe_json($status));
-	//exit();
 });
 
 

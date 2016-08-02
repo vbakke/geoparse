@@ -14,6 +14,8 @@ $table = array("groups" => "vafe.".$db_tb_pre."Groups"
 				,"locations" => "vafe.".$db_tb_pre."Locations"
 				);
 
+$shareCodePrefix = "@";
+				
 
 function TestModuleDB() {
 	global $NL;
@@ -48,29 +50,33 @@ function lookupGroupIds($con, $groupCode) {
 	if ($debugMode)
 		print "lookupGroupIds(".$groupCode.")".$NL;
 
-	// Testing if groupCode is a used ShareCode first
-	$ids = getIdFromShareCode($con, $groupCode);
-
-	// If not found as a ShareCode, verify that the groupId-pair exists
-	if ($ids) {
+	$ids = null;
+	// ShareCodes start with a '#'
+	$shareCode = extractShareCode($groupCode);
+	if ($shareCode) {
+		// Validated against DB
+		$ids = getIdsFromShareCode($con, $shareCode);
 		if ($debugMode)
-			print "lookupGroupIds() is a SHARECODE for id".$ids.$NL;
+			print "lookupGroupIds() '".$shareCode."' is a SHARECODE for ids: ".join(", ", $ids).$NL;
 		return $ids;
 	} else {
-		$ids = explode("-", $groupCode, 2);
-		$ids[0] = ctype_digit($ids[0]) ? intval($ids[0]) : -1;
-		$ids[1] = ctype_digit($ids[1]) ? intval($ids[1]) : -1;
-		
+		// Split id-pair into ids
+		$ids = getIdsFromGroupId($groupCode);
 		if ($debugMode)
-			print "lookupGroupIds() is NOT a SHARECODE. Using ids: ".$ids.$NL;
+			print "lookupGroupIds() Split '".$groupCode."' into: ".join(", ", $ids).$NL;
+
+		// Validate against DB
 		if (doesExistGroupIds($con, $ids)) {
 			if ($debugMode)
-				print "lookupGroupIds() ids are valid: ".$ids.$NL;
+				print "lookupGroupIds() '".$groupCode."' is a valid id-pair: ".join(", ", $ids).$NL;
 			return $ids;
 		} else {
+			if ($debugMode)
+				print "lookupGroupIds() '".$groupCode."' is a NOT valid id-pair: ".join(", ", $ids).$NL;
 			return null;
 		}
 	}
+	return null;
 }
 
 function doesExistGroupIds($con, $ids) {
@@ -92,14 +98,33 @@ function doesExistGroupIds($con, $ids) {
 	return false;
 }
 
+function getIdsFromGroupId($groupId) {
+	$ids = explode("-", $groupId, 2);
+
+	$ids[0] = ctype_digit($ids[0]) ? intval($ids[0]) : -1;
+	$ids[1] = ctype_digit($ids[1]) ? intval($ids[1]) : -1;
+
+	return $ids;
+}
+
 // --------------------
 // SHARE_CODE functions
 // --------------------
 
+function extractShareCode($groupCode) {
+	global $shareCodePrefix;
+	
+	if (substr($groupCode, 0, 1) == $shareCodePrefix) {
+		return substr($groupCode, 1);
+	} else {
+		return "";
+	}
+}
+
 function isShareCodeFree($con, $shareCode) {
 	global $NL;
 	
-	$ids = getIdFromShareCode($con, $shareCode);
+	$ids = getIdsFromShareCode($con, $shareCode);
 	if (!$ids) {
 		return true;
 	} else {
@@ -124,7 +149,7 @@ function getFreeShareCode($con, $length, $prefix="") {
 	return null;
 }
 
-function getIdFromShareCode($con, $shareCode) {
+function getIdsFromShareCode($con, $shareCode) {
 	global $table, $NL, $debugMode;
 	
 	$vars['shareCode'] = $shareCode;
@@ -142,7 +167,6 @@ function getIdFromShareCode($con, $shareCode) {
 	}
 	return $ids;
 }
-
 
 // --------------------
 // READ GROUP - GET :id
@@ -248,12 +272,18 @@ function createLocation($groupCode, $jsonLocation) {
 	if ($debugMode) print "createLocation(".$groupCode."): ".$jsonLocation.$NL;
 	$location = json_decode($jsonLocation, true);
 
+	if ($location == null) {
+		if ($debugMode)
+			print "ERROR: Missing location".$NL;
+		return Array(statuscode=>400, statusmessage=>"ERROR: Missing location data");
+	}
+	
 	$con = connectDb();
 
 	$ids = lookupGroupIds($con, $groupCode);
 	if (!$ids) {
 		// Return 404
-		return Array(statuscode=>404);
+		return Array(statuscode=>404, statusmessage=>"ERROR: Incorrect groupCode");
 	}
 	$groupRowId = $ids[1];
 	
@@ -270,7 +300,10 @@ function insertLocation($con, $groupRowId, $location) {
 	$sql = "INSERT INTO ".$table['locations']." ".
 			"(groupRowId, label, lat, lng) ".
 			"VALUES (".$groupRowId.", '$(label)', '$(lat)', '$(lng)')";  // $groupRowId cannot have SQL injections. Can be inserted directly
-	if ($debugMode) print "Insert Location: ".$location.$NL;
+	if ($debugMode) {
+		print "Insert Location: ";
+		var_dump($location);
+	}
 	$sql = replaceFields($con, $sql, $location);
 	if ($debugMode) print "SQL: ".$sql.$NL;
 		
@@ -282,9 +315,113 @@ function insertLocation($con, $groupRowId, $location) {
 
 // 2016-version end
 
+function replaceFields($con, $sql, $set) {
+	global $NL;
+	foreach ($set as $field => $value) {
+		//print "DBG: SQL inject ".$field."=".$value.$NL;
+		$sql = str_replace("$(".$field.")", mysqli_real_escape_string ($con, $value), $sql);
+	}
+	return $sql;
+}
 
 
+function connectDb() {
+	global $debugMode;
+	global $NL;
+	global $db_host;
+	global $db_db;
+	global $db_u;
+	global $db_p;
+	
+	if ($debugMode) {
+		print "Connecting to '".$db_db."'".$NL;
+	}
 
+	$con = mysqli_connect($db_host, $db_u, $db_p, $db_db);
+	
+	if (mysqli_connect_errno()) {
+		print "Failed to connect to MySQL: " . mysqli_connect_error();
+	} else {
+		if ($debugMode) {
+			print "Connected".$NL;
+		}
+	}
+	
+	return $con;
+}
+function closeConnection($con) {
+	mysqli_close($con);
+}
+
+function executeSql($sql, $con=null) {
+	global $NL;
+	$closeConnection = false;
+
+	if ($con == null)  {
+		$con = connectDb();
+		$closeConnection = true;
+	}
+
+	$result = mysqli_query($con, $sql);
+
+	if ($result === FALSE) {
+		print "Failed to execute SQL: " . mysqli_error($con).$NL;
+	} 
+	
+	if ($closeConnection) {
+		closeConnection($con);
+	}
+	
+	return $result;
+}
+
+
+function randomKey($maxlength, $prefix="") {
+	global $NL;
+	$str = $prefix;
+	
+	if ($digit != 1 && $digit != 2)
+		$digit = rand(0,1);
+
+	$str = $str . randomChar(0);
+	for ($i=1; $i<$maxlength; $i++) {
+		$str = $str . randomChar($digit);
+	}
+	return $str;
+}
+
+function randomChar($digit) {
+	$randBaseDigits = "23456789";
+	$randBaseLowerCase = "abcdefghijkmnrty";
+	$randBaseUpperCase = "ABDEFGHJKLMNPQRSTUVWXYZ";
+	$randBaseLowerCase = "ab";
+	$randBaseUpperCase = "AB";
+	$randBase = array(0 => $randBaseDigits, 1 => $randBaseLowerCase, 2 => $randBaseUpperCase);
+
+	if ($digit)
+		$type = 0;
+	else
+		$type = 2;
+	
+	$max = strlen($randBase[$type])-1;
+
+	return $randBase[$type][rand(0, $max)];
+}
+
+// quote
+function q($str) {
+	return "'".str_replace("'", "''", $str)."'";
+}
+
+
+if ($TestDB) {
+	TestModuleDB();
+}
+
+//--------------------------
+
+
+/*
 // Return the lastest version of a given shareCode
 function getSet($shareCode) {
 	global $NL, $debugMode;
@@ -371,18 +508,6 @@ function updateSet($jsonSet) {
 	return $shareCode;
 }
 
-function replaceFields($con, $sql, $set) {
-	global $NL;
-	foreach ($set as $field => $value) {
-		//print "DBG: SQL inject ".$field."=".$value.$NL;
-		$sql = str_replace("$(".$field.")", mysqli_real_escape_string ($con, $value), $sql);
-	}
-	return $sql;
-}
-
-if ($TestDB) {
-	TestModuleDB();
-}
 
 
 function sqlSelect($con, $table, $keys=null, $where=null) {
@@ -517,95 +642,6 @@ function makeUpdateSql($table, $hash, $idName, $keys=null) {
 	
 	return $sql;
 }
-
-
-
-function connectDb() {
-	global $debugMode;
-	global $NL;
-	global $db_host;
-	global $db_db;
-	global $db_u;
-	global $db_p;
-	
-	if ($debugMode) {
-		print "Connecting to '".$db_db."'".$NL;
-	}
-
-	$con = mysqli_connect($db_host, $db_u, $db_p, $db_db);
-	
-	if (mysqli_connect_errno()) {
-		print "Failed to connect to MySQL: " . mysqli_connect_error();
-	} else {
-		if ($debugMode) {
-			print "Connected".$NL;
-		}
-	}
-	
-	return $con;
-}
-function closeConnection($con) {
-	mysqli_close($con);
-}
-
-function executeSql($sql, $con=null) {
-	global $NL;
-	$closeConnection = false;
-
-	if ($con == null)  {
-		$con = connectDb();
-		$closeConnection = true;
-	}
-
-	$result = mysqli_query($con, $sql);
-
-	if ($result === FALSE) {
-		print "Failed to execute SQL: " . mysqli_error($con).$NL;
-	} 
-	
-	if ($closeConnection) {
-		closeConnection($con);
-	}
-	
-	return $result;
-}
-
-
-function randomKey($maxlength, $prefix="") {
-	global $NL;
-	$str = $prefix;
-	
-	if ($digit != 1 && $digit != 2)
-		$digit = rand(0,1);
-
-	$str = $str . randomChar(0);
-	for ($i=1; $i<$maxlength; $i++) {
-		$str = $str . randomChar($digit);
-	}
-	return $str;
-}
-
-function randomChar($digit) {
-	$randBaseDigits = "23456789";
-	$randBaseLowerCase = "abcdefghijkmnrty";
-	$randBaseUpperCase = "ABDEFGHJKLMNPQRSTUVWXYZ";
-	$randBaseLowerCase = "ab";
-	$randBaseUpperCase = "AB";
-	$randBase = array(0 => $randBaseDigits, 1 => $randBaseLowerCase, 2 => $randBaseUpperCase);
-
-	if ($digit)
-		$type = 0;
-	else
-		$type = 2;
-	
-	$max = strlen($randBase[$type])-1;
-
-	return $randBase[$type][rand(0, $max)];
-}
-
-// quote
-function q($str) {
-	return "'".str_replace("'", "''", $str)."'";
-}
+*/
 
 ?>
