@@ -54,17 +54,24 @@ $app->post('/freeShareCode', function () {
 // -----------
 
 $app->get('/groups/:groupId', function ($groupCode) {
-	global $NL;
+	global $environment, $NL;
 	//print "Searching for group: ".$groupCode.$NL;
-	$row = getGroup($groupCode);
-	
-	echo(safe_json($row));
+	$result = getGroup($groupCode);
+
+	if (strtoupper($environment) != "PROD")
+		$result["environment"] = $environment;
+
+	echo(safe_json($result));
 });
 
 $app->post('/groups', function () {
-	global $app, $NL;
+	global $app, $environment, $NL;
 	$body = file_get_contents('php://input');
 	$result = createGroup($body);
+	
+	if (strtoupper($environment) != "PROD")
+		$result["environment"] = $environment;
+	
 	if ($result)
 		$app->response()->setStatus(201);
 	echo(safe_json($result));

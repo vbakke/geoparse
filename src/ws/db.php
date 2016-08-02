@@ -3,11 +3,11 @@
 require "db_conf.php";
 
 $NL = "<br/>\n";
-if ( !"debug")
-	$debugMode = true;
-else
-	$debugMode = false;
 
+// Enable debugMode from query string, unless it is Production
+if (strtoupper($environment) != "PROD") {
+	$debugMode = $_GET['debug']=='true';
+}
 $TestDB = true&&false;
 
 $table = array("groups" => "vafe.".$db_tb_pre."Groups"
