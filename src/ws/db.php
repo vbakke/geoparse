@@ -51,13 +51,12 @@ function lookupGroupIds($con, $groupCode) {
 		print "lookupGroupIds(".$groupCode.")".$NL;
 
 	$ids = null;
-	// ShareCodes start with a '#'
-	$shareCode = extractShareCode($groupCode);
-	if ($shareCode) {
+	// ShareCodes cannot start with a digit
+	if (!ctype_digit(left($groupCode,1))) {
 		// Validated against DB
-		$ids = getIdsFromShareCode($con, $shareCode);
+		$ids = getIdsFromShareCode($con, $groupCode);
 		if ($debugMode)
-			print "lookupGroupIds() '".$shareCode."' is a SHARECODE for ids: ".join(", ", $ids).$NL;
+			print "lookupGroupIds() '".$groupCode."' is a SHARECODE for ids: ".join(", ", $ids).$NL;
 		return $ids;
 	} else {
 		// Split id-pair into ids
@@ -111,19 +110,9 @@ function getIdsFromGroupId($groupId) {
 // SHARE_CODE functions
 // --------------------
 
-function extractShareCode($groupCode) {
-	global $shareCodePrefix;
-	
-	if (substr($groupCode, 0, 1) == $shareCodePrefix) {
-		return substr($groupCode, 1);
-	} else {
-		return "";
-	}
-}
-
 function isShareCodeFree($con, $shareCode) {
 	global $NL;
-	
+	#print "DBG: isShareCodeFree($shareCode)".$NL;
 	$ids = getIdsFromShareCode($con, $shareCode);
 	if (!$ids) {
 		return true;
@@ -134,13 +123,16 @@ function isShareCodeFree($con, $shareCode) {
 function getFreeShareCode($con, $length, $prefix="") {
 	global $NL;
 
-	$attempts = 2;
-	$maxlength = 2*$length;
+	if (!$length)
+		$length = 4;
+	
+	$attempts = 5;
+	$maxlength = 3*($length+1);
 	
 	for ($len=$length; $len<$maxlength; $len++) {  //Safe-guard to avoid infinit loops
 		for ($i=0; $i<$attempts; $i++) {
 			$shareCode = randomKey($len, $prefix);
-			
+
 			if (isShareCodeFree($con, $shareCode)) {
 				return $shareCode;
 			} 
@@ -153,6 +145,7 @@ function getIdsFromShareCode($con, $shareCode) {
 	global $table, $NL, $debugMode;
 	
 	$vars['shareCode'] = $shareCode;
+
 	$sql = "SELECT groupRandId, groupRowId FROM ".$table['groups']." WHERE deletedDate is null AND shareCode = '$(shareCode)' ORDER BY CreatedDate DESC";
 	$sql = replaceFields($con, $sql, $vars);
 	
@@ -317,9 +310,21 @@ function insertLocation($con, $groupRowId, $location) {
 
 function replaceFields($con, $sql, $set) {
 	global $NL;
+
+	$closeConnection = false;
+
+	if ($con == null)  {
+		$con = connectDb();
+		$closeConnection = true;
+	}
+	
+
 	foreach ($set as $field => $value) {
-		//print "DBG: SQL inject ".$field."=".$value.$NL;
+		#print "DBG: replaceFields() SQL inject ".$field."=".$value." -> (".mysqli_real_escape_string ($con, $value).")".$NL;
 		$sql = str_replace("$(".$field.")", mysqli_real_escape_string ($con, $value), $sql);
+	}
+	if ($closeConnection) {
+		closeConnection($con);
 	}
 	return $sql;
 }
@@ -379,30 +384,48 @@ function executeSql($sql, $con=null) {
 function randomKey($maxlength, $prefix="") {
 	global $NL;
 	$str = $prefix;
-	
-	if ($digit != 1 && $digit != 2)
-		$digit = rand(0,1);
 
-	$str = $str . randomChar(0);
+	$randBaseDigits = "23456789";
+	$randBaseUpperCase = "ABDEFGHJKLMNPQRSTUVWXYZ";
+	//$randBaseLowerCase = "abcdefghijkmnrty";
+	$randBaseDigits = "23";
+	$randBaseUpperCase = "AB";
+	$randBase = array(0 => $randBaseDigits, 1 => $randBaseUpperCase);
+	$digitCount = strlen($randBaseDigits);
+	$fullCount = $digitCount + strlen($randBaseUpperCase);
+
+
+	$str = $str . randomChar($randBase, false);
+	$useDigit = null;
+	$useDigitPrevious = null;
+	#print "0:$str:".$NL;
 	for ($i=1; $i<$maxlength; $i++) {
-		$str = $str . randomChar($digit);
+		$useDigitPrevious = $useDigit;
+		// Find radnom type, unless we must use same type again. However, always change first time.
+		if ($useSameAgain !== true || $useDigit === null) {
+			
+			$useDigit = (rand(0, $fullCount) < $digitCount) ? 1 : 0;
+			#print "Swapped from ".$useDigitPrevious." to ".$useDigit.$NL;
+		} 
+		// Only use same again, if we changed type
+		$useSameAgain = false;
+		if ($useDigit && $useDigitPrevious===null)  {
+			#print "Number first time. Bruk samme".$NL;
+			$useSameAgain = true;
+		} else if ($useDigit !== $useDigitPrevious && $useDigitPrevious!==null) {
+			#print "Byttet. Bruke samme.".$NL;
+			$useSameAgain = true;
+		}
+		
+		#print "Use same again: ";var_dump($useSameAgain);
+		$str = $str . randomChar($randBase, $useDigit);
+		#print "$i:$str: Next: use same:";var_dump($useSameAgain);
 	}
 	return $str;
 }
 
-function randomChar($digit) {
-	$randBaseDigits = "23456789";
-	$randBaseLowerCase = "abcdefghijkmnrty";
-	$randBaseUpperCase = "ABDEFGHJKLMNPQRSTUVWXYZ";
-	$randBaseLowerCase = "ab";
-	$randBaseUpperCase = "AB";
-	$randBase = array(0 => $randBaseDigits, 1 => $randBaseLowerCase, 2 => $randBaseUpperCase);
-
-	if ($digit)
-		$type = 0;
-	else
-		$type = 2;
-	
+function randomChar($randBase, $useDigit) {
+	$type = ($useDigit) ? 0 : 1;
 	$max = strlen($randBase[$type])-1;
 
 	return $randBase[$type][rand(0, $max)];
@@ -412,6 +435,13 @@ function randomChar($digit) {
 function q($str) {
 	return "'".str_replace("'", "''", $str)."'";
 }
+function left($str, $len) {
+	return substr($str, 0, $len);
+}
+function right($str, $len) {
+	return substr($str, -$len);
+}
+
 
 
 if ($TestDB) {

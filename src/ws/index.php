@@ -37,12 +37,12 @@ $app->get('/hello/:name', function ($name) {
 
 $app->get('/freeShareCode/:shareCode', function ($shareCode) {
 	global $NL;
-	$row = array(free => isShareCodeFree($shareCode));  // ToDo: Check if sharecode is used in db
+	$row = array(free => isShareCodeFree(null, $shareCode));  // ToDo: Check if sharecode is used in db
 	echo(safe_json($row));
 });
 $app->post('/freeShareCode', function () {
 	global $NL;
-	$free = getFreeShareCode(4,"D-");
+	$free = getFreeShareCode(null, 2);
 	
 	$row = array(shareCode => $free);
 	echo(safe_json($row));

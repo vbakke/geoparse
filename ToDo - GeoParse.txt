@@ -18,12 +18,12 @@ ToDo - Store and Share
 - GUI: FIX error and feedback
 - WS: Locations CREATE
 - GUI: Add new location
+- WS: Split ShareCode starts with #, otherwise groupId is assumed
 
 --- Påbegynt ---
 
 
 --- Skal påbegynnes ---
-- WS: Split ShareCode starts with #, otherwise groupId is assumed
 - WS: Group + Locations UPDATE
 - GUI: Save (Update same)
 
