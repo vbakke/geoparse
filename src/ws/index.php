@@ -58,7 +58,7 @@ $app->get('/groups/:groupId', function ($groupCode) {
 	//print "Searching for group: ".$groupCode.$NL;
 	$result = getGroup($groupCode);
 
-	if (strtoupper($environment) != "PROD")
+	if ($result && strtoupper($environment) != "PROD")
 		$result["environment"] = $environment;
 
 	echo(safe_json($result));
@@ -69,7 +69,7 @@ $app->post('/groups', function () {
 	$body = file_get_contents('php://input');
 	$result = createGroup($body);
 	
-	if (strtoupper($environment) != "PROD")
+	if ($result && strtoupper($environment) != "PROD")
 		$result["environment"] = $environment;
 	
 	if ($result)
