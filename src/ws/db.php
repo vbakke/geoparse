@@ -257,9 +257,44 @@ function createGroup($jsonGroup) {
 }
 
 
-// ----------------------
-// CREATE LOCATION - POST
-// ----------------------
+// --------------------------
+// READ GROUP LOCATION - POST   -  IMPLEMENTATION NOT COMPLETE (Is it needed?)
+// --------------------------
+function getGroupsLocations($groupCode) {
+	global $table, $NL, $debugMode;
+
+	$con = connectDb();
+
+	// Lookup (and validate) shareCode / groupId
+	$ids = lookupGroupIds($con, $groupCode);
+	$groupRowId = $ids[1];
+
+	if ($debugMode)
+		print "Getting locations for '".$groupId."': IDs: '".$ids[0]."' - '".$ids[1]."'".$NL;
+	
+	$locations = getLocations($con, $groupRowId);
+	
+	closeConnection($con);
+	return Array(statuscode=>201, locations=>$locations);
+}
+
+function getLocations($con, $groupRowId) {
+	global $table, $debugMode, $NL;
+	
+	// -- Create Location ---
+	$sql = "SELECT label, lat, lng FROM ".$table['locations']." WHERE deletedDate is not null AND  groupRowId = ".$groupRowId." ";  // $groupRowId cannot have SQL injections. Can be inserted directly
+
+	if ($debugMode) print "SQL: ".$sql.$NL;
+		
+	$result = executeSql($sql, $con);
+	
+	$locationId = mysqli_insert_id($con);
+	return $locationId;
+}
+
+// ----------------------------
+// CREATE GROUP LOCATION - POST
+// ----------------------------
 function createLocation($groupCode, $jsonLocation) {
 	global $table, $NL, $debugMode;
 	if ($debugMode) print "createLocation(".$groupCode."): ".$jsonLocation.$NL;
