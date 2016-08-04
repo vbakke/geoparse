@@ -19,17 +19,23 @@ ToDo - Store and Share
 - WS: Locations CREATE
 - GUI: Add new location
 - WS: Split ShareCode starts with #, otherwise groupId is assumed
+- WS: Locations DELETE
+- GUI: Remove marker, update DB
 
 --- Påbegynt ---
 
-
 --- Skal påbegynnes ---
-- WS: Group + Locations UPDATE
-- GUI: Save (Update same)
+BUG: Remove a marker that has just been added fails (no meta.locationId)
+BUG: Remove a marker in a group that has just been shared fails (no meta.locationId)
+- WS: Locations UPDATE
+- GUI: Rename marker, update DB
+- GUI: Move marker, update DB
 
 --- Gjenstår ---
+- WS: Group  UPDATE
+- GUI: Rename Group, Update DB
+- GUI: Save (Update same)
 - GUI: New Share
-- WS: Locations UPDATE
 - WS+GUI: New Share with duplicate ShareCode
 
 - TestCase: 

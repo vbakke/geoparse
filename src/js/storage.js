@@ -11,7 +11,9 @@ var storage = (function () {
 	if (document.URL.indexOf("http://localhost") > -1)
 		WS_BASE = "http://vafe.net/geo/ws"; // ToDo-Release: Revert
 	var WS_GROUP = WS_BASE+"/groups";
+	var WS_GROUP_ID = WS_BASE+"/groups/:groupId";
 	var WS_LOCATION = WS_BASE+"/groups/:groupId/locations";
+	var WS_LOCATION_ID = WS_BASE+"/groups/:groupId/locations/:locationId";
 	var WS_SET = WS_BASE+"/set";  // DEL
 
 	var _self = {};
@@ -131,14 +133,31 @@ var storage = (function () {
 			data: JSON.stringify(location)
 		});
 		request.done( function (data) {
-			alert("OK: "+data);
 			var result = data;
 			//set['sharecode'] = result;
-			onFinished(data);
+			if (onFinished)
+				onFinished(data);
 		})
-		.fail( function (jqxhr, textStatus, error ) {
-			_self.onAjaxError(jqxhr, textStatus, error, onFail);
+			.fail( function (jqxhr, textStatus, error ) {
+				_self.onAjaxError(jqxhr, textStatus, error, onFail);
+			});
+	}
+
+	_self.removeLocation = function (groupId, locationId, onFinished, onFail) {
+		var url = WS_LOCATION_ID.replace(':groupId', groupId).replace(':locationId', locationId);
+		var request = $.ajax({
+			url: url,
+			type: "delete",
 		});
+		request.done( function (data) {
+			var result = data;
+			//set['sharecode'] = result;
+			if (onFinished)
+				onFinished(data);
+		})
+			.fail( function (jqxhr, textStatus, error ) {
+				_self.onAjaxError(jqxhr, textStatus, error, onFail);
+			});
 	}
 
 	// -----------------

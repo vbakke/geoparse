@@ -188,7 +188,7 @@ function getGroup($groupId) {
 		
 		if ($group) {
 			// --- Get Locations ---
-			$sql = "SELECT label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)'";
+			$sql = "SELECT locationId, label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)'";
 			$sql = replaceFields($con, $sql, $set);
 			
 			if ($debugMode)
@@ -272,17 +272,17 @@ function getGroupsLocations($groupCode) {
 	if ($debugMode)
 		print "Getting locations for '".$groupId."': IDs: '".$ids[0]."' - '".$ids[1]."'".$NL;
 	
-	$locations = getLocations($con, $groupRowId);
+	$locations = getLocationsDB($con, $groupRowId);
 	
 	closeConnection($con);
 	return Array(statuscode=>201, locations=>$locations);
 }
 
-function getLocations($con, $groupRowId) {
+function getLocationsDB($con, $groupRowId) {
 	global $table, $debugMode, $NL;
 	
 	// -- Create Location ---
-	$sql = "SELECT label, lat, lng FROM ".$table['locations']." WHERE deletedDate is not null AND  groupRowId = ".$groupRowId." ";  // $groupRowId cannot have SQL injections. Can be inserted directly
+	$sql = "SELECT locationId, label, lat, lng FROM ".$table['locations']." WHERE deletedDate is not null AND  groupRowId = ".$groupRowId." ";  // $groupRowId cannot have SQL injections. Can be inserted directly
 
 	if ($debugMode) print "SQL: ".$sql.$NL;
 		
@@ -311,17 +311,17 @@ function createLocation($groupCode, $jsonLocation) {
 	$ids = lookupGroupIds($con, $groupCode);
 	if (!$ids) {
 		// Return 404
-		return Array(statuscode=>404, statusmessage=>"ERROR: Incorrect groupCode");
+		return Array(statuscode=>404, statusmessage=>"ERROR: Not found: group");
 	}
 	$groupRowId = $ids[1];
 	
-	$locationId = insertLocation($con, $groupRowId, $location);
+	$locationId = insertLocationDB($con, $groupRowId, $location);
 	
 	closeConnection($con);
 	return Array(statuscode=>201, locationId=>$locationId);
 }
 
-function insertLocation($con, $groupRowId, $location) {
+function insertLocationDB($con, $groupRowId, $location) {
 	global $table, $debugMode, $NL;
 	
 	// -- Create Location ---
@@ -339,6 +339,53 @@ function insertLocation($con, $groupRowId, $location) {
 	
 	$locationId = mysqli_insert_id($con);
 	return $locationId;
+}
+
+// ------------------------------
+// DELETE GROUP LOCATION - DELETE
+// ------------------------------
+function deleteLocation($groupCode, $locationId) {
+	global $table, $NL, $debugMode;
+	if ($debugMode) print "deleteLocation(".$groupCode.", ".$locationId.")".$NL;
+
+	$con = connectDb();
+
+	$ids = lookupGroupIds($con, $groupCode);
+	if (!$ids) {
+		// Return 404
+		return Array(statuscode=>404, statusmessage=>"ERROR: Not found: group");
+	}
+	$groupRowId = $ids[1];
+	
+	$success = deleteLocationDB($con, $groupRowId, $locationId);
+	
+	closeConnection($con);
+	
+	if ($success)
+		return Array(statuscode=>200);
+	else
+		return Array(statuscode=>404, statusmessage=>"ERROR: Not found: location");
+}
+
+function deleteLocationDB($con, $groupRowId, $locationId) {
+	global $table, $debugMode, $NL;
+	
+	$vars = [groupRowId=>$groupRowId, locationId=>$locationId];
+	
+	// -- Create Location ---
+	$sql = "UPDATE ".$table['locations']." ".
+			"SET deletedDate = now() ".
+			"WHERE deletedDate is null AND groupRowId = ".$groupRowId." AND  locationId = ".$locationId." "; 
+	
+	$sql = replaceFields($con, $sql, $vars);
+	if ($debugMode) print "DELETE Location SQL: ".$sql.$NL;
+		
+	$result = executeSql($sql, $con);
+	
+	$rows = mysqli_affected_rows($con);
+	var_dump($rows);
+	$success = ($rows === 1);
+	return $success;
 }
 
 // 2016-version end

@@ -226,6 +226,10 @@
 		attempts.needMoreInfo = (attempts.eval[attempts.bestMatch] < 100);
 		if (attempts.needMoreInfo) {
 			if (hintLocation) {
+				if (attempts.pos.utm.feedback)
+					attempts.pos.utm.feedback.length = 0;
+				if (attempts.pos.latlon.feedback)
+					attempts.pos.latlon.feedback.length = 0;
 				attempts = _self.addHintLocation(attempts, hintLocation);
 			} else {
 				var parsingFeedback = attempts.pos[attempts.bestMatch].feedback;

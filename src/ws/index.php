@@ -22,6 +22,8 @@ function safe_json($object) {
 	return json_encode($object);
 }
 
+
+
 $app->get('/ping', function () {
 	echo "Ping!";
 });
@@ -81,6 +83,14 @@ $app->post('/groups', function () {
 // ROUTE GROUP / LOCATION
 // ----------------------
 
+
+$app->options('/groups/:groupId/locations/:locationId', function ($groupCode, $locationId) {
+	global $app;
+	$app->response->headers->set("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
+	$app->response()->setStatus(200);
+});
+
+
 $app->post('/groups/:groupId/locations', function ($groupCode) {
 	global $app, $NL, $debugMode;
 	$body = file_get_contents('php://input');
@@ -96,6 +106,19 @@ $app->post('/groups/:groupId/locations', function ($groupCode) {
 	
 	if ($status['locationId'])
 		echo(safe_json($status));
+});
+
+$app->delete('/groups/:groupId/locations/:locationId', function ($groupCode, $locationId) {
+	global $app, $NL, $debugMode;
+
+	$status = deleteLocation($groupCode, $locationId);
+
+	if ($debugMode) { 
+		print "DELETE location ".$groupCode.", ".$locationId.": "; 
+		var_dump($status); 
+	}
+	
+	$app->response()->setStatus($status['statuscode']);
 });
 
 

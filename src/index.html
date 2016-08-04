@@ -251,7 +251,7 @@
 	}
 	function onClickInMap() {	
 		if(tmpMapZoom == map.getZoom() && clickedMapPos){
-			var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, true);
+			var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, undefined, true);
 			clickedMapPos = null;
 
 			var utmLogMsg = approxUtm(location.utm);
@@ -668,7 +668,8 @@
 					sharedId = ""; // Clear to avoid repeatitive insert to DB
 					for (var i = 0; i < data.locations.length; i++) {
 						var location = data.locations[i];
-						addLatLonLocation(location.lat, location.lng, location.label, true);
+						var meta = {locationId: location.locationId};
+						addLatLonLocation(location.lat, location.lng, location.label, meta, true);
 					}
 					sharedId = data.groupId; // Add this AFTER addLatLonLocation
 					zoomToLocations();
@@ -792,11 +793,11 @@
 		}
 	}
 				
-	function addLatLonLocation(lat, lon, label, freezeMap) {
+	function addLatLonLocation(lat, lon, label, meta, freezeMap) {
 		//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
 		var latlon = new geoLatLon(lat, lon);
 		var utm = geoconverter.LatLonToUTM(latlon);
-		var location = addLocation("", latlon, utm, label, freezeMap);
+		var location = addLocation("", latlon, utm, label, meta, freezeMap);
 		return location;
 	}
 
@@ -833,27 +834,19 @@
 		return label;
 
 	}
-	function addLocation(orgStr, latlon, utm, label, freezeMap) {
+	function addLocation(orgStr, latlon, utm, label, meta, freezeMap) {
 		if (!label) {
 			label = getLabelLetter();
 		}
-		var location = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
+		var location = {orgStr: orgStr, latlon: latlon, utm: utm, meta: meta, label: label};
 		
 		
 		addLocationToTable(tb, location);
 		addLocationToMap(location, freezeMap);
-
 		if (sharedId) {
-			var location2 = {label: label, lat: latlon.lat, lng: latlon.lon};
-			storage.addLocation(sharedId, location2,
-					function (data) {
-						console.log("Added location: "+data);
-					},
-					function (err) {
-						console.log("ERROR: Adding location: "+err);
-					}
-			);
+			addLocationToDb(location);
 		}
+
 
 		posArray.push(location);
 		
@@ -865,6 +858,32 @@
 		var dist = google.maps.geometry.spherical.computeDistanceBetween(latLngA, latLngB);
 		return dist;
 	}
+
+
+	function addLocationToDb(location) {
+		var locationDB = {label: location.label, lat: location.latlon.lat, lng: location.latlon.lon};
+		storage.addLocation(sharedId, locationDB,
+				function (data) {
+					console.log("Added location: " + data);
+				},
+				function (err) {
+					console.log("ERROR: Adding location: " + err);
+				}
+		);
+	}
+
+	function removeLocationFromDb(location) {
+		var locationDB = {locationId: location.meta.locationId};
+		storage.removeLocation(sharedId, locationDB.locationId,
+				function (data) {
+					console.log("Removed location: " + data);
+				},
+				function (err) {
+					console.log("ERROR: Removing location: " + err);
+				}
+		);
+	}
+
 	function addLocationToTable(tb, location) {
 		if (posArray.length <= 0) {
 			tb.empty();
@@ -1105,6 +1124,9 @@
 
 
 	function removeLocation(index) {
+		if (sharedId) {
+			removeLocationFromDb(posArray[index]);
+		}
 		removeLocationFromMap(index);
 		removeLocationFromTable(index);
 		posArray.splice(index, 1); // Remove the element
