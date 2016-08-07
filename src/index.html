@@ -663,9 +663,9 @@
 			function (data) {
 				console.log(data);
 				if (!data) {
-					showFeedback("Could not find '" + groupId + "'");
+					showFeedback("ERROR: Could not find '" + groupId + "'");
 				} else if (!data.locations) {
-						showFeedback("No locations for '" + groupId + "'");
+						showFeedback("INFO: No coordinates found for '" + groupId + "'");
 				} else {
 					$("#txtSetGroupId").val(data.groupId);
 					$("#txtSetShareCode").val(data.shareCode);
@@ -713,13 +713,20 @@
 					, lat: posArray[i].latlon.lat
 					, lng: posArray[i].latlon.lon
 				};
-				group.locations.unshift(location);  // append()
+				group.locations.push(location);
 			}
 		}
 		storage.createNewShare(group, function (data) {
-			alert("index.html: data: "+data);
+			console.log("index.html: data: "+data);
 			// Store sharecode in local storage
 			sharedId = data.groupId;
+			var count = Math.min(data.locations.length, posArray.length);
+			for (var i=0; i<count; i++) {
+				if (data.locations[i].label != posArray[i].label)
+					console.log("DBG: Mismatch location #"+i+": local: '"+posArray[i].label+"', remote: '"+data.locations[i].label+"'");
+
+				posArray[i].meta = {locationId: data.locations[i].locationId};
+			}
 			$("#txtSetGroupId").val(data.groupId);
 			$("#txtSetShareCode").val(data.shareCode);
 		}, function (errorMsg) {

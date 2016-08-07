@@ -248,11 +248,11 @@ function createGroup($jsonGroup) {
 		$result = executeSql($sql, $con);
 	}
 	
+	$groupId = $groupObj["groupRandId"]."-".$groupRowId;
+	$groupObj = getGroup($groupId);
+
 	closeConnection($con);
 
-	// Tidy ID
-	$groupObj["groupId"] = $groupObj["groupRandId"]."-".$groupRowId;
-	unset($groupObj->$groupRandId);
 	return $groupObj;
 }
 
@@ -296,13 +296,6 @@ function getGroupLocation($groupCode, $locationId) {
 			print "Getting location ".$locationId." for '".$groupId."': IDs: '".$ids[0]."' - '".$ids[1]."'".$NL;
 		
 		$location = getLocationDB($con, $groupRowId, $locationId);
-		/*
-		if ($location) {
-			$status = [statuscode=>404, statusmessage=>"Location Not found"];
-		} else {
-			$status = [statuscode=>200, statusmessage=>"OK", location=>$location];
-		}
-		*/
 	}
 	closeConnection($con);
 

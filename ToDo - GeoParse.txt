@@ -21,12 +21,14 @@ ToDo - Store and Share
 - WS: Split ShareCode starts with #, otherwise groupId is assumed
 - WS: Locations DELETE
 - GUI: Remove marker, update DB
+BUG: Remove a marker that has just been added fails (no meta.locationId)
+BUG: Remove a marker in a group that has just been shared fails (no meta.locationId)
 
 --- Påbegynt ---
 
 --- Skal påbegynnes ---
-BUG: Remove a marker that has just been added fails (no meta.locationId)
-BUG: Remove a marker in a group that has just been shared fails (no meta.locationId)
+- GUI: Open ID geo/?q=ID
+- GUI: Share updateqd the displayed URL in addresss bar
 - WS: Locations UPDATE
 - GUI: Rename marker, update DB
 - GUI: Move marker, update DB
@@ -56,7 +58,6 @@ BUG: Remove a marker in a group that has just been shared fails (no meta.locatio
 - GUI: Store all opened ShareCodes in Local storage
 - GUI: Open and select previous opened Groups from Local Storage
 
-- GUI: Open ID geo/?q=ID
 
 - Clean server log
 - WS: Use mysql_query("START TRANSACTION"); mysql_query("COMMIT"); mysql_query("ROLLBACK");

@@ -109,12 +109,7 @@ var storage = (function () {
 			type: "post",
 			data: JSON.stringify(group)
 		});
-		request.done( function (data) {
-			alert("OK: "+data);
-			var result = data;
-			//set['sharecode'] = result;
-			onFinished(data);
-		})
+		request.done(onFinished)
 		.fail( function (jqxhr, textStatus, error ) {
 			_self.onAjaxError(jqxhr, textStatus, error, onFail);
 		});
