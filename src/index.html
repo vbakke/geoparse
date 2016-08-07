@@ -131,6 +131,13 @@
 				</table>
 			</div>
 		</div>
+		<script>
+			$("#txtSetShareCode").keyup(function(event){
+				if(event.keyCode == 13){
+					$("#btnLoad").click();
+				}
+			});
+		</script>
 	</div>
 	<div id="divMap">
 		<div id="divMap2"></div>
@@ -834,22 +841,30 @@
 		return label;
 
 	}
-	function addLocation(orgStr, latlon, utm, label, meta, freezeMap) {
+	function addLocation(orgStr, latlon, utm, label, meta, freezeMap, skipDB) {
+		if (skipDB == undefined) skipDB= false;
+
 		if (!label) {
 			label = getLabelLetter();
 		}
+
 		var location = {orgStr: orgStr, latlon: latlon, utm: utm, meta: meta, label: label};
-		
-		
-		addLocationToTable(tb, location);
-		addLocationToMap(location, freezeMap);
-		if (sharedId) {
-			addLocationToDb(location);
+
+		if (sharedId && !skipDB) {
+			var locationDB = {label: label, lat: latlon.lat, lng: latlon.lon};
+			addLocationToDb(locationDB, function (locationDB) {
+						meta = {locationId: locationDB.locationId};
+						//  Recursively call addLocation(), but with skipDB flag set to true
+						addLocation(orgStr, latlon, utm, label, meta, freezeMap, true);
+					}
+			);
+		} else {
+			addLocationToTable(tb, location);
+			addLocationToMap(location, freezeMap);
+			posArray.push(location);
 		}
 
 
-		posArray.push(location);
-		
 		return location;
 	}
 	function getDistance(locationA, locationB) {
@@ -860,12 +875,9 @@
 	}
 
 
-	function addLocationToDb(location) {
-		var locationDB = {label: location.label, lat: location.latlon.lat, lng: location.latlon.lon};
+	function addLocationToDb(locationDB, onFinished) {
 		storage.addLocation(sharedId, locationDB,
-				function (data) {
-					console.log("Added location: " + data);
-				},
+				onFinished				,
 				function (err) {
 					console.log("ERROR: Adding location: " + err);
 				}

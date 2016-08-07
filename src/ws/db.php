@@ -277,25 +277,59 @@ function getGroupsLocations($groupCode) {
 	closeConnection($con);
 	return Array(statuscode=>201, locations=>$locations);
 }
+// --------------------------
+// GET: GROUP LOCATION - POST   
+// --------------------------
+function getGroupLocation($groupCode, $locationId) {
+	global $table, $NL, $debugMode;
 
-function getLocationsDB($con, $groupRowId) {
+	$con = connectDb();
+
+	// Lookup (and validate) shareCode / groupId
+	$ids = lookupGroupIds($con, $groupCode);
+	if (!$ids) {
+		$status = [statuscode=>404, statusmessage=>"Group Not found"];
+	} else {
+		$groupRowId = $ids[1];
+
+		if ($debugMode)
+			print "Getting location ".$locationId." for '".$groupId."': IDs: '".$ids[0]."' - '".$ids[1]."'".$NL;
+		
+		$location = getLocationDB($con, $groupRowId, $locationId);
+		/*
+		if ($location) {
+			$status = [statuscode=>404, statusmessage=>"Location Not found"];
+		} else {
+			$status = [statuscode=>200, statusmessage=>"OK", location=>$location];
+		}
+		*/
+	}
+	closeConnection($con);
+
+	return $location;
+}
+
+function getLocationDB($con, $groupRowId, $locationId) {
 	global $table, $debugMode, $NL;
 	
+	$vars = [groupRowId=>$groupRowId, locationId=>$locationId];
 	// -- Create Location ---
-	$sql = "SELECT locationId, label, lat, lng FROM ".$table['locations']." WHERE deletedDate is not null AND  groupRowId = ".$groupRowId." ";  // $groupRowId cannot have SQL injections. Can be inserted directly
-
+	$sql = "SELECT locationId, CONCAT(label, '-', locationId) as label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = $(groupRowId) AND locationId = $(locationId) ";  
+	
+	$sql = replaceFields($con, $sql, $vars);
 	if ($debugMode) print "SQL: ".$sql.$NL;
-		
+	
 	$result = executeSql($sql, $con);
 	
-	$locationId = mysqli_insert_id($con);
-	return $locationId;
+	$location = mysqli_fetch_assoc($result);
+
+	return $location;
 }
 
 // ----------------------------
 // CREATE GROUP LOCATION - POST
 // ----------------------------
-function createLocation($groupCode, $jsonLocation) {
+function createGroupsLocation($groupCode, $jsonLocation) {
 	global $table, $NL, $debugMode;
 	if ($debugMode) print "createLocation(".$groupCode."): ".$jsonLocation.$NL;
 	$location = json_decode($jsonLocation, true);

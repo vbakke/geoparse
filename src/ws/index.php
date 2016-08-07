@@ -34,7 +34,7 @@ $app->get('/hello/:name', function ($name) {
 });
 
 // -------------------
-// ROUTE FREESHARECODE
+// ROUTE: FREESHARECODE
 // -------------------
 
 $app->get('/freeShareCode/:shareCode', function ($shareCode) {
@@ -52,7 +52,7 @@ $app->post('/freeShareCode', function () {
 
 
 // -----------
-// ROUTE GROUP
+// ROUTE: GROUP
 // -----------
 
 $app->get('/groups/:groupId', function ($groupCode) {
@@ -80,32 +80,62 @@ $app->post('/groups', function () {
 });
 
 // ----------------------
-// ROUTE GROUP / LOCATION
+// ROUTE: GROUP / LOCATION
 // ----------------------
 
 
 $app->options('/groups/:groupId/locations/:locationId', function ($groupCode, $locationId) {
 	global $app;
-	$app->response->headers->set("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
+	//$app->response->headers->set("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
+	$app->response->headers->set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
 	$app->response()->setStatus(200);
 });
 
 
+$app->get('/groups/:groupId/locations/:locationId', function ($groupCode, $locationId) {
+	global $app, $environment, $NL, $debugMode;
+	
+	$result = getGroupLocation($groupCode, $locationId);
+
+	if ($result && strtoupper($environment) != "PROD")
+		$result["environment"] = $environment;
+	//$app->response()->setStatus($status['statuscode']);
+
+	if ($result) {
+		$app->response()->setStatus(200);
+		echo(safe_json($result));
+	} else {
+		$app->response()->setStatus(404);
+		echo "Not found";
+	}
+});
+
+
 $app->post('/groups/:groupId/locations', function ($groupCode) {
-	global $app, $NL, $debugMode;
+	global $app, $environment, $NL, $debugMode;
 	$body = file_get_contents('php://input');
 
-	$status = createLocation($groupCode, $body);
+	$status = createGroupsLocation($groupCode, $body);
 
 	if ($debugMode) { 
 		print "POST location ".$groupCode.": "; 
 		var_dump($status); 
 	}
 	
+	$locationId = $status['locationId'];
+	if ($locationId) {
+		$url = $app->request->getRootUri();
+		$url .= $app->request->getResourceUri();
+		$url .= "/".$status['locationId'];
+		$app->response->headers->set("Location", $url);
+		
+		$result = getGroupLocation($groupCode, $locationId);
+		if ($result && strtoupper($environment) != "PROD")
+			$result["environment"] = $environment;
+		
+		echo(safe_json($result));
+		}
 	$app->response()->setStatus($status['statuscode']);
-	
-	if ($status['locationId'])
-		echo(safe_json($status));
 });
 
 $app->delete('/groups/:groupId/locations/:locationId', function ($groupCode, $locationId) {
