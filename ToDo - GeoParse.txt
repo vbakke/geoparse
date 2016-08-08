@@ -23,14 +23,14 @@ ToDo - Store and Share
 - GUI: Remove marker, update DB
 BUG: Remove a marker that has just been added fails (no meta.locationId)
 BUG: Remove a marker in a group that has just been shared fails (no meta.locationId)
+- GUI: Open ID with URL geo#ID
+- GUI: Share updated the displayed URL in addresss bar
+- GUI: 'Clear' cleans the share
 
 --- Påbegynt ---
 
 --- Skal påbegynnes ---
-- GUI: Open ID geo/?q=ID
-- GUI: Share updateqd the displayed URL in addresss bar
 - WS: Locations UPDATE
-- GUI: Rename marker, update DB
 - GUI: Move marker, update DB
 
 --- Gjenstår ---
@@ -38,7 +38,11 @@ BUG: Remove a marker in a group that has just been shared fails (no meta.locatio
 - GUI: Rename Group, Update DB
 - GUI: Save (Update same)
 - GUI: New Share
+- GUI: Delete Group
+- WS: Delete Group
 - WS+GUI: New Share with duplicate ShareCode
+
+-WS: Bug: ShareCode Høst and HØST are not treated the same.
 
 - TestCase: 
 	- Create, Get ID

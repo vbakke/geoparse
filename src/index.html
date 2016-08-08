@@ -51,7 +51,7 @@
 				<div id="divEnterPos" style="float:left;margin-right:5px;">
 					  <input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
 					  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
-			</div>
+				</div>
 			</form>
 			<div style="clear: both"></div>
 			<div id="divFeedback"></div>
@@ -110,6 +110,7 @@
 				Cheers, :)
 			</p-->
 		</div>
+		<!--
 		<div id="divStorage">
 			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button>
 			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
@@ -131,6 +132,7 @@
 				</table>
 			</div>
 		</div>
+		-->
 		<script>
 			$("#txtSetShareCode").keyup(function(event){
 				if(event.keyCode == 13){
@@ -145,7 +147,7 @@
 			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Norgeskart.no</button>
 			<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
 			<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
-			
+
 			<div class="clearfix"></div>
 		</div>
 	</div>
@@ -153,7 +155,7 @@
 
 <div style="clear: both"></div>
 </div>
- 
+
 <script type="text/javascript">
 	var googleIsOffline = false;
 	var posArray = [];
@@ -185,6 +187,7 @@
 	var tb = $("#posTable tbody");
 	var tbSets = $("#setsTable tbody");
 	var txtCoordinate = $("#txtCoordinate");
+	addToTableNoElelemntsText();
 
 	// Add on load event to initialize the whole shebang
 	if (googleIsOffline)
@@ -193,17 +196,48 @@
 		loadGoogleApi(initialize);
 
 	function loadGoogleApi(initFunc) {
+		console.log("loadGoogleApi()");
 		$.get("./conf/gkey.txt", null, function (data) {
+			console.log("loadGoogleApi() got gkey");
 			var apiUrl = "https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry&key=" + data.trim();
 			$.getScript(apiUrl, function () {
+				console.log("loadGoogleApi() got API");
 				$.getScript("./lib/markerwithlabel.js", initFunc);
 			});
 		}, "text");
 	}
 	function initialize() {
-			initMap("divMap2");
+		console.log("initialize()");
+
+		initMap("divMap2");
 		clearLocations();
-		generateSetsTable();
+		//generateSetsTable();
+
+		var groupId = "";
+		if(window.location.hash)
+			groupId = window.location.hash.substr(1);
+		if(groupId) {
+			console.log("initialize(): Hash: "+groupId);
+			showFeedback("INFO: Loading " + groupId);
+			if (googleIsOffline) {
+				loadGroup(groupId);
+			} else {
+				google.maps.event.addListenerOnce(map, 'idle', function () {
+					loadGroup(groupId);
+				});
+			}
+		}
+
+		$(window).on('hashchange', function () {
+			console.log("HASH change: "+window.location.hash);
+			var groupId = "";
+			if(window.location.hash)
+				groupId = window.location.hash.substr(1);
+			if(groupId) {
+				showFeedback("INFO: Loading " + window.location.hash.substr(1));
+				loadGroup(window.location.hash);
+			}
+		});
 
 		txtCoordinate.on("focus",function(e){
 			if (this.selectionEnd == 0) {
@@ -218,7 +252,7 @@
 			}
 		});
 	}
-	function initMap(div) {
+	function initMap(div, onFinished) {
 		updateMapOptions();
 		var mapOptions = {
 			zoom: initZoomLevel,
@@ -238,7 +272,9 @@
 
 		// Get current location
 		if (navigator.geolocation) {
+			console.log("Asking for browser location");
 			navigator.geolocation.getCurrentPosition(function (location) {
+				console.log("Received browser location");
 				var lat = location.coords.latitude;
 				var lon = location.coords.longitude;
 
@@ -253,7 +289,9 @@
 					return val.replace("%gridZone%", gridZone)
 				});
 			});
-		} 
+		}
+		if (onFinished)
+			onFinished();
 
 	}
 	function onClickInMap() {	
@@ -589,7 +627,9 @@
 	}
 	
 	function onClickClearLocations() {
-		ga('send', 'event', 'user-click', 'clear', 'clear-'+posArray.length); 
+		ga('send', 'event', 'user-click', 'clear', 'clear-'+posArray.length);
+		sharedId = "";
+		window.location.hash = "";
 		var btn = $("#btnAddMyPos");
 		//btn.prop("disabled", false);
 		clearLocations();
@@ -659,14 +699,25 @@
 		if (groupId == "")
 			groupId = "1001-2";
 
+		loadGroup(groupId);
+		window.location.hash = groupId;
+
+	}
+
+	function loadGroup(groupId) {
+		console.log("loadGroup("+groupId+")");
+		if (groupId && groupId[0] == '#') // If url hash is passed as argument
+			groupId = groupId.substr(1);
+
 		storage.getSharedGroup(groupId,
 			function (data) {
 				console.log(data);
-				if (!data) {
+				if (!data || data.error) {
 					showFeedback("ERROR: Could not find '" + groupId + "'");
 				} else if (!data.locations) {
 						showFeedback("INFO: No coordinates found for '" + groupId + "'");
 				} else {
+					clearFeedback();
 					$("#txtSetGroupId").val(data.groupId);
 					$("#txtSetShareCode").val(data.shareCode);
 					$("#txtSetName").val(data.name);
@@ -729,6 +780,7 @@
 			}
 			$("#txtSetGroupId").val(data.groupId);
 			$("#txtSetShareCode").val(data.shareCode);
+			window.location.hash = data.shareCode;
 		}, function (errorMsg) {
 			alert("createNewShare(): "+errorMsg);
 		});

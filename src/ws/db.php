@@ -189,6 +189,7 @@ function getGroup($groupId) {
 		if ($group) {
 			// --- Get Locations ---
 			$sql = "SELECT locationId, label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)'";
+			#$sql = "SELECT locationId, CONCAT(label, '-', locationId) as label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)'";
 			$sql = replaceFields($con, $sql, $set);
 			
 			if ($debugMode)
@@ -307,7 +308,8 @@ function getLocationDB($con, $groupRowId, $locationId) {
 	
 	$vars = [groupRowId=>$groupRowId, locationId=>$locationId];
 	// -- Create Location ---
-	$sql = "SELECT locationId, CONCAT(label, '-', locationId) as label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = $(groupRowId) AND locationId = $(locationId) ";  
+	$sql = "SELECT locationId, label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = $(groupRowId) AND locationId = $(locationId) ";  
+	#$sql = "SELECT locationId, CONCAT(label, '-', locationId) as label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = $(groupRowId) AND locationId = $(locationId) ";  
 	
 	$sql = replaceFields($con, $sql, $vars);
 	if ($debugMode) print "SQL: ".$sql.$NL;
