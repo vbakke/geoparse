@@ -101,6 +101,63 @@ body {
     font-size: 0.8em;
 }
 
+.utmKmText
+{
+    font-size: 1.166em;
+}
+
+#divFeedback
+{
+    font-size: 0.8em;
+
+}
+
+.feedback {
+    margin: 2px;
+    padding: 3px;
+    border: 3px;
+    border-style: solid;
+    border-color: #D9E6FC;
+}
+.feedbackError
+{
+    background: #ff8f85;
+    border-color: #ff4133;
+
+    background-image:none !important;
+    -webkit-animation: fadeIt 1s ease-in-out;
+    -moz-animation: fadeIt 1s ease-in-out;
+    -o-animation: fadeIt 1s ease-in-out;
+    animation: fadeIt 1s ease-in-out;
+}
+
+@-webkit-keyframes fadeIt {
+    0%   { background-color: #FFFFFF; }
+    50%  { background-color: #FF0000; }
+    100% { background-color: #FFFFFF; }
+}
+@-moz-keyframes fadeIt {
+    0%   { background-color: #FFFFFF; }
+    50%  { background-color: #00FF00; }
+    100% { background-color: #FFFFFF; }
+}
+@-o-keyframes fadeIt {
+    0%   { background-color: #FFFFFF; }
+    50%  { background-color: #FFFF00; }
+    100% { background-color: #FFFFFF; }
+}
+@keyframes fadeIt {
+    0%  { background-color: #ff4133; }
+    100% { background-color: #ff8f85; }
+}
+
+.backgroundAnimated{
+    background-image:none !important;
+    -webkit-animation: fadeIt 1s ease-in-out;
+    -moz-animation: fadeIt 1s ease-in-out;
+    -o-animation: fadeIt 1s ease-in-out;
+    animation: fadeIt 0.3s ease-in-out;
+}
 
 table {
        width:100%;

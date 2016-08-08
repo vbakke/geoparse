@@ -17,6 +17,7 @@
 	<script src="./js/geoclasses.js"></script>
 	<script src="./js/geoconverter.js"></script>
 	<script src="./js/geoparse.js"></script>
+	<script src="./js/storage.js"></script>
 	<script src="./js/norgeskart.js"></script>
 	<script src="./lib/jquery-1.11.1.js"></script>
 	<script src="./lib/amplify.min.js"></script>
@@ -35,11 +36,12 @@
 <div id="divAll">
 	<div id="divPanel">
 		<div style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
-		<div id="divHeader"><span class="header">EARTH</span><br/><p style="font-size:0.7em;margin-top:0;">Convert between GPS and UTM coordinates</p></div>
+		<div id="divHeader"><span class="header">EARTH</span><br/>
+			<p style="font-size:0.7em;margin-top:0;">Convert between GPS and UTM coordinates</p>
+		</div>
 		<div id="divInput">
 			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
 			<div id="divMyLocation" style="float:right">
-				<div id="sMyLocation"></div>
 				<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 			</div>
 			<form id="convertPos" name="convertPos" target="dummy_iframe">
@@ -78,12 +80,12 @@
 										 <option value="dms">d°m's"</option>
 								 </select>
 								 <!-- ToDo: Ala http://proto.io/freebies/onoff/ -->
-							 	 <div><input id="chkLatlonOrderNE" type="checkbox" onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N before E</div>
+							 	 <div><input id="chkLatlonOrderNE" type="checkbox" onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners" value="posNE">N&nbsp;before&nbsp;E</div>
 							 	 <div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
 							 </td>
 							 <td>
 								 <div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
-								 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E before N</div>
+								 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E&nbsp;before&nbsp;N</div>
 								 <div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
 							 </td>
 							 <td colspan="2" style="text-align:center;">
@@ -91,12 +93,14 @@
 							 </td>
 						 </tr>
 					 </tfoot>
-				</table>
-		 </div>
+			 </table>
+		</div>
 				
 		<div id="divUsage">
 			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
-			Update: 2016-07-14: Now you can enter street addresses and place names.
+				Update: 2016-07-25: Work in progress: Storing and Sharing locations.
+			</p><p style="margin-bottom:0;font-size:0.7em;">
+				Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
 			<!--p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
@@ -106,6 +110,36 @@
 				Cheers, :)
 			</p-->
 		</div>
+		<!--
+		<div id="divStorage">
+			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button>
+			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
+			GroupId: <input id="txtSetGroupId" readonly style="width:15%">
+			ShareCode: <input id="txtSetShareCode" style="width:15%">
+			Name: <input id="txtSetName" style="width:15%">
+			Description: <input id="txtSetDescription" style="width:60%">
+			<div id="divStorageTable">
+				<table id="setsTable">
+
+					<thead style="font-size:0.9em;">
+						<th>Set</th>
+						<th>Last modified</th>
+						<th>Share Code</th>
+						<th></th>
+					</thead>
+					<tbody style="font-size:0.9em;">
+				</tbody>
+				</table>
+			</div>
+		</div>
+		-->
+		<script>
+			$("#txtSetShareCode").keyup(function(event){
+				if(event.keyCode == 13){
+					$("#btnLoad").click();
+				}
+			});
+		</script>
 	</div>
 	<div id="divMap">
 		<div id="divMap2"></div>
@@ -113,7 +147,7 @@
 			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Norgeskart.no</button>
 			<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
 			<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
-			
+
 			<div class="clearfix"></div>
 		</div>
 	</div>
@@ -121,10 +155,11 @@
 
 <div style="clear: both"></div>
 </div>
- 
+
 <script type="text/javascript">
 	var googleIsOffline = false;
 	var posArray = [];
+	var sharedId = "";
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
 	var initKnownLocationZoomLevel = 10;
@@ -150,7 +185,9 @@
 	var map;
 	var clickedMapPos, tmpMapZoom;
 	var tb = $("#posTable tbody");
+	var tbSets = $("#setsTable tbody");
 	var txtCoordinate = $("#txtCoordinate");
+	addToTableNoElelemntsText();
 
 	// Add on load event to initialize the whole shebang
 	if (googleIsOffline)
@@ -159,16 +196,48 @@
 		loadGoogleApi(initialize);
 
 	function loadGoogleApi(initFunc) {
+		console.log("loadGoogleApi()");
 		$.get("./conf/gkey.txt", null, function (data) {
+			console.log("loadGoogleApi() got gkey");
 			var apiUrl = "https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry&key=" + data.trim();
 			$.getScript(apiUrl, function () {
+				console.log("loadGoogleApi() got API");
 				$.getScript("./lib/markerwithlabel.js", initFunc);
 			});
 		}, "text");
 	}
 	function initialize() {
+		console.log("initialize()");
+
 		initMap("divMap2");
 		clearLocations();
+		//generateSetsTable();
+
+		var groupId = "";
+		if(window.location.hash)
+			groupId = window.location.hash.substr(1);
+		if(groupId) {
+			console.log("initialize(): Hash: "+groupId);
+			showFeedback("INFO: Loading " + groupId);
+			if (googleIsOffline) {
+				loadGroup(groupId);
+			} else {
+				google.maps.event.addListenerOnce(map, 'idle', function () {
+					loadGroup(groupId);
+				});
+			}
+		}
+
+		$(window).on('hashchange', function () {
+			console.log("HASH change: "+window.location.hash);
+			var groupId = "";
+			if(window.location.hash)
+				groupId = window.location.hash.substr(1);
+			if(groupId) {
+				showFeedback("INFO: Loading " + window.location.hash.substr(1));
+				loadGroup(window.location.hash);
+			}
+		});
 
 		txtCoordinate.on("focus",function(e){
 			if (this.selectionEnd == 0) {
@@ -183,7 +252,7 @@
 			}
 		});
 	}
-	function initMap(div) {
+	function initMap(div, onFinished) {
 		updateMapOptions();
 		var mapOptions = {
 			zoom: initZoomLevel,
@@ -203,8 +272,9 @@
 
 		// Get current location
 		if (navigator.geolocation) {
-			var span = $("#sMyLocation");
+			console.log("Asking for browser location");
 			navigator.geolocation.getCurrentPosition(function (location) {
+				console.log("Received browser location");
 				var lat = location.coords.latitude;
 				var lon = location.coords.longitude;
 
@@ -212,9 +282,6 @@
 
 				map.setCenter(new google.maps.LatLng(lat, lon));
 				map.setZoom(initKnownLocationZoomLevel);
-				// Display the location
-				var tmp = myLocation.toString();
-				span.innerText = tmp;
 
 				var tmpUtm = geoconverter.LatLonToUTM(myLocation);
 				var gridZone = tmpUtm.getGridZone() || "33W";
@@ -222,12 +289,14 @@
 					return val.replace("%gridZone%", gridZone)
 				});
 			});
-		} 
+		}
+		if (onFinished)
+			onFinished();
 
 	}
 	function onClickInMap() {	
 		if(tmpMapZoom == map.getZoom() && clickedMapPos){
-			var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, true);
+			var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, undefined, true);
 			clickedMapPos = null;
 
 			var utmLogMsg = approxUtm(location.utm);
@@ -322,7 +391,7 @@
 		var input = $(event.currentTarget);
 		var label = updateLabelFromInput(input, true);
 		var formattedLabel = '<span class="dotted hand">'+label+'</span>';
-		
+	
 		var td = input.closest("td");
 		td.empty();
 		td.append(formattedLabel);
@@ -336,16 +405,16 @@
 		ga('send', 'event', 'user-click', 'convertPos', 'convertPos-'+orgStr.replace(/[0-8]/g,'9'));
 		ga('send', 'pageview', {
 			'page': '/geoparse/convertPos',
-			'title': orgStr.replace(/[0-8]/g,'9')
+				'title': orgStr.replace(/[0-8]/g,'9')
 		});
-
+		
 		var digitCount = orgStr.replace(/[^0-9]/g, "").length;
 		var charCount = orgStr.replace(/[^a-zA-Z]/g, "").length;
 		if (charCount > digitCount) {
 			addAddress(orgStr);
 		} else {
 			addConvertedPos(orgStr);
-		}
+	}
 
 		// Return false to avoid page reload
 		return false;
@@ -438,11 +507,11 @@
 			addLocation(positionStr, latlon, utm);
 		} else {
 			// What to do
-		}
+	}
 
 	}
 
-
+	
 	function clearFeedback() {
 		showFeedback('');
 	}
@@ -461,7 +530,17 @@
 
 		var feedbackDiv = $("#divFeedback");
 		if (feedbackDiv.length>0) {
-			feedbackDiv.html(str);
+			feedbackDiv.html("");
+			feedbackDiv.removeClass();
+
+			if (str.length > 0) {
+				feedbackDiv.html("&nbsp;");
+				feedbackDiv.addClass('feedback');
+				setTimeout(function () {
+					feedbackDiv.addClass('feedbackError');
+					feedbackDiv.html(str);
+				}, 100);
+			}
 		}
 	}
 	
@@ -547,7 +626,9 @@
 	}
 	
 	function onClickClearLocations() {
-		ga('send', 'event', 'user-click', 'clear', 'clear-'+posArray.length); 
+		ga('send', 'event', 'user-click', 'clear', 'clear-'+posArray.length);
+		sharedId = "";
+		window.location.hash = "";
 		var btn = $("#btnAddMyPos");
 		//btn.prop("disabled", false);
 		clearLocations();
@@ -566,27 +647,206 @@
 		ga('send', 'event', 'user-click', 'removeRow', 'removeRow-'+index); 
 	}
 
+	function onClickLoad(elem) {
+		var index = $(elem).closest("tr").index();
+		var store = amplify.store("localSets");
+		var set = store.sets[index].set;
+
+		clearLocations();
+		for (var i=0; i<set.length; i++) {
+			var location = set[i];
+			var label = location.label;
+			var pos = location.latlon;
+			var latlon = new geoLatLon(pos.lat, pos.lon);
+			var utm = geoconverter.LatLonToUTM(latlon);
+		
+			addLocation(null, latlon, utm, label);
+		}
+	}
+
+	function onClickSave() {
+		var name = $("#txtSetName").val();
+		var desc = $("#txtSetDescription").val();
+
+		var posSet = [];
+		for (var i=0; i<posArray.length; i++) {
+			posSet.unshift( {label: posArray[i].label, latlon: posArray[i].latlon} );
+		}
+		var set = {name: name,
+					description: desc,
+					created: new Date().getTime(),
+					modified: new Date().getTime(),
+					set: posSet
+			};
+		saveSetLocally(set);
+	}
+
+	// Store the set locally
+	function createSetLocally(set, index) {
+		// http://techslides.com/30-code-playgrounds-and-sharing-tools/
+		var store = amplify.store("localSets");
+		if (store == undefined)
+			store = {sets: []};
+
+		store.sets.push(set);
+		amplify.store("localSets", store);
+	}
+
+	function onClickLoadDBG() {
+		clearFeedback();
+		var groupId = $("#txtSetShareCode").val();
+		if (groupId == "")
+			groupId = "1001-2";
+
+		loadGroup(groupId);
+		window.location.hash = groupId;
+
+	}
+
+	function loadGroup(groupId) {
+		console.log("loadGroup("+groupId+")");
+		if (groupId && groupId[0] == '#') // If url hash is passed as argument
+			groupId = groupId.substr(1);
+
+		storage.getSharedGroup(groupId,
+			function (data) {
+				console.log(data);
+				if (!data || data.error) {
+					showFeedback("ERROR: Could not find '" + groupId + "'");
+				} else if (!data.locations) {
+						showFeedback("INFO: No coordinates found for '" + groupId + "'");
+				} else {
+					clearFeedback();
+					$("#txtSetGroupId").val(data.groupId);
+					$("#txtSetShareCode").val(data.shareCode);
+					$("#txtSetName").val(data.name);
+					$("#txtSetDescription").val(data.description);
+					clearLocations();
+					sharedId = ""; // Clear to avoid repeatitive insert to DB
+					for (var i = 0; i < data.locations.length; i++) {
+						var location = data.locations[i];
+						var meta = {locationId: location.locationId};
+						addLatLonLocation(location.lat, location.lng, location.label, meta, true);
+					}
+					sharedId = data.groupId; // Add this AFTER addLatLonLocation
+					zoomToLocations();
+				}
+
+			},
+			function (errorMsg) {
+				alert("getSharedGroup(): "+errorMsg);
+			}
+		);
+
+	}
+	function onClickShare(elem) {
+		clearFeedback();
+		if ("Create New Share") {
+			createNewShare();
+		} else {
+			// LOAD
+			var result = getSet("shareCode");
+
+		}
+	}
+
+	function createNewShare() {
+		var group = {"name": $("#txtSetName").val()
+			, description: $("#txtSetDescription").val()
+			, shareCode: $("#txtSetShareCode").val()
+		};
+		if (posArray.length > 0) {
+			group.locations = [];
+			for (var i= 0; i<posArray.length; i++) {
+				var location = {
+					label: posArray[i].label
+					, lat: posArray[i].latlon.lat
+					, lng: posArray[i].latlon.lon
+				};
+				group.locations.push(location);
+			}
+		}
+		storage.createNewShare(group, function (data) {
+			console.log("index.html: data: "+data);
+			// Store sharecode in local storage
+			sharedId = data.groupId;
+			var count = Math.min(data.locations.length, posArray.length);
+			for (var i=0; i<count; i++) {
+				if (data.locations[i].label != posArray[i].label)
+					console.log("DBG: Mismatch location #"+i+": local: '"+posArray[i].label+"', remote: '"+data.locations[i].label+"'");
+
+				posArray[i].meta = {locationId: data.locations[i].locationId};
+			}
+			$("#txtSetGroupId").val(data.groupId);
+			$("#txtSetShareCode").val(data.shareCode);
+			window.location.hash = data.shareCode;
+		}, function (errorMsg) {
+			alert("createNewShare(): "+errorMsg);
+		});
+	}
+	function createSet(set) {
+		var shareCode;
+
+		var result ;
+
+		var request = $.ajax({
+	        url: "./ws/index.php/set",
+	        type: "post",
+	        data: JSON.stringify(set)
+	    });
+		request.done( function (data) {
+			alert("OK: "+data);
+			var result = data;
+			set['sharecode'] = result;
+		})
+		request.fail( function (jqxhr, textStatus, error ) {
+			var err = textStatus + ", " + error;
+			alert( "DBG: Request Failed: " + err );
+			window.console && console.log( "Request Failed: " + err );
+		});
+		return shareCode;
+	}
+
+	function getSet(shareCode) {
+		var shareCode;
+
+		var result = undefined;
+		var returnVal = $.getJSON("./ws/index.php/set/aa")
+					.done( function (data) 
+						{
+							alert("OK: "+data);
+							result = data;
+						})
+					.fail( function (jqxhr, textStatus, error ) {
+							var err = textStatus + ", " + error;
+    						alert( "Request Failed: " + err );
+    						console.log( "Request Failed: " + err );
+						});
+
+		alert("getSet(): ReturnVal: "+returnVal)
+		return result;
+	}
+
 	// Ask browser for location
 	function onClickAddMyPos() {
-		var span = $("#sMyLocation");
-		span.innerHTML = "";
+		clearFeedback();
 		if (navigator.geolocation) {
 			navigator.geolocation.getCurrentPosition(addMyLocation);
 		} else {
-			span.innerHTML = "Geolocation is not supported by this browser.";
+			showFeedback("Geolocation is not supported by this browser.");
 		}
 	}
 
 	function addMyLocation(pos) {
 		if (pos == undefined) {
-			var span = $("#sMyLocation");
-			span.innerHTML = "Could not retrieve your location";
+			showFeedback("Could not retrieve your location");
 		} else {
 			var me = $("#btnAddMyPos");
 			//me.prop("disabled", true);
 
 			var label = "Me";
 			var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label);
+
 
 			var utmLogMsg = approxUtm(location.utm);
 			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+utmLogMsg); 
@@ -598,11 +858,11 @@
 		}
 	}
 				
-	function addLatLonLocation(lat, lon, label, freezeMap) {
+	function addLatLonLocation(lat, lon, label, meta, freezeMap) {
 		//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
 		var latlon = new geoLatLon(lat, lon);
 		var utm = geoconverter.LatLonToUTM(latlon);
-		var location = addLocation("", latlon, utm, label, freezeMap);
+		var location = addLocation("", latlon, utm, label, meta, freezeMap);
 		return location;
 	}
 
@@ -639,19 +899,30 @@
 		return label;
 
 	}
-	function addLocation(orgStr, latlon, utm, label, freezeMap) {
+	function addLocation(orgStr, latlon, utm, label, meta, freezeMap, skipDB) {
+		if (skipDB == undefined) skipDB= false;
+
 		if (!label) {
 			label = getLabelLetter();
 		}
-		var location = {orgStr: orgStr, latlon: latlon, utm: utm, label: label};
-		
-		
-		addLocationToTable(tb, location);
-		addLocationToMap(location, freezeMap);
 
-		
-		posArray.push(location);
-		
+		var location = {orgStr: orgStr, latlon: latlon, utm: utm, meta: meta, label: label};
+
+		if (sharedId && !skipDB) {
+			var locationDB = {label: label, lat: latlon.lat, lng: latlon.lon};
+			addLocationToDb(locationDB, function (locationDB) {
+						meta = {locationId: locationDB.locationId};
+						//  Recursively call addLocation(), but with skipDB flag set to true
+						addLocation(orgStr, latlon, utm, label, meta, freezeMap, true);
+					}
+			);
+		} else {
+			addLocationToTable(tb, location);
+			addLocationToMap(location, freezeMap);
+			posArray.push(location);
+		}
+
+
 		return location;
 	}
 	function getDistance(locationA, locationB) {
@@ -660,6 +931,29 @@
 		var dist = google.maps.geometry.spherical.computeDistanceBetween(latLngA, latLngB);
 		return dist;
 	}
+
+
+	function addLocationToDb(locationDB, onFinished) {
+		storage.addLocation(sharedId, locationDB,
+				onFinished				,
+				function (err) {
+					console.log("ERROR: Adding location: " + err);
+				}
+		);
+	}
+
+	function removeLocationFromDb(location) {
+		var locationDB = {locationId: location.meta.locationId};
+		storage.removeLocation(sharedId, locationDB.locationId,
+				function (data) {
+					console.log("Removed location: " + data);
+				},
+				function (err) {
+					console.log("ERROR: Removing location: " + err);
+				}
+		);
+	}
+
 	function addLocationToTable(tb, location) {
 		if (posArray.length <= 0) {
 			tb.empty();
@@ -766,7 +1060,7 @@
 		location.marker = marker;
 		boundingbox.extend(markerPos); // Always add new marker to bounding box
 		bbCount++;
-
+		
 
 
 		// Resize and zoom to boundingbox
@@ -802,6 +1096,27 @@
 		}
 
 	}
+	function zoomToLocations() {
+		var data, markerPos;
+		var boundingbox = new google.maps.LatLngBounds();
+
+		for (var i = 0; i < posArray.length; i++) {
+			data = posArray[i];
+			markerPos = new google.maps.LatLng(data.latlon.lat, data.latlon.lon);
+			boundingbox.extend(markerPos);
+		}
+		if (posArray.length == 1) {
+			map.setZoom(firstZoomLevel);
+			map.setCenter(markerPos);
+		} else {
+			// Add a minimum size to the boundingbox
+			var minimumBBoxWidth = 100;  // meters
+			boundingbox.extend(google.maps.geometry.spherical.computeOffset(markerPos, minimumBBoxWidth / 2, 45));
+			boundingbox.extend(google.maps.geometry.spherical.computeOffset(markerPos, minimumBBoxWidth / 2, -135));
+
+			map.fitBounds(boundingbox);
+		}
+	}
 	function markerDragEnd(event) {
 		var posStr = this.position.lat().toFixed(5)+"N "+this.position.lng().toFixed(5)+"E";
 		ga('send', 'event', 'user-click', 'dragTo', 'dragTo-'+posStr); // .replace(/[0-8]/g,'9'));
@@ -816,7 +1131,7 @@
 		clearLocationsFromTable();
 		posArray = [];
 	}
-
+	
 	function zoomInOnPoint(index) {
 		if (index < posArray.length) {
 			var latlon = posArray[index].marker.getPosition();
@@ -879,6 +1194,9 @@
 
 
 	function removeLocation(index) {
+		if (sharedId) {
+			removeLocationFromDb(posArray[index]);
+		}
 		removeLocationFromMap(index);
 		removeLocationFromTable(index);
 		posArray.splice(index, 1); // Remove the element
@@ -963,6 +1281,38 @@
 		$("#chkDisplayLabels").attr("checked", config.map.displayLabalsInMap);
 	}
 
+
+	function generateSetsTable() {
+		var store = amplify.store("localSets");
+		if (store == undefined || store.sets == undefined)
+			return;
+
+		var sets = store.sets;
+
+		if (sets.length > 0) {
+			tbSets.empty();
+			for (var i=0; i<sets.length; i++) {
+				var str = generateSetRowStr(i, sets[i]);
+				tbSets.append("<tr>"+str+"</tr>");
+			}
+
+		}
+	}
+	function generateSetRowStr(index, set) {
+		var name = set.name;
+		var desc = set.description;
+		var modified = new Date(set.modified).toISOString().replace("T", " ").substring(0,16);
+
+			// add desctiption as a tooltip
+		var str = "<td>"+name+"</td>" + 
+					"<td>"+modified+"</td>" +
+					"<td >"+JSON.stringify(set)+'<button onclick="onClickShareSet(this)">Share</button></td>' +
+					'<td style="text-align:center;">' +
+						'<button onclick="onClickLoad(this)">Load</button>' +
+						'<img src="'+imgRemoveRow+'" hover-src="'+imgRemoveRowHover+'" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveSet(this)">'+
+					'</td>';
+		return str;
+	}
 
 	function approxUtm(utm) {
 		var round = 1000; //  in meters
