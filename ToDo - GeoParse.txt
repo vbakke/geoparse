@@ -1,8 +1,7 @@
 ToDo
 ====
+
 v2
---
-- Share locations
 
 ---
 Bug: "555555, 6666666" failes if utm zone is unavailable
@@ -49,6 +48,10 @@ Backlog
 Done
 ====
 2016
+v2.0.1
+--
+- Share locations
+- Store: 
 - Parse: Lookup Address
 - Bug: Install HTTPS to allow Current location
 2015
