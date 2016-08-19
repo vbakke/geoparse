@@ -17,9 +17,12 @@ Bug: Adding more than 26 points, gives no-name labels
    - Draw optionaly 100m, or 10m according to scale
 - GUI: Remove marker, should reposition map?
 
-- GUI: Facebook link
-- GUI: Button: Not converted directly? Report here!
-- GUI: Provide feedback button
+Help
+====
+- (i) Make Help popup
+- (i) Write helpful text explaining the formats
+- (i) on Fixed zone
+
 
 
 Backlog
@@ -49,9 +52,11 @@ Done
 ====
 2016
 v2.0.1
---
+- Bug: Mobile, moving map make the keyboard popup when text input previously had focus
+v2.0
 - Share locations
 - Store: 
+v1.
 - Parse: Lookup Address
 - Bug: Install HTTPS to allow Current location
 2015

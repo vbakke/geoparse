@@ -84,7 +84,7 @@
 							 	 <div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners" value="posNE">Use negative for S and W</div>
 							 </td>
 							 <td>
-								 <div>Fixed zone: <input size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
+								 <div>Fixed zone: <input id="txtUtmZone" size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
 								 <div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners" value="posEN">E&nbsp;before&nbsp;N</div>
 								 <div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners" value="strict">Strict UTM</div>
 							 </td>
@@ -239,6 +239,8 @@
 			}
 		});
 
+		// Prevents mouseup when input has focus
+		// ....... but why...? (2016-08-19)
 		txtCoordinate.on("focus",function(e){
 			if (this.selectionEnd == 0) {
     			$(this).select();
@@ -251,6 +253,7 @@
 				this.isEnterFocus = false;
 			}
 		});
+
 	}
 	function initMap(div, onFinished) {
 		updateMapOptions();
@@ -268,7 +271,18 @@
 				clickedMapPos = event.latLng;
 				setTimeout("onClickInMap()", 600);
 			}
-        });
+		});
+
+		// Remove focus from text fields when moving map,
+		// to avoid on-screen keyboard popping up after each move
+		google.maps.event.addListener(map, 'dragstart', function(event) {
+			if ($("#txtCoordinate").is(":focus")) {
+				$("#txtCoordinate").blur();
+			}
+			if ($("#txtUtmZone").is(":focus")) {
+				$("#txtUtmZone").blur();
+			}
+		});
 
 		// Get current location
 		if (navigator.geolocation) {
