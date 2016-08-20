@@ -53,6 +53,7 @@ Done
 2016
 v2.0.1
 - Bug: Mobile, moving map make the keyboard popup when text input previously had focus
+- Bug: PHP script does not work when using geo.vafe.net
 v2.0
 - Share locations
 - Store: 
