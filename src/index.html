@@ -19,7 +19,7 @@
 	<script src="./js/geoparse.js"></script>
 	<script src="./js/storage.js"></script>
 	<script src="./js/norgeskart.js"></script>
-	<script src="./lib/jquery-1.11.1.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
 	<script src="./lib/amplify.min.js"></script>
 	<title>Convert and view your GPS and UTM coordinates</title>
 </head>
@@ -521,6 +521,7 @@
 			addLocation(positionStr, latlon, utm);
 		} else {
 			// What to do
+			console.log("ERROR: Not adding location");
 	}
 
 	}
@@ -681,8 +682,8 @@
 	}
 
 	function onClickSave() {
-		var name = $("#txtSetName").val();
-		var desc = $("#txtSetDescription").val();
+		var name = $("#txtSetName").text();
+		var desc = $("#txtSetDescription").text();
 
 		var posSet = [];
 		for (var i=0; i<posArray.length; i++) {
@@ -734,7 +735,7 @@
 				} else {
 					clearFeedback();
 					$("#txtSetGroupId").text(data.groupId);
-					$("#txtSetShareCode").val(data.shareCode);
+					$("#txtSetShareCode").text(data.shareCode);
 					$("#txtSetName").text(data.name);
 					$("#txtSetDescription").text(data.description);
 					clearLocations();
@@ -767,9 +768,9 @@
 	}
 
 	function createNewShare() {
-		var group = {"name": $("#txtSetName").val()
-			, description: $("#txtSetDescription").val()
-			, shareCode: $("#txtSetShareCode").val()
+		var group = {"name": $("#txtSetName").text()
+			, description: $("#txtSetDescription").text()
+			, shareCode: $("#txtSetShareCode").text()
 		};
 		if (posArray.length > 0) {
 			group.locations = [];
@@ -1087,7 +1088,7 @@
 				if (!map.getBounds().contains(markerPos))
 					map.setCenter(markerPos);
 			} else {
-				// Zoom in/put, and store zoom levels
+				// Zoom in/out, and store zoom levels
 				var preZoom = map.getZoom();
 				map.fitBounds(boundingbox);
 				var autoZoom = map.getZoom();

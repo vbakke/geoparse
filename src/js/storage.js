@@ -9,7 +9,7 @@ var storage = (function () {
 
 	var WS_BASE = "./ws";
 	if (document.URL.indexOf("http://localhost") > -1)
-		WS_BASE = "http://vafe.net/geo/ws"; // ToDo-Release: Revert
+		WS_BASE = "https://www.vafe.net/geo-test/ws"; 
 	var WS_GROUP = WS_BASE+"/groups";
 	var WS_GROUP_ID = WS_BASE+"/groups/:groupId";
 	var WS_LOCATION = WS_BASE+"/groups/:groupId/locations";

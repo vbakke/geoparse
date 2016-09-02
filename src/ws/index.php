@@ -2,9 +2,12 @@
 require 'Slim/Slim.php';
 require 'db.php';
 
+class GeoException extends Exception { }
 \Slim\Slim::registerAutoloader();
 
+
 $NL = "<br/>\n";
+
 
 $app = new \Slim\Slim(array(
     'debug' => false
@@ -54,21 +57,39 @@ $app->post('/freeShareCode', function () {
 // -----------
 // ROUTE: GROUP
 // -----------
+function allOptions() {
+	global $app;
+	$app->response->headers->set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+	$app->response()->setStatus(200);
+}
+$app->options('/groups/:groupId', function ($groupCode) {
+	allOptions();
+});
 
 $app->get('/groups/:groupId', function ($groupCode) {
-	global $environment, $NL;
+	global $app, $environment, $NL;
 	//print "Searching for group: ".$groupCode.$NL;
-	$result = getGroup($groupCode);
 
+	try {
+		$result = getGroup($groupCode);
+	} catch (Exception $e) {
+		$app->response()->setStatus($e->getCode());
+		echo($e->getMessage());
+		return;
+	}
+	
 	if ($result && strtoupper($environment) != "PROD")
 		$result["environment"] = $environment;
-
+	
+	$app->response()->setStatus(200);
 	echo(safe_json($result));
 });
 
 $app->post('/groups', function () {
 	global $app, $environment, $NL;
-	$body = file_get_contents('php://input');
+	$request = \Slim\Slim::getInstance()->request();
+	$body = $request->getBody();
+
 	$result = createGroup($body);
 	
 	if ($result && strtoupper($environment) != "PROD")
@@ -79,6 +100,44 @@ $app->post('/groups', function () {
 	echo(safe_json($result));
 });
 
+$app->put('/groups/:groupId', function ($groupId) {
+	global $app, $environment, $NL;
+	$request = $app->request();
+	$body = $request->getBody();
+
+	try {
+		$result = updateGroup($groupId, $body);
+	} catch (Exception $e) {
+		$app->response()->setStatus($e->getCode());
+		echo($e->getMessage());
+		return;
+	}
+	
+	if ($result && strtoupper($environment) != "PROD")
+		$result["environment"] = $environment;
+	
+	if ($result)
+		$app->response()->setStatus(204);
+	else
+		$app->response()->setStatus(404);
+	//echo(safe_json($result));
+});
+
+$app->delete('/groups/:groupId', function ($groupCode) {
+	global $app, $environment, $NL;
+	try {
+		$result = deleteGroup($groupCode);
+	} catch (GeoException $e) {
+		$app->response()->setStatus($e->getCode());
+		echo($e->getMessage());
+		return;
+	}
+	if ($result)
+		$app->response()->setStatus(204);
+	else
+		$app->response()->setStatus(404);
+});
+
 // ----------------------
 // ROUTE: GROUP / LOCATION
 // ----------------------
@@ -86,8 +145,7 @@ $app->post('/groups', function () {
 
 $app->options('/groups/:groupId/locations/:locationId', function ($groupCode, $locationId) {
 	global $app;
-	//$app->response->headers->set("Access-Control-Allow-Methods", "PUT, GET, POST, DELETE, OPTIONS");
-	$app->response->headers->set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+	$app->response->headers->set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 	$app->response()->setStatus(200);
 });
 
@@ -113,7 +171,8 @@ $app->get('/groups/:groupId/locations/:locationId', function ($groupCode, $locat
 
 $app->post('/groups/:groupId/locations', function ($groupCode) {
 	global $app, $environment, $NL, $debugMode;
-	$body = file_get_contents('php://input');
+	$request = \Slim\Slim::getInstance()->request();
+	$body = $request->getBody();
 
 	$status = createGroupsLocation($groupCode, $body);
 
@@ -137,6 +196,29 @@ $app->post('/groups/:groupId/locations', function ($groupCode) {
 		}
 	$app->response()->setStatus($status['statuscode']);
 });
+
+
+$app->put('/groups/:groupId/locations/:locationId', function ($groupCode, $locationId) {
+	global $app, $NL, $debugMode;
+
+	$request = \Slim\Slim::getInstance()->request();
+	$body = $request->getBody();
+	
+	try {
+		$result = updateLocation($groupCode, $locationId, $body);
+	} catch (GeoException $e) {
+		$app->response()->setStatus($e->getCode());
+		echo($e->getMessage());
+		return;
+	}
+	
+	
+	if ($result)
+		$app->response()->setStatus(204);
+	else
+		$app->response()->setStatus(404);
+});
+
 
 $app->delete('/groups/:groupId/locations/:locationId', function ($groupCode, $locationId) {
 	global $app, $NL, $debugMode;

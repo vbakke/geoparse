@@ -10,6 +10,10 @@ RewriteCond %{SERVER_PORT} 80
 RewriteCond %{REQUEST_URI} ^/geo/
 RewriteRule ^(.*)$ https://www.vafe.net/$1 [R=301,L]
 
+RewriteCond %{SERVER_PORT} 80
+RewriteCond %{REQUEST_URI} ^/geo-test/
+RewriteRule ^(.*)$ https://www.vafe.net/$1 [R=301,L]
+
 
 ## Internal redirect geo.vafe.net -> /geo
 RewriteCond %{HTTP_HOST} ^geo.vafe.net$
@@ -17,7 +21,7 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(ws/)(.*) /geo/$1index.php/$2 [qsappend,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule (.*ws/) $1index.php/ [qsappend,L]
+RewriteRule (geo.*ws/) $1index.php/ [qsappend,L]
 
 
 RewriteCond %{HTTP_HOST} ^geo.vafe.net$
