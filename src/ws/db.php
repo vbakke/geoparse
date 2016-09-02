@@ -187,7 +187,7 @@ function getGroup($groupCode) {
 	// Lookup (and validate) shareCode / groupId
 	$ids = lookupGroupIds($con, $groupCode);
 	if (!$ids) {
-		throw new GeoException("ERROR: Not found: group", 404);
+		throw new GeoException("ERROR: Not found group $groupCode", 404);
 	}
 	
 	if ($debugMode)
@@ -276,73 +276,152 @@ function createGroup($jsonGroup) {
 function updateGroup($groupCode, $jsonGroup) {
 	global $table, $NL, $debugMode;
 	
-	print "updateGroup($groupCode): ";
-	var_dump($jsonGroup);
+	#print "updateGroup($groupCode): ";
+	#var_dump($jsonGroup);
 	if (!$jsonGroup)
-		throw new GeoException("No data - VEB 1", 204);
+		throw new GeoException("No data", 400);
 	$wsGroup = json_decode($jsonGroup, true);
+	$wsGroup['updatedIp'] = $_SERVER['REMOTE_ADDR'];
 	
 	$con = connectDb();
 
 	// Lookup (and validate) shareCode / groupId
 	$ids = lookupGroupIds($con, $groupCode);
 	if (!$ids) {
-		throw new GeoException("ERROR: Not found: group", 404);
+		throw new GeoException("ERROR: Not found group $groupCode", 404);
 	}
 	
 	if ($debugMode)
 		print "Getting '".$groupCode."': IDs: '".$ids[0]."' - '".$ids[1]."'".$NL;
 	$groupRowId = $ids[1];
-	
+
+	// Get current Group from DB
 	$dbGroup = getGroupDB($con, $groupRowId);
 
-	$isEqual = true;
 	
-	if (!isGroupHeadEqual($dbGroup, $wsGroup))
-		$isEqual = false;
-	
-	// Check the locations
+	// Create assoc, with locationId as key. Using 'NULL' for missing keys.
 	$locationsDB = createHash($dbGroup['locations'], 'locationId');
 	$locationsWS = createHash($wsGroup['locations'], 'locationId');
-	var_dump($locationsWS);
 
-	// TODO NEXT: Loop through $locationsWS['NULL']
+	// Create locations without locationsId.
+	$isEqual = true;
 	if (array_key_exists('NULL', $locationsWS)) {
 		$isEqual = false;
 		foreach ($locationsWS['NULL'] as $locationWS) {
-			print "CREATE LOCATION ".$locationWS['label'].".".$NL;
+			if ($debugMode) print "CREATE LOCATION ".$locationWS['label'].".".$NL;
 			insertLocationDB($con, $groupRowId, $locationWS);
 		}
 	}
 	
+	// Check all locations already in the DB
 	foreach ($locationsDB as $locationId => $locationDB) {
-		print "Testing location $locationId".$NL;
+		//if ($debugMode) print "Testing location $locationId".$NL;
 		if (array_key_exists($locationId, $locationsWS)) {
-			// Location, exists in boath. Update if not equal
-			if (!isGroupHeadEqual($locationsWS[$locationId], $locationsDB[$locationId])) {
-				print "Location $locationId for $groupRowId has changed. Updates.";
+			// Location, exists in both. Update if different.
+			if (!isLocationEqual($locationsWS[$locationId], $locationsDB[$locationId])) {
+				if ($debugMode) print "Location $locationId for $groupRowId has changed. Updates.";
 				updateLocationDB($con, $groupRowId, $locationId, $locationsWS[$locationId]);
 				$isEqual = false;
 			} else {
-				print "Location $locationId for $groupRowId is still equal. Do nothing.";
+				if ($debugMode) print "Location $locationId for $groupRowId is still equal. Do nothing.".$NL;
 			}
 		} else {
-			print "Removed location! Deleting".$NL;
+			// DB location not amongst inut from WS. Delete it.
+			if ($debugMode) print "Removed location! Deleting".$NL;
 			deleteLocationDB($con, $groupRowId, $locationId);
 		}
 	}
-	/*
 	
-	if (!$isEqual) {
+	// Update Group's head if anything was updated
+	if (!isGroupHeadEqual($dbGroup, $wsGroup))
+		$isEqual = false;
+	
+	if (!$isEqual)
+	{
 		if ($debugMode) print "Group has changed. Updating group head".$NL;
-		//updateGroupDb();
+		updateGroupDb($con, $groupRowId, $wsGroup);
+		$updated = true;
 	} else {
 		if ($debugMode) print "Group has NOT been changed. Nothing to update".$NL;
-		return false;
+		$updated = false;
 	}
+	
 	closeConnection($con);
-	*/
-	return Array(statuscode=>400, statusmessage=>"ERROR: Missing location data");
+	
+	return $updated;
+}
+
+function updateGroupDB($con, $groupRowId, $group) {
+	global $table, $debugMode, $NL;
+	
+	$vars = $group;
+	$vars['groupRowId'] = $groupRowId;
+
+	// -- Create Location ---
+	$sql = "UPDATE ".$table['groups']." ".
+			"SET updatedDate = now() ".
+			"  , name = '$(name)' ".
+			"  , description = '$(description)' ".
+			"  , updatedIp = '$(updatedIp)' ".
+			"WHERE deletedDate is null AND groupRowId = $(groupRowId)  "; 
+	
+	$sql = replaceFields($con, $sql, $vars);
+	if ($debugMode) print "UPDATE Group SQL: ".$sql.$NL;
+		
+	$result = executeSql($sql, $con);
+	
+	$rows = mysqli_affected_rows($con);
+
+	$success = ($rows === 1);
+	return $success;
+}
+
+
+
+//-------------
+// DELETE GROUP 
+//
+function deleteGroup($groupCode) {
+	global $NL, $debugMode;
+	
+	$con = connectDb();
+
+	// Lookup (and validate) shareCode / groupId
+	$ids = lookupGroupIds($con, $groupCode);
+	if ($ids == null || !$ids) {
+		throw new GeoException("ERROR: Not found group $groupCode", 404);
+	}
+	
+	if ($debugMode)
+		print "Deleting '".$groupCode."': IDs: '".$ids[0]."' - '".$ids[1]."'".$NL;
+	$groupRowId = $ids[1];
+	
+	$deleted = deleteGroupDB($con, $groupRowId);
+
+	closeConnection($con);
+
+	return $deleted;
+}
+
+function deleteGroupDB($con, $groupRowId) {
+	global $table, $debugMode, $NL;
+	
+	$vars = [groupRowId=>$groupRowId];
+	
+	// -- Create Location ---
+	$sql = "UPDATE ".$table['groups']." ".
+			"SET deletedDate = now() ".
+			"WHERE deletedDate is null AND groupRowId = ".$groupRowId."  "; 
+	
+	$sql = replaceFields($con, $sql, $vars);
+	if ($debugMode) print "DELETE Group SQL: ".$sql.$NL;
+		
+	$result = executeSql($sql, $con);
+	
+	$rows = mysqli_affected_rows($con);
+
+	$success = ($rows === 1);
+	return $success;
 }
 
 
@@ -532,11 +611,12 @@ function updateLocationDB($con, $groupRowId, $locationId, $location) {
 	$result = executeSql($sql, $con);
 	
 	$count = mysqli_affected_rows($con);
-	var_dump($count);
+
 	return ($count == 1)?true:false;
 
 }
 
+// -------------------------------
 
 
 function createHash($array, $fieldname) {
@@ -545,12 +625,12 @@ function createHash($array, $fieldname) {
 
 	foreach ($array as $element) {
 		if (array_key_exists($fieldname, $element)) {
-			print "DBG: Adding: ".$element[$fieldname].$NL;
+			#print "DBG: Adding: ".$element[$fieldname].$NL;
 			$hash[$element[$fieldname]] = $element;
 		} else {
 			if (!array_key_exists("NULL", $hash))
 				$hash['NULL'] = [];
-			print "DBG: Adding: NULL".$NL;
+			#print "DBG: Adding: NULL".$NL;
 			array_push($hash['NULL'], $element);
 		}
 	}
@@ -564,32 +644,33 @@ function isGroupHeadEqual($groupA, $groupB) {
 	print "DBG: isGroupHeadEqual(): B:";
 	var_dump($groupB);
 
-	if ($locationA['name'] === $locationB['name']
-		|| $locationA['description'] === $locationB['description']
+	if ($locationA['name'] !== $locationB['name']
+		|| $locationA['description'] !== $locationB['description']
 		)
-		return true;
-	else
-	*/
 		return false;
+	else
+		return true;
+	*/
 }
 
 
 
 function isLocationEqual($locationA, $locationB) {
 	global $debugMode, $NL;
-	/*
-	print "DBG: isLocationEqual(): A:";
-	var_dump($locationA);
-	print "DBG: isLocationEqual(): B:";
-	var_dump($locationB);
-	if ($locationA['label'] === $locationB['label']
-		&& abs(floatval($locationA['lat']) - floatval($locationB['lat'])) < 0.0000001
-		&& abs(floatval($locationA['lng']) - floatval($locationB['lng'])) < 0.0000001
-		)
-		return true;
-	else
-	*/
+	
+	#print "DBG: isLocationEqual(): A:";
+	#var_dump($locationA);
+	#print "DBG: isLocationEqual(): B:";
+	#var_dump($locationB);
+	if ($locationA['label'] !== $locationB['label']
+		|| abs(floatval($locationA['lat']) - floatval($locationB['lat'])) > 0.0000001
+		|| abs(floatval($locationA['lng']) - floatval($locationB['lng'])) > 0.0000001
+		) 
+	{
 		return false;
+	}
+	
+	return true;
 }
 
 // ------------------------------
@@ -634,7 +715,7 @@ function deleteLocationDB($con, $groupRowId, $locationId) {
 	$result = executeSql($sql, $con);
 	
 	$rows = mysqli_affected_rows($con);
-	var_dump($rows);
+
 	$success = ($rows === 1);
 	return $success;
 }

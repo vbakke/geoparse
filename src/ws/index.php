@@ -57,21 +57,31 @@ $app->post('/freeShareCode', function () {
 // -----------
 // ROUTE: GROUP
 // -----------
-
-$app->options('/groups/:groupId', function ($groupCode) {
+function allOptions() {
 	global $app;
 	$app->response->headers->set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
 	$app->response()->setStatus(200);
+}
+$app->options('/groups/:groupId', function ($groupCode) {
+	allOptions();
 });
 
 $app->get('/groups/:groupId', function ($groupCode) {
-	global $environment, $NL;
+	global $app, $environment, $NL;
 	//print "Searching for group: ".$groupCode.$NL;
-	$result = getGroup($groupCode);
 
+	try {
+		$result = getGroup($groupCode);
+	} catch (Exception $e) {
+		$app->response()->setStatus($e->getCode());
+		echo($e->getMessage());
+		return;
+	}
+	
 	if ($result && strtoupper($environment) != "PROD")
 		$result["environment"] = $environment;
-
+	
+	$app->response()->setStatus(200);
 	echo(safe_json($result));
 });
 
@@ -107,8 +117,25 @@ $app->put('/groups/:groupId', function ($groupId) {
 		$result["environment"] = $environment;
 	
 	if ($result)
-		$app->response()->setStatus(200);
-	echo(safe_json($result));
+		$app->response()->setStatus(204);
+	else
+		$app->response()->setStatus(404);
+	//echo(safe_json($result));
+});
+
+$app->delete('/groups/:groupId', function ($groupCode) {
+	global $app, $environment, $NL;
+	try {
+		$result = deleteGroup($groupCode);
+	} catch (GeoException $e) {
+		$app->response()->setStatus($e->getCode());
+		echo($e->getMessage());
+		return;
+	}
+	if ($result)
+		$app->response()->setStatus(204);
+	else
+		$app->response()->setStatus(404);
 });
 
 // ----------------------
@@ -179,22 +206,17 @@ $app->put('/groups/:groupId/locations/:locationId', function ($groupCode, $locat
 	
 	try {
 		$result = updateLocation($groupCode, $locationId, $body);
-		print "DBG: PUT: ";
-		var_dump($result);
-	//*
 	} catch (GeoException $e) {
 		$app->response()->setStatus($e->getCode());
 		echo($e->getMessage());
 		return;
 	}
-	// */
 	
-	/*
+	
 	if ($result)
-		$app->response()->setStatus(200);
+		$app->response()->setStatus(204);
 	else
 		$app->response()->setStatus(404);
-	*/
 });
 
 
