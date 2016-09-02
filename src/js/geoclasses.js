@@ -1,6 +1,6 @@
 function geoLatLon(lat, lon) {
-	this.lat = lat;
-	this.lon = lon;
+	this.lat = parseFloat(lat);
+	this.lon = parseFloat(lon);
 	
 	/** 
 	 * d
