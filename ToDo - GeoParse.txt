@@ -2,12 +2,12 @@ ToDo - Store and Share
 ==== ==================
 
 
-- Allow HTTPS for PHP
 - FIX WS_BASE back to relative path!!!
 
 
 
 --- Done ---
+- WS: Moved DB config into ini file
 - WS: Hello world
 - WS: Read DB for GET
 - WS: Group + Locations READ
@@ -26,15 +26,15 @@ BUG: Remove a marker in a group that has just been shared fails (no meta.locatio
 - GUI: Open ID with URL geo#ID
 - GUI: Share updated the displayed URL in addresss bar
 - GUI: 'Clear' cleans the share
+- WS: Locations UPDATE
+- WS: Group  UPDATE
+- WS: Lage CREATE_LOCATION_DB
 
 --- Påbegynt ---
 
 --- Skal påbegynnes ---
-- WS: Locations UPDATE
-- GUI: Move marker, update DB
 
 --- Gjenstår ---
-- WS: Group  UPDATE
 - GUI: Rename Group, Update DB
 - GUI: Save (Update same)
 - GUI: New Share
@@ -42,16 +42,20 @@ BUG: Remove a marker in a group that has just been shared fails (no meta.locatio
 - WS: Delete Group
 - WS+GUI: New Share with duplicate ShareCode
 
--WS: Bug: ShareCode Høst and HØST are not treated the same.
+- WS: Bug: ShareCode Høst and HØST are not treated the same.
 
 - TestCase: 
-	- Create, Get ID
-	- Get Group ID
-	- Add Location
-	- Get Group ShareCode
-	- Update Location
-	- Delete Location
-	- Delete Group
+	- #Get by ShareCode
+	- #Create, Get ID
+	- #Add Location
+	- #Get by Group ID
+	- #Update Location
+	- #Update Group
+		#- Name
+		#- Delete two locations
+		#- Add one
+	- #Delete Location
+	- #Delete Group
 
 - GUI: Store new location when Add Location
 - GUI: Save location when Update Location: Loc name / Loc pos moves
