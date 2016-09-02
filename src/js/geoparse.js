@@ -13,13 +13,207 @@
 	var _dirChars = _NORTH+_SOUTH+_EAST+_WEST;
 	var _digitChars = "0-9";
 	var _numChars = "0-9,.";
-	var _degreesChars = "0-9.,°°ºo^~\*'\" -";
+	var _degreesChars = "0-9.,°°ºo^~\*'\"-";
 	var _delimChars = ",|\\/ ";
 	var _zoneBandChars = "A-HJ-NP-Z+-";
 	var _latLonStr = "\s*(["+_dirChars+"]?)\s*(["+_degreesChars+"]+)\s*(["+_dirChars+"]?)["+_delimChars+"]+(["+_dirChars+"]?)(["+_degreesChars+"]+)\s*(["+_dirChars+"]?)";
 	var _latLonRe = RegExp(_latLonStr);
 	var _utmRe = RegExp("\s*(["+_digitChars+"]{1,2})? *(["+_zoneBandChars+"])?? *(["+_dirChars+"]?) *(["+_numChars+"]+) *(["+_dirChars+"]?)["+_delimChars+"]*(["+_dirChars+"]?) *(["+_numChars+"]+) *(["+_dirChars+"]?)");
 	var _self = {};
+
+	_self.makeHint = function (pos, hintSource) {
+		var hint = {};
+		hint.source = hintSource;
+		if (pos.latlon && pos.utm) {
+			hint.utm = pos.utm;
+			hint.latlon = pos.latlon;
+		}
+		else if (pos.lat && pos.lon) {
+			hint.utm = geoconverter.LatLonToUTM(pos);
+			hint.latlon = geoconverter.UTMToLatLon(hint.utm);
+		} else if (pos.easting && pos.northing) {
+			hint.latlon = geoconverter.UTMToLatLon(pos);
+			hint.utm = geoconverter.LatLonToUTM(hint.latlon);
+		} else {
+			throw new Error('Unknown hint position');
+		}
+		return hint;
+	}
+
+	_self.parse = function (str, hintLocation, hintFormat) {
+		//alert('OBSOLETE parse()!');
+		// Try parsing (tokenizing)
+		var utm = _self.parseUtm(str);
+		var latlon = _self.parseLatLon(str);
+	
+		// Evaluate
+		var attempts = {pos: {"utm": utm, "latlon": latlon}};
+		var attempts = _self.findBestMatch(attempts);
+
+
+		// Need more info
+		attempts.needMoreInfo = (attempts.eval[attempts.bestMatch] < 100);
+		if (attempts.needMoreInfo && hintLocation) {
+			attempts = _self.addHintLocation(attempts, hintLocation);
+		}
+
+		// Return:
+		//    - tokenized position
+		//    - missing info (need location)
+		return attempts;
+	}
+
+	_self.findBestMatch = function (attempts) {
+		attempts.eval = {utm: 0, latlon: 0};
+		if (attempts.pos.utm) {
+			attempts.eval.utm = _self.evalUtm(attempts.pos.utm);
+		}
+		if (attempts.pos.latlon) {
+			attempts.eval.latlon = _self.evalLatLon(attempts.pos.latlon);
+		}
+
+		attempts.bestMatch = undefined;
+		if (attempts.eval.utm > attempts.eval.latlon) {
+			if (attempts.eval.utm > 50)
+				attempts.bestMatch = 'utm';
+		} else {
+			if (attempts.eval.latlon > 50)
+				attempts.bestMatch = 'latlon';
+		}
+
+		return attempts;
+	}
+
+	_self.addHintLocation = function (attempts, hint) {
+		if (attempts.bestMatch == "utm") {
+			var utm = _self.addUtmHintLocation(attempts.pos.utm, hint);
+			attempts.pos.utm = utm;
+		} else if (attempts.bestMatch == "latlon") {
+			var latlon = _self.addLatLonHintLocation(attempts.pos.latlon, hint);
+			attempts.pos.latlon = latlon;
+		}
+		return attempts;
+	}
+
+	_self.addUtmHintLocation = function (utm, hintLocation) {
+		// Adding Zone and/or band, if missing
+		var feedback = '';
+		if (!utm.zone) {
+			utm.zone = hintLocation.utm.zone;
+			feedback += 'zone '+utm.zone;
+		}
+
+		if (!utm.band) {
+			utm.band = hintLocation.utm.band;
+
+			if (feedback)
+				feedback += utm.band;
+			else
+				feedback +=
+			feedback += 'zoneband '+utm.band;
+		}
+		if (feedback) {
+			feedback = 'Added ' + feedback;
+			if (hintLocation.source)
+				feedback = feedback + ' from ' + hintLocation.source;
+			_self.addFeedback(utm, feedback);
+		}
+
+
+		// Swap NS and EW if that is "closer to home"
+		var scoreUnmodified = Math.abs(utm.easting-hintLocation.utm.easting) + Math.abs(utm.northing-hintLocation.utm.northing);
+		var scoreReversed = Math.abs(utm.easting-hintLocation.utm.northing) + Math.abs(utm.northing-hintLocation.utm.easting);
+		if (scoreReversed*10 < scoreUnmodified) {
+			var tempPos=utm.easting; utm.easting=utm.northing; utm.northing=tempPos;
+			_self.addFeedback(utm, 'DBG: I SWAPPED. It it a lot closer to home');
+
+		}
+
+		return utm;
+	}
+
+	_self.addFeedback = function (obj, feedback) {
+		if (!obj.feedback)
+			obj.feedback = [];
+		obj.feedback.push( feedback );
+	}
+
+	_self.addLatLonHintLocation = function (latlon, hintLocation) {
+		hintLocation = hintLocation.latlon;
+		//if (latlon.isWithoutNSEW) {}
+		var diff = Math.abs(latlon.lat-hintLocation.lat) + Math.abs(latlon.lon-hintLocation.lon);
+		var diffReverse = Math.abs(latlon.lat-hintLocation.lon) + Math.abs(latlon.lon-hintLocation.lat);
+		if (diffReverse < diff*2)  {
+			// swap lat and lon
+			var tempDeg=latlon.lat; latlon.lat=latlon.lon; latlon.lon=tempDeg;
+			_self.addFeedback('')
+		}
+		return latlon;
+	}
+
+	_self.evalUtm = function (utm) {
+		// ToDo: Must evalute NSEW
+		var val = 0;
+
+
+		if (utm.zone) {
+			val += 10;
+		}
+		if (utm.easting) {
+			if (Math.abs(utm.easting) < 180)
+				val += -5;
+			else
+			if (utm.easting > 100000)
+				val += 25;
+			if (utm.easting < 999999)
+				val += 25;
+		}
+		if (utm.northing) {
+			// ToDo: If Northing matches zoneband
+
+			if (Math.abs(utm.northing) < 180)
+				val += -5;
+			else
+				if (Math.abs(utm.northing) < 9999999)
+					val += 40;
+				else
+					val += 10;
+		}
+
+		return val;
+	}
+
+	_self.evalLatLon = function (latlon) {
+		// ToDo: Must evalute NSEW
+		var val = 0;
+
+
+		if (latlon.lat) {
+			if (Math.abs(latlon.lat) > 90)
+				val += -5;
+			else
+				val += 50;
+		}
+
+		if (latlon.lon) {
+			if (Math.abs(latlon.lon) > 180)
+				val += -5;
+			else
+				val += 50;
+		}
+
+		return val;
+	}
+
+
+	// =====================================================
+	// Parse array of tokens 
+	//
+	_self.parseTokens = function (tokens, options, hintLocation) {
+		// Try parsing (tokenizing)
+		var utm = _self.parseTokensUtm(tokens, options);
+		var latlon = _self.parseTokensLatLon(tokens, options);
+	}
 	
 	_self.makeHint = function (pos, hintSource) {
 		var hint = {};
@@ -538,6 +732,8 @@
 	// Parse string containing latitude and longitude
 	//
 	_self.parseLatLon = function (str) {
+		//alerts('OBSOLETE');
+
 		if (str == undefined || str == null)
 			return undefined;
 		
@@ -599,6 +795,7 @@
 	// Parse string containing UTM coordinates
 	//
 	_self.parseUtm = function (str) {
+		//alert('OBSOLETE parseUtm()');
 		if (str == undefined || str == null)
 			return undefined;
 		
@@ -653,6 +850,7 @@
 	// Parse string containing degrees, minutes and seconds
 	//
 	_self.parseDeg = function (str) {
+		//alerts('OBSOLETE');
 		_self.dbg("<b>"+str+"</b>");
 		if (!str) {
 			return 0.0;
