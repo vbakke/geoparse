@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QUnit basic example</title>
+    <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.0.1.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="https://code.jquery.com/qunit/qunit-2.0.1.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+<script src="qunit-assert-close.js"></script>
+<script>
+    var WS_BASE = "./ws";
+    if (document.URL.indexOf("http://localhost") > -1)
+        WS_BASE = "https://www.vafe.net/geo-test/ws";
+    var WS_GROUP = WS_BASE+"/groups";
+    var WS_GROUP_ID = WS_BASE+"/groups/:groupId";
+    var WS_LOCATION = WS_BASE+"/groups/:groupId/locations";
+    var WS_LOCATION_ID = WS_BASE+"/groups/:groupId/locations/:locationId";
+
+    QUnit.config.reorder = false;
+    QUnit.test( "a basic test example", function( assert ) {
+        var value = "hello";
+        assert.equal( value, "hello", "We expect value to be hello" );
+    });
+
+    var testGroup = {
+        "name": "UNIT TEST",
+        "description": "Used for Unit testing",
+        "locations": [
+            {
+                "label": "Pos1",
+                "lat": 59.1,
+                "lng": 9.1
+            },
+            {
+                "label": "Pos2",
+                "lat": 59.2,
+                "lng": 9.2
+            },
+            {
+            "label": "Pos3",
+            "lat": 59.3,
+            "lng": 9.3
+        }],
+    };
+    var testPos4 =             {
+        "label": "Pos4",
+        "lat": 59.4,
+        "lng": 9.4
+    };
+
+    var shareCode = "DBG";
+    var groupId = null;
+    var locationId = null;
+    var deviation = 0.000001;
+    QUnit.module('PHP API');
+    QUnit.test( "Get a ShareCode: "+shareCode , function (assert) {
+        console.log('--- '+assert.test.testName+' ---');
+        var done = assert.async();
+        var url = WS_GROUP + "/" + encodeURIComponent(shareCode);
+        var returnVal = $.getJSON(url)
+                .then( function  (data, success, xhr)
+                {
+                    console.log("GET shareCode: "+shareCode);
+                    console.log(data);
+                    assert.equal(xhr.status, 200);
+                    assert.equal(data.name, "JS-TEST");
+                    assert.equal(data.groupId, "1001-2");
+                    assert.equal(data.shareCode, shareCode);
+                    assert.equal(data.locations.length, 2);
+                    assert.equal(data.locations[0].label, "Pos1");
+                    assert.close(data.locations[0].lat, 59.1, deviation);
+                    assert.close(data.locations[0].lng, 9.1, deviation);
+
+                    groupId = data.groupId;
+                    done();
+                });
+    });
+    QUnit.test( "POST - Create new group", function (assert) {
+        console.log('--- '+assert.test.testName+' ---');
+        console.log("Verify GroupId:");
+        console.log(groupId);
+        var done = assert.async();
+        var url = WS_GROUP;
+        var request = $.ajax(
+                {
+                    url: url,
+                    type: "post",
+                    data: JSON.stringify(testGroup)
+                }
+        ).then( function (data, success, xhr) {
+                    console.log("Created group ");
+                    console.log(data);
+
+                    assert.equal(xhr.status, 201);
+                    assert.equal(data.name, testGroup.name);
+
+                    groupId = data.groupId;
+                    shareCode = data.shareCode;
+                    done();
+                }
+        ).fail( function (xhr, msg, e) {
+                    console.log(xhr);
+                    console.log(msg);
+                    console.log(e);
+                    assert.ok(false, "HTTP failed: "+msg);
+                    done();
+                }
+        );
+    });
+    QUnit.test( "POST - Create new location", function (assert) {
+        console.log('--- '+assert.test.testName+' ---');
+        console.log("Verify GroupId:");
+        console.log(groupId);
+        console.log(assert);
+
+        assert.notEqual(groupId, null, 'groupId: '+groupId);
+        var done = assert.async();
+        var url = WS_LOCATION.replace(':groupId', groupId);
+        var request = $.ajax(
+                {
+                    url: url,
+                    type: "post",
+                    data: JSON.stringify(testPos4)
+                }
+        ).then( function (data, success, xhr) {
+                    console.log("Created location ");
+                    console.log(data);
+
+                    assert.equal(xhr.status, 201);
+                    assert.equal(data.label, testPos4.label);
+                    locationId = data.locationId;
+                    done();
+                }
+        ).fail( function (xhr, msg, e) {
+                    console.log(xhr);
+                    console.log(msg);
+                    console.log(e);
+                    assert.ok(false, "HTTP Failed: "+msg);
+                    done();
+                }
+        );
+    });
+
+    QUnit.test( "GET Verify creation of group", function (assert) {
+        console.log('--- ' + assert.test.testName + ' ---');
+        console.log("Verify GroupId:");
+        console.log(groupId);
+        assert.notEqual(groupId, null, 'groupId: ' + groupId);
+        var done = assert.async();
+        var url = WS_GROUP_ID.replace(':groupId', groupId);
+        var returnVal = $.getJSON(url)
+                .then(function (data, success, xhr) {
+                    console.log("GET shareCode: " + shareCode);
+                    console.log(data);
+                    assert.equal(xhr.status, 200);
+                    assert.equal(data.name, testGroup.name);
+                    assert.equal(data.groupId, groupId);
+                    assert.equal(data.locations.length, 4);
+                    assert.equal(data.locations[3].locationId, locationId);
+                    assert.equal(data.locations[3].label, testPos4.label);
+                    assert.close(data.locations[3].lat, testPos4.lat, deviation);
+                    assert.close(data.locations[3].lng, testPos4.lng, deviation);
+                    done();
+                })
+                .fail(function (xhr, msg, e) {
+                    console.log(xhr);
+                    console.log(msg);
+                    console.log(e);
+                    assert.ok(false, "HTTP Failed: " + msg);
+                    done();
+                }
+        );
+    });
+    QUnit.test( "PUT Update location", function (assert) {
+        console.log('--- ' + assert.test.testName + ' ---');
+        console.log("Verify groupId & locationId:");
+        console.log(groupId);
+        console.log(locationId);
+        assert.notEqual(groupId, null, 'groupId='+groupId);
+        assert.notEqual(locationId, null, 'locationId='+locationId);
+        var done = assert.async();
+        var url = WS_LOCATION_ID.replace(':groupId', groupId).replace(':locationId', locationId);
+        testPos4.lat += 0.01;
+        testPos4.lng += 0.01;
+        var returnVal = $.ajax(
+                {
+                    url: url,
+                    type: "put",
+                    data: JSON.stringify(testPos4)
+                })
+                .then(function (data, success, xhr) {
+                    console.log("GET shareCode: " + shareCode);
+                    console.log(data);
+                    assert.equal(xhr.status, 204);
+                    done();
+                })
+                .fail(function (xhr, msg, e) {
+                    console.log(xhr);
+                    console.log(msg);
+                    console.log(e);
+                    assert.ok(false, "HTTP Failed: " + msg);
+                    done();
+                }
+        );
+    });
+    QUnit.test( "GET Verify update location", function (assert) {
+        console.log('--- ' + assert.test.testName + ' ---');
+        assert.notEqual(groupId, null);
+        var done = assert.async();
+        var url = WS_LOCATION_ID.replace(':groupId', groupId).replace(':locationId', locationId);
+        var returnVal = $.getJSON(url)
+                .then(function (data, success, xhr) {
+                    console.log("GET shareCode: " + shareCode);
+                    console.log(data);
+                    assert.equal(xhr.status, 200);
+                    assert.equal(data.label, testPos4.label);
+                    assert.close(data.lat, testPos4.lat, deviation);
+                    assert.close(data.lng, testPos4.lng, deviation);
+                    done();
+                });
+
+    });
+    QUnit.test( "GET Group", function (assert) {
+        console.log('--- ' + assert.test.testName + ' ---');
+        assert.notEqual(groupId, null);
+        var done = assert.async();
+        var url = WS_GROUP_ID.replace(':groupId', groupId);
+        var returnVal = $.getJSON(url)
+                .then(function (data, success, xhr) {
+                    console.log("GET group "+groupId);
+                    console.log(data);
+                    assert.equal(xhr.status, 200);
+                    assert.notEqual(data.locations, null);
+                    assert.equal(data.locations.length, 4);
+                    testGroup = data;
+                    done();
+                });
+
+    });
+
+    QUnit.test( "PUT Update Group", function (assert) {
+        console.log('--- ' + assert.test.testName + ' ---');
+        console.log("Verify testGroup:");
+        console.log(testGroup);
+        console.log(testPos4);
+        assert.notEqual(groupId, null, 'groupId='+groupId);
+        assert.notEqual(testGroup, null, 'testGroup='+testGroup.name);
+        assert.notEqual(testGroup.locations, null, 'testGroup.locations not null');
+        var done = assert.async();
+        var url = WS_GROUP_ID.replace(':groupId', groupId);
+        // Delete First two Locations
+        testGroup.locations.shift();
+        testGroup.locations.shift();
+        // Add a new
+        testPos4.label += ' B';
+        testPos4.lat += 0.05;
+        testPos4.lng += 0.05;
+        testGroup.locations.push(testPos4);
+        testGroup.name += " updated";
+        testGroup.description += " updated at "+new Date().toString();
+        console.log("Altered testGroup:");
+        console.log(testGroup);
+        console.log(JSON.stringify(testGroup));
+        var returnVal = $.ajax(
+                {
+                    url: url,
+                    type: "put",
+                    data: JSON.stringify(testGroup)
+                })
+                .then(function (data, success, xhr) {
+                    console.log('Received:');
+                    console.log(data);
+                    console.log(success);
+                    console.log(xhr);
+                    assert.equal(xhr.status, 204, 'Response '+xhr.status);
+                    done();
+                })
+                .fail(function (xhr, msg, e) {
+                    console.log(xhr);
+                    console.log(msg);
+                    console.log(e);
+                    assert.ok(false, "HTTP Failed: '" + msg + "'");
+                    done();
+                }
+        );
+    });
+    QUnit.test( "GET Verify update location", function (assert) {
+        console.log('--- ' + assert.test.testName + ' ---');
+        assert.notEqual(groupId, null);
+        var done = assert.async();
+        var url = WS_GROUP_ID.replace(':groupId', groupId);
+        var returnVal = $.getJSON(url)
+                .then(function (data, success, xhr) {
+                    console.log("GET shareCode: " + shareCode);
+                    console.log(data);
+                    assert.equal(xhr.status, 200);
+                    assert.equal(data.name, testGroup.name);
+                    assert.equal(data.description, testGroup.description);
+                    assert.notEqual(data.locations, undefined);
+                    assert.equal(data.locations.length, 3);
+                    assert.equal(data.locations[0].label, testGroup.locations[0].label);
+                    assert.equal(data.locations[1].label, testGroup.locations[1].label);
+                    assert.equal(data.locations[2].label, testGroup.locations[2].label);
+                    done();
+                });
+
+    });
+
+
+    QUnit.test( "DELETE - Delete the group", function (assert) {
+        console.log('--- '+assert.test.testName+' ---');
+        assert.notEqual(groupId, null);
+        var done = assert.async();
+        var url = WS_GROUP_ID.replace(':groupId', groupId);
+        var request = $.ajax(
+                {
+                    url: url,
+                    type: "delete",
+                }
+        ).then(function (data, success, xhr) {
+                    console.log("Delete group: " + groupId);
+                    console.log(data);
+                    assert.equal(xhr.status, 204);
+                    done();
+                }
+        ).fail(function (xhr, msg, e) {
+                    console.log(msg);
+                    console.log(e);
+                    console.log(xhr);
+                    assert.ok(e, "HTTP failed: " + msg);
+                }
+        );
+    });
+
+
+    // Negative testing - Non-existsing
+    QUnit.test( "DELETE - non-existing group", function (assert) {
+        console.log('--- '+assert.test.testName+' ---');
+        assert.notEqual(groupId, null);
+        var done = assert.async();
+        var url = WS_GROUP_ID.replace(':groupId', groupId);
+        var request = $.ajax(
+                {
+                    url: url,
+                    type: "delete",
+                }
+        ).then(function (data, success, xhr) {
+                    console.log("Delete group: " + groupId);
+                    console.log(data);
+                    assert.equal(xhr.status, 0, 'ERROR: Negative test returned ok');
+                    done();
+                }
+        ).fail(function (xhr, msg, e) {
+                    assert.equal(xhr.status, 404, 'OK: Not found '+groupId);
+                    done();
+                }
+        );
+    });
+
+    QUnit.test( "UPDATE - non-existing group", function (assert) {
+        console.log('--- '+assert.test.testName+' ---');
+        assert.notEqual(groupId, null);
+        var done = assert.async();
+        var url = WS_GROUP_ID.replace(':groupId', groupId);
+        var request = $.ajax(
+                {
+                    url: url,
+                    type: "put",
+                    data: JSON.stringify(testGroup)
+                }
+        ).then(function (data, success, xhr) {
+                    console.log("Update group: " + groupId);
+                    console.log(data);
+                    assert.equal(xhr.status, 0, 'ERROR: Negative test returned ok');
+                    done();
+                }
+        ).fail(function (xhr, msg, e) {
+                    assert.equal(xhr.status, 404, 'OK: Not found '+groupId);
+                    done();
+                }
+        );
+    });
+
+    QUnit.test( "GET - non-existing group", function (assert) {
+        console.log('--- '+assert.test.testName+' ---');
+        assert.notEqual(groupId, null);
+        var done = assert.async();
+        var url = WS_GROUP_ID.replace(':groupId', groupId);
+        var request = $.ajax(
+                {
+                    url: url,
+                    type: "get",
+                }
+        ).then(function (data, success, xhr) {
+                    console.log("Get group: " + groupId);
+                    console.log(data);
+                    assert.equal(xhr.status, 0, 'ERROR: Negative test returned ok');
+                    done();
+                }
+        ).fail(function (xhr, msg, e) {
+                    assert.equal(xhr.status, 404, 'OK: Not found '+groupId);
+                    done();
+                }
+        );
+    });
+
+</script>
+</body>
+</html>

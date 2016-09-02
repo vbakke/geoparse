@@ -13,7 +13,7 @@ $app = new \Slim\Slim(array(
     'debug' => false
 ));
 
-if (new DateTime() < new Datetime("2016-08-31"))
+if (new DateTime() < new Datetime("2016-09-30"))
 	$app->response->headers->set('Access-Control-Allow-Origin', 'http://localhost');
 $app->response->headers->set('Content-Type', 'application/json;charset=utf-8');
 
