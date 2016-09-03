@@ -36,8 +36,8 @@
 <div id="divAll">
 	<div id="divPanel">
 		<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
-		<div id="divHeader"><span class="header" id="txtSetName">EARTH</span><br/>
-			<p class="smallText" style="margin-top:0;" id="txtSetDescription">Convert between GPS and UTM coordinates</p>
+		<div id="divHeader"><span class="header" id="txtMapName">EARTH</span><br/>
+			<p class="smallText" style="margin-top:0;" id="txtMapDescription">Convert between GPS and UTM coordinates</p>
 		</div>
 		<div id="divInput">
 			<div>
@@ -50,7 +50,7 @@
 					  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
 				</div>
 				<div id="divMyLocation" style="float:right">
-					<button id="btnShare" class="rounded-corners"  onclick="onClickShare()" tabindex="3" title="Add my device location"><img src="./img/share.png" height="16"></button>
+					<button id="btnShareMenu" class="rounded-corners"  onclick="onClickShareMenu()" tabindex="3" title="Share this map"><img src="./img/share.png" height="16"></button>
 					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 				</div>
 			</form>
@@ -59,17 +59,18 @@
 		</div>
 		<div id="divShare" >
 			<span >Share your map with others</span>
-			<input id="txtShareName" placeholder="Name of map" class="rounded-corners largeText" style="width:100%">
-			<textarea id="txtShareDescription" placeholder="Description" rows="5" class="rounded-corners" style="width:100%"></textarea>
+			<input id="txtMapNameInput" placeholder="Name of map" class="rounded-corners largeText" style="width:100%">
+			<textarea id="txtMapDescriptionInput" placeholder="Description" rows="5" class="rounded-corners" style="width:100%"></textarea>
 
-			<input id="txtShareCode" class="rounded-corners" disabled placeholder="Share code" style="width:25%">
+			<input id="txtMapShareCodeInput" class="rounded-corners" disabled placeholder="Share code" style="width:25%">
 			<span class="smallText">
 				<input type="checkbox" id="chkShareUseShareCode">Use easy name
 			</span>
-			<input id="txtShareUrl" class="rounded-corners" readonly style="width:100%">
-
 			<button id="btnShareGroup" class="rounded-corners" onclick="onClickShare()">Share</button>
-			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
+			<button id="btnLoad" class="rounded-corners" onclick="onClickShareCancel()">Cancel</button><br/>
+
+			<input id="txtShareUrl" class="rounded-corners" readonly hidden style="width:100%">
+
 		</div>
 		<!-- div id="divStorageTable">
 			<table id="setsTable">
@@ -301,6 +302,7 @@
 				console.log("Received browser location");
 				var lat = location.coords.latitude;
 				var lon = location.coords.longitude;
+				var accuracy = location.coords.accuracy;
 
 				myLocation = new geoLatLon(lat, lon);
 
@@ -311,6 +313,33 @@
 				var gridZone = tmpUtm.getGridZone() || "33W";
 				$(".zoneReplacement").text(function(i, val) {
 					return val.replace("%gridZone%", gridZone)
+				});
+
+				// Draw center of
+				var accuracyCircle = new google.maps.Circle({
+					strokeColor: '#A5BCE2',
+					strokeOpacity: 0.8,
+					strokeWeight: 2,
+					fillColor: '#E8F1FF',
+					fillOpacity: 0.5,
+					map: map,
+					center: {lat: lat, lng: lon},
+					radius: accuracy
+				});
+				var r = 7;
+				var myCircle = {
+					path: 'M -r 0 A r r 0 1 0 r 0 A r r 0 1 0 -r 0 z '.replace(/r/g, r), // Replace all "r" with the value of r
+					fillColor: 'yellow',
+					fillOpacity: 0.7,
+					scale: 1,
+					strokeColor: 'gold',
+					strokeWeight: 2
+				};
+				var marker = new google.maps.Marker({
+					position: {lat: lat, lng: lon},
+					icon:  myCircle,
+					draggable: false,
+					map: map
 				});
 			});
 		}
@@ -768,36 +797,43 @@
 		);
 
 	}
-	function onClickShare() {
+	function onClickShareMenu() {
 		clearFeedback();
-		showShareDialog();
-		setTimeout(hideShareDialog, 2000);
+		$("#divShare").toggle('fast');
+	}
+	function onClickShareCancel() {
+		clearFeedback();
+		$("#divShare").hide('fast');
 	}
 
-	function hideShareDialog() {
-		var div = $("#divShare").hide('fast');
-	}
-	function showShareDialog() {
-		var div = $("#divShare").show('fast');
-	}
 
-	function onClickShare_DELETE_ME(elem) {
-
-			clearFeedback();
-		if ("Create New Share") {
-			createNewShare();
-		} else {
-			// LOAD
-			var result = getSet("shareCode");
-
-		}
-	}
-
-	function createNewShare() {
-		var group = {"name": $("#txtSetName").text()
-			, description: $("#txtSetDescription").text()
-			, shareCode: $("#txtSetShareCode").text()
+	function onClickShare(elem) {
+		clearFeedback();
+		var group = {"name": $("#txtMapNameInput").val()
+			, description: $("#txtMapDescriptionInput").val()
 		};
+		if ($("#txtMapShareCodeInput").val()) {
+			group['shareCode'] = $("#txtMapShareCodeInput").val();
+		}
+
+		createNewShare(group, function (data) {
+			$("#txtShareUrl").show();
+
+			$("#txtMapName").val(data.name);
+			$("#txtMapDescription").val(data.description);
+			window.location.hash = (data.shareCode === undefined) ? data.groupId : data.shareCode;
+			setFacebookShare();
+			$("#txtMapShareCodeInput").prop('disabled', false);
+			$("#txtMapShareCodeInput").prop('readonly', true);
+			$("#txtMapShareCodeInput").val(data.shareCode);
+
+			$("#txtShareUrl").val(window.location);
+			$("#txtShareUrl").select();
+		});
+	}
+
+	function createNewShare(group, onFinished) {
+
 		if (posArray.length > 0) {
 			group.locations = [];
 			for (var i= 0; i<posArray.length; i++) {
@@ -820,10 +856,9 @@
 
 				posArray[i].meta = {locationId: data.locations[i].locationId};
 			}
-			$("#txtSetGroupId").val(data.groupId);
-			$("#txtSetShareCode").val(data.shareCode);
-			window.location.hash = data.shareCode;
-			setFacebookShare();
+
+			// Callback
+			onFinished(data);
 		}, function (errorMsg) {
 			alert("createNewShare(): "+errorMsg);
 		});
