@@ -35,27 +35,56 @@
 </script>
 <div id="divAll">
 	<div id="divPanel">
-		<div style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
+		<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
 		<div id="divHeader"><span class="header" id="txtSetName">EARTH</span><br/>
-			<p style="font-size:0.7em;margin-top:0;" id="txtSetDescription">Convert between GPS and UTM coordinates</p>
+			<p class="smallText" style="margin-top:0;" id="txtSetDescription">Convert between GPS and UTM coordinates</p>
 		</div>
 		<div id="divInput">
-			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
-			<div id="divMyLocation" style="float:right">
-				<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
+			<div>
+				Enter coordinate / address:
 			</div>
+			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
 			<form id="convertPos" name="convertPos" target="dummy_iframe">
-				<div style="float:left;margin-right:5px;margin-top:4px;">
-					Enter coordinate / address:
-				</div>
 				<div id="divEnterPos" style="float:left;margin-right:5px;">
 					  <input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
 					  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
+				</div>
+				<div id="divMyLocation" style="float:right">
+					<button id="btnShare" class="rounded-corners"  onclick="onClickShare()" tabindex="3" title="Add my device location"><img src="./img/share.png" height="16"></button>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 				</div>
 			</form>
 			<div style="clear: both"></div>
 			<div id="divFeedback"></div>
 		</div>
+		<div id="divShare" >
+			<span >Share your map with others</span>
+			<input id="txtShareName" placeholder="Name of map" class="rounded-corners largeText" style="width:100%">
+			<textarea id="txtShareDescription" placeholder="Description" rows="5" class="rounded-corners" style="width:100%"></textarea>
+
+			<input id="txtShareCode" class="rounded-corners" disabled placeholder="Share code" style="width:25%">
+			<span class="smallText">
+				<input type="checkbox" id="chkShareUseShareCode">Use easy name
+			</span>
+			<input id="txtShareUrl" class="rounded-corners" readonly style="width:100%">
+
+			<button id="btnShareGroup" class="rounded-corners" onclick="onClickShare()">Share</button>
+			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
+		</div>
+		<!-- div id="divStorageTable">
+			<table id="setsTable">
+
+				<thead style="font-size:0.9em;">
+				<th>Set</th>
+				<th>Last modified</th>
+				<th>Share Code</th>
+				<th></th>
+				</thead>
+				<tbody style="font-size:0.9em;">
+				</tbody>
+			</table>
+		</div -->
+
 		<div id="divTable">
 			 <table id="posTable">
 			  		 <thead>
@@ -97,9 +126,9 @@
 		</div>
 				
 		<div id="divUsage">
-			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
+			<p class="zoneReplacement smallText">
 				Update: 2016-08-08: v2.0: Load shared coordinates. Sharing your own is coming up.
-			</p><p style="margin-bottom:0;font-size:0.7em;">
+			</p><p class="smallText">
 				Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
 			<!--p style="margin-bottom:0;">
@@ -110,29 +139,8 @@
 				Cheers, :)
 			</p-->
 		</div>
-		<!--
-		<div id="divStorage">
-			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button>
-			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
-			GroupId: <input id="txtSetGroupId" readonly style="width:15%">
-			ShareCode: <input id="txtSetShareCode" style="width:15%">
-			Name: <input id="txtSetName" style="width:15%">
-			Description: <input id="txtSetDescription" style="width:60%">
-			<div id="divStorageTable">
-				<table id="setsTable">
 
-					<thead style="font-size:0.9em;">
-						<th>Set</th>
-						<th>Last modified</th>
-						<th>Share Code</th>
-						<th></th>
-					</thead>
-					<tbody style="font-size:0.9em;">
-				</tbody>
-				</table>
-			</div>
-		</div>
-		-->
+
 		<script>
 			$("#txtSetShareCode").keyup(function(event){
 				if(event.keyCode == 13){
@@ -214,6 +222,7 @@
 		//generateSetsTable();
 
 		var groupId = "";
+		setFacebookShare();
 		if(window.location.hash)
 			groupId = window.location.hash.substr(1);
 		if(groupId) {
@@ -231,6 +240,7 @@
 		$(window).on('hashchange', function () {
 			console.log("HASH change: "+window.location.hash);
 			var groupId = "";
+			setFacebookShare();
 			if(window.location.hash)
 				groupId = window.location.hash.substr(1);
 			if(groupId) {
@@ -644,6 +654,7 @@
 		ga('send', 'event', 'user-click', 'clear', 'clear-'+posArray.length);
 		sharedId = "";
 		window.location.hash = "";
+		setFacebookShare();
 		$("#txtSetName").text("EARTH");
 		$("#txtSetDescription").text("Convert between GPS and UTM coordinates");
 		var btn = $("#btnAddMyPos");
@@ -717,6 +728,7 @@
 
 		loadGroup(groupId);
 		window.location.hash = groupId;
+		setFacebookShare();
 
 	}
 
@@ -751,13 +763,27 @@
 
 			},
 			function (errorMsg) {
-				alert("getSharedGroup(): "+errorMsg);
+				console.log("ERROR: getSharedGroup(): "+errorMsg);
 			}
 		);
 
 	}
-	function onClickShare(elem) {
+	function onClickShare() {
 		clearFeedback();
+		showShareDialog();
+		setTimeout(hideShareDialog, 2000);
+	}
+
+	function hideShareDialog() {
+		var div = $("#divShare").hide('fast');
+	}
+	function showShareDialog() {
+		var div = $("#divShare").show('fast');
+	}
+
+	function onClickShare_DELETE_ME(elem) {
+
+			clearFeedback();
 		if ("Create New Share") {
 			createNewShare();
 		} else {
@@ -797,6 +823,7 @@
 			$("#txtSetGroupId").val(data.groupId);
 			$("#txtSetShareCode").val(data.shareCode);
 			window.location.hash = data.shareCode;
+			setFacebookShare();
 		}, function (errorMsg) {
 			alert("createNewShare(): "+errorMsg);
 		});
@@ -1356,6 +1383,10 @@
 		
 	}
 
+	function setFacebookShare() {
+		var div = $("#divFacebook");
+		div.attr('data-href', window.location.href);
+	}
 </script>
 <script id="_webengage_script_tag" type="text/javascript">
 	var _weq = _weq || {};

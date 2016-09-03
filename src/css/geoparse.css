@@ -91,29 +91,42 @@ body {
     padding-bottom:6px;
 }
 
-.utmKmText
+#divShare
 {
-    font-size: 1.166em;
+    background-color: #C4D9FA;
+    border-color: #5A80BB;
+    border-style: solid;
+    padding: 5px;
+    margin-bottom:6px;
+}
+#divShare > input:disabled {
+    background-color: #C4D9FA;
 }
 
-#divFeedback
-{
-    font-size: 0.8em;
-}
-
-.utmKmText
-{
-    font-size: 1.166em;
-}
-
-#divFeedback
-{
-    font-size: 0.8em;
+#divShare > * {
+    margin: 4px 0;
 }
 
 .utmKmText
 {
     font-size: 1.166em;
+}
+
+.smallText
+{
+    font-size: 0.7em;
+}
+.largeText
+{
+    font-size: 1.3em;
+}
+.boldText
+{
+    font-weight: bold;
+}
+
+input:disabled {
+    background: #C4D9FA;
 }
 
 #divFeedback
@@ -128,6 +141,17 @@ body {
     border: 3px;
     border-style: solid;
     border-color: #D9E6FC;
+}
+.feedbackInfo
+{
+    background: #dfe4ff;
+    border-color: #5A80BB;
+
+    background-image:none !important;
+    -webkit-animation: fadeIt 1s ease-in-out;
+    -moz-animation: fadeIt 1s ease-in-out;
+    -o-animation: fadeIt 1s ease-in-out;
+    animation: fadeIt 1s ease-in-out;
 }
 .feedbackError
 {
@@ -206,7 +230,7 @@ input {
 }
 
 .inputText {
-  width: 16.2em;
+  width: 220px;
   font-size: 1.2em;
 }
 
