@@ -38,7 +38,7 @@
 			throw new Error('Unknown hint position');
 		}
 		return hint;
-	}
+	};
 
 	_self.parse = function (str, hintLocation, hintFormat) {
 		//alert('OBSOLETE parse()!');
@@ -61,7 +61,7 @@
 		//    - tokenized position
 		//    - missing info (need location)
 		return attempts;
-	}
+	};
 
 	_self.findBestMatch = function (attempts) {
 		attempts.eval = {utm: 0, latlon: 0};
@@ -82,7 +82,7 @@
 		}
 
 		return attempts;
-	}
+	};
 
 	_self.addHintLocation = function (attempts, hint) {
 		if (attempts.bestMatch == "utm") {
@@ -93,7 +93,7 @@
 			attempts.pos.latlon = latlon;
 		}
 		return attempts;
-	}
+	};
 
 	_self.addUtmHintLocation = function (utm, hintLocation) {
 		// Adding Zone and/or band, if missing
@@ -130,13 +130,13 @@
 		}
 
 		return utm;
-	}
+	};
 
 	_self.addFeedback = function (obj, feedback) {
 		if (!obj.feedback)
 			obj.feedback = [];
 		obj.feedback.push( feedback );
-	}
+	};
 
 	_self.addLatLonHintLocation = function (latlon, hintLocation) {
 		hintLocation = hintLocation.latlon;
@@ -149,7 +149,7 @@
 			_self.addFeedback('')
 		}
 		return latlon;
-	}
+	};
 
 	_self.evalUtm = function (utm) {
 		// ToDo: Must evalute NSEW
@@ -181,7 +181,7 @@
 		}
 
 		return val;
-	}
+	};
 
 	_self.evalLatLon = function (latlon) {
 		// ToDo: Must evalute NSEW
@@ -203,7 +203,7 @@
 		}
 
 		return val;
-	}
+	};
 
 
 	// =====================================================
@@ -213,7 +213,7 @@
 		// Try parsing (tokenizing)
 		var utm = _self.parseTokensUtm(tokens, options);
 		var latlon = _self.parseTokensLatLon(tokens, options);
-	}
+	};
 	
 	_self.makeHint = function (pos, hintSource) {
 		var hint = {};
@@ -232,7 +232,7 @@
 			throw new Error('Unknown hint position');
 		}
 		return hint;
-	}
+	};
 
 	_self.parse = function (str, hintLocation, hintFormat) {
 		//alert('OBSOLETE parse()!');
@@ -255,7 +255,7 @@
 		//    - tokenized position
 		//    - missing info (need location)
 		return attempts;
-	}
+	};
 
 	_self.findBestMatch = function (attempts) {
 		attempts.eval = {utm: 0, latlon: 0};
@@ -276,7 +276,7 @@
 		}
 
 		return attempts;
-	}
+	};
 
 	_self.addHintLocation = function (attempts, hint) {
 		if (attempts.bestMatch == "utm") {
@@ -287,7 +287,7 @@
 			attempts.pos.latlon = latlon;
 		}
 		return attempts;
-	}
+	};
 
 	_self.addUtmHintLocation = function (utm, hintLocation) {
 		// Adding Zone and/or band, if missing
@@ -324,13 +324,13 @@
 		}
 
 		return utm;
-	}
+	};
 
 	_self.addFeedback = function (obj, feedback) {
 		if (!obj.feedback)
 			obj.feedback = [];
 		obj.feedback.push( feedback );
-	}
+	};
 
 	_self.addLatLonHintLocation = function (latlon, hintLocation) {
 		hintLocation = hintLocation.latlon;
@@ -343,7 +343,7 @@
 			_self.addFeedback('')
 		}
 		return latlon;
-	}
+	};
 
 	_self.evalUtm = function (utm) {
 		// ToDo: Must evalute NSEW
@@ -375,7 +375,7 @@
 		}
 
 		return val;
-	}
+	};
 
 	_self.evalLatLon = function (latlon) {
 		// ToDo: Must evalute NSEW
@@ -397,7 +397,7 @@
 		}
 
 		return val;
-	}
+	};
 
 
 	// =====================================================
@@ -439,7 +439,7 @@
 		//    - missing info (need location)
 		return attempts;
 
-	}
+	};
 	// =====================================================
 	// Parse array of tokens containing UTM
 	//
@@ -549,7 +549,7 @@
 		var utm = new geoUtm(zone, band, easting, northing);
 		utm.feedback = feedback;
 		return utm;
-	}
+	};
 
 	// =====================================================
 	// Parse array of tokens containing latitude and longitude
@@ -662,7 +662,7 @@
 		var geo = new geoLatLon(latitude, longititude);
 		return geo;
 
-	}
+	};
 
 	// =====================================================
 	// Parse string containing latitude and longitude
@@ -712,7 +712,7 @@
 
 
 		return {i: i, pos: sign*pos};
-	}
+	};
 
 	// =====================================================
 	// Has no delimiters, if all the numbers are in only one group
@@ -726,7 +726,7 @@
 			return true;
 		else
 			return false;
-	}
+	};
 
 	// =====================================================
 	// Parse string containing latitude and longitude
@@ -788,7 +788,7 @@
 		
 		var geo = new geoLatLon(latitude, longititude);
 		return geo;
-	}
+	};
 
 	
 	// =====================================================
@@ -844,7 +844,7 @@
 		
 		var utm = new geoUtm(zone, band, easting, northing);
 		return utm;
-	}
+	};
 
 	// =====================================================
 	// Parse string containing degrees, minutes and seconds
@@ -914,7 +914,7 @@
 
 
 		return sign * deg;
-	}
+	};
 
 	
 	
@@ -929,7 +929,7 @@
 		str = str.replace(",", ".");
 		var num = parseFloat(str);
 		return num;
-	}
+	};
 	
 	
 	// =====================================
@@ -946,7 +946,7 @@
 			index++;
 		}
 		return -1;
-	}
+	};
 	
 	// =====================================
 	// Find starting position of a number.
@@ -962,7 +962,7 @@
 			index++;
 		}
 		return -1;
-	}
+	};
 	
 	// ======================================
 	// Find a delimiter between two numbers.
@@ -980,7 +980,7 @@
 			}
 		}
 		return -1;
-	}
+	};
 	
 	// ======================================
 	_self.tokenizeString = function (str, options) {
@@ -997,7 +997,7 @@
 		}
 
 		return tokens;
-	}
+	};
 
 	// ======================================
 	_self.readToken = function (str, i, options) {
@@ -1035,14 +1035,14 @@
 
 
 		return token;
-	}
+	};
 
 	// ======================================
 	_self.createToken = function (str, start, end, type) {
 		var token = {start: start, end: end, type:type, 
 					value: str.substring(start, end)};
 		return token;
-	}
+	};
 
 	// ======================================
 	// Find end position for a number
@@ -1075,7 +1075,7 @@
 			i = start;
 		}
 		return i;
-	}
+	};
 
 	// ======================================
 	// Find end position for a word,
@@ -1087,7 +1087,7 @@
 			i++;
 
 		return i;
-	}
+	};
 
 	// ======================================
 	// Find end one pos further
@@ -1095,7 +1095,7 @@
 		if (str[i]!=undefined)
 			i++;
 		return i;
-	}
+	};
 
 	// ======================================
 	// Find end position for a delimiter.
@@ -1106,7 +1106,7 @@
 			i++;
 
 		return i;
-	}
+	};
 	
 	// ======================================
 	// Find end position for a unit.
@@ -1117,7 +1117,7 @@
 			i++;
 
 		return i;
-	}
+	};
 
 	// ======================================
 	// Find end position for a sequence of spaces
@@ -1125,7 +1125,7 @@
 		while (' \t\n\r\v'.indexOf(str[i]) > -1)
 			i++;
 		return i;
-	}
+	};
 
 	_self.numPositiveDigits = function (str) {
 		var i = 0;
@@ -1144,14 +1144,14 @@
 		}
 
 		return i - zeroCount;
-	}
+	};
 	
 	// ==============
 	// Debug methods
 	var _dbgDiv = "";
 	_self.setDebugDiv = function (dbgDiv) {
 		_self.dbgDiv = dbgDiv;
-	}	
+	};
 	_self.dbg = function (str) {
 		if (_self.dbgDiv) {
 			var dbgDiv = document.getElementById("dbgDiv");
@@ -1159,7 +1159,7 @@
 				dbgDiv.innerHTML = str + "<br/>\n" + dbgDiv.innerHTML;
 			}
 		}
-	}
+	};
 	
 	return _self;
 }());

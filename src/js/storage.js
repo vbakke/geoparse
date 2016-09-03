@@ -21,13 +21,13 @@ var storage = (function () {
 
 	_self.setDefaultValues = function (org, defaultValue) {
 		return org;
-	}
+	};
 
 
 	_self.getAllLocalSets = function () {
 		var store = amplify.store("localSets");
 		return store;
-	}
+	};
 	
 	_self.storeSet = function (index, set, onFinished, onFail) {
 		if (set[SHARECODE]) {
@@ -50,7 +50,7 @@ var storage = (function () {
 			_self._storeSetLocally(index, set, onFinished);
 		}
 
-	}
+	};
 
 	_self._storeSetLocally = function(index, set, onFinished) {
 		var store = amplify.store("localSets");
@@ -67,7 +67,7 @@ var storage = (function () {
 
 		// Call the callback with the stored set
 		onFinished(set);
-	}
+	};
 
 
 	// ============
@@ -85,7 +85,7 @@ var storage = (function () {
 
 		if (callback != undefined)
 			callback(errorMsg);
-	}
+	};
 
 	_self.getSharedGroup = function (groupId, onFinished, onFail) {
 		var shareCode;
@@ -101,7 +101,7 @@ var storage = (function () {
 			.fail( function (jqxhr, textStatus, error ) {
 				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
-	}
+	};
 
 	_self.createNewShare = function (group, onFinished, onFail) {
 		var request = $.ajax({
@@ -113,7 +113,7 @@ var storage = (function () {
 		.fail( function (jqxhr, textStatus, error ) {
 			_self.onAjaxError(jqxhr, textStatus, error, onFail);
 		});
-	}
+	};
 
 
 
@@ -136,7 +136,7 @@ var storage = (function () {
 			.fail( function (jqxhr, textStatus, error ) {
 				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
-	}
+	};
 
 	_self.removeLocation = function (groupId, locationId, onFinished, onFail) {
 		var url = WS_LOCATION_ID.replace(':groupId', groupId).replace(':locationId', locationId);
@@ -153,7 +153,7 @@ var storage = (function () {
 			.fail( function (jqxhr, textStatus, error ) {
 				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
-	}
+	};
 
 	// -----------------
 
@@ -163,7 +163,7 @@ var storage = (function () {
 	*/
 	_self.createShare = function (index, set, onFinished, onFail) {
 		_self._createSharedSet(index, set, onFinished, onFail);
-	}
+	};
 
 	_self.getSharedSet = function (shareCode, onFinished, onFail) {
 		var shareCode;
@@ -179,7 +179,7 @@ var storage = (function () {
 				alert( "Request Failed: " + err );
 				console.log( "Request Failed: " + err );
 			});
-	}
+	};
 
 
 	_self._createSharedSet = function (index, set, onFinished, onFail) {
@@ -212,7 +212,7 @@ var storage = (function () {
 
 
 		
-	}
+	};
 
 	_self._updateSharedSet = function (set, onFinished, onFail) {
 		set[VERSION]++;
@@ -236,7 +236,7 @@ var storage = (function () {
 			window.console && console.log( "Request Failed: " + err );
 			onFail(err);
 		});
-	}
+	};
 	
 	
 	return _self;

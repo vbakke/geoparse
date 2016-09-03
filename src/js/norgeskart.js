@@ -11,7 +11,7 @@ var norgeskart = (function () {
 	// 	
 	_self.isInNorway = function (location) {
 		return _self.isUtmInNorway(location.utm);
-	}
+	};
 	_self.isUtmInNorway = function (utm) {
 		if (utm.zone < 32)
 			return false;
@@ -22,7 +22,7 @@ var norgeskart = (function () {
 		if (utm.band > 'X')
 			return false;
 		return true;
-	}
+	};
 
 	_self.makeUrl = function (locationArray, viewport, includeLabels) {
 		// Make UTM33 coordinates
@@ -76,7 +76,7 @@ var norgeskart = (function () {
 		var url = "http://norgeskart.no" + urlCenter + urlMarkers;
 
 		return url;
-	}
+	};
 	
 	_self.findZoomLevel = function (locationArray, bbox, viewport) {
 		//var bbox = {w: 1000, h:1000};
@@ -99,7 +99,7 @@ var norgeskart = (function () {
 			zoomLevel++;
 		}
 		return zoomLevel-2;
-	}
+	};
 	
 	
 	return _self;

@@ -176,11 +176,11 @@ function geoUtm(zone, band, easting, northing) {
 		post = str.slice(-3);
 		var html = pre + '<span class="'+styleClass+'">' + km + '</span>' + post;
 		return html;
-	}
+	};
 	
 	this.getGridZone = function () {
 		return this.zone + this.band;
-	}
+	};
 
 	this.getHemisphere = function () {
 		if (this.band == "+")
@@ -192,5 +192,5 @@ function geoUtm(zone, band, easting, northing) {
 			return "N";
 		else
 			return "S";
-	}
+	};
 }
