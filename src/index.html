@@ -36,8 +36,8 @@
 <div id="divAll">
 	<div id="divPanel">
 		<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
-		<div id="divHeader"><span class="header" id="txtMapName">EARTH</span><br/>
-			<p class="smallText" style="margin-top:0;" id="txtMapDescription">Convert between GPS and UTM coordinates</p>
+		<div id="divHeader"><span class="header" id="txtMapName">MapShare</span><br/>
+			<p class="smallText" style="margin-top:0;" id="txtMapDescription">Share your locations</p>
 		</div>
 		<div id="divInput">
 			<div>
@@ -46,18 +46,18 @@
 			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
 			<form id="convertPos" name="convertPos" target="dummy_iframe">
 				<div id="divEnterPos" style="float:left;margin-right:5px;">
-					  <input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
-					  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
+			  		<input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
+			  		<button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 				</div>
 				<div id="divMyLocation" style="float:right">
 					<button id="btnShareMenu" class="rounded-corners"  onclick="onClickShareMenu()" tabindex="3" title="Share this map"><img src="./img/share.png" height="16"></button>
-					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 				</div>
 			</form>
 			<div style="clear: both"></div>
 			<div id="divFeedback"></div>
 		</div>
-		<div id="divShare" >
+		<div id="divShare" hidden >
 			<span >Share your map with others</span>
 			<input id="txtMapNameInput" placeholder="Name of map" class="rounded-corners largeText" style="width:100%">
 			<textarea id="txtMapDescriptionInput" placeholder="Description" rows="5" class="rounded-corners" style="width:100%"></textarea>
@@ -99,6 +99,7 @@
 			  		 	</tr>
 					 </thead>
 					 <tbody>
+					 	<tr><td></td><td colspan='2' align='center'><i>No coordinates added yet</i></td><td></td><td></td></tr>
 					 </tbody>
 					 <tfoot>
 				  		 <tr>
@@ -128,7 +129,9 @@
 				
 		<div id="divUsage">
 			<p class="zoneReplacement smallText">
-				Update: 2016-08-08: v2.0: Load shared coordinates. Sharing your own is coming up.
+				Update: 2016-09-04: v2.1: Share your own maps. First draft release.
+			</p><p class="zoneReplacement smallText">
+			Update: 2016-08-08: v2.0: Load shared coordinates. Sharing your own is coming up.
 			</p><p class="smallText">
 				Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
@@ -142,13 +145,6 @@
 		</div>
 
 
-		<script>
-			$("#txtSetShareCode").keyup(function(event){
-				if(event.keyCode == 13){
-					$("#btnLoad").click();
-				}
-			});
-		</script>
 	</div>
 	<div id="divMap">
 		<div id="divMap2"></div>
@@ -196,7 +192,7 @@
 	var tb = $("#posTable tbody");
 	var tbSets = $("#setsTable tbody");
 	var txtCoordinate = $("#txtCoordinate");
-	addToTableNoElelemntsText();
+	//addToTableNoElelemntsText();
 
 	// Add on load event to initialize the whole shebang
 	if (googleIsOffline)
@@ -684,8 +680,8 @@
 		sharedId = "";
 		window.location.hash = "";
 		setFacebookShare();
-		$("#txtSetName").text("EARTH");
-		$("#txtSetDescription").text("Convert between GPS and UTM coordinates");
+		$("#txtSetName").text("MapShare");
+		$("#txtSetDescription").text("Share your locations");
 		var btn = $("#btnAddMyPos");
 		//btn.prop("disabled", false);
 		clearLocations();
@@ -749,17 +745,6 @@
 		amplify.store("localSets", store);
 	}
 
-	function onClickLoadDBG() {
-		clearFeedback();
-		var groupId = $("#txtSetShareCode").val();
-		if (groupId == "")
-			groupId = "1001-2";
-
-		loadGroup(groupId);
-		window.location.hash = groupId;
-		setFacebookShare();
-
-	}
 
 	function loadGroup(groupId) {
 		console.log("loadGroup("+groupId+")");
@@ -775,10 +760,8 @@
 						showFeedback("INFO: No coordinates found for '" + groupId + "'");
 				} else {
 					clearFeedback();
-					$("#txtSetGroupId").text(data.groupId);
-					$("#txtSetShareCode").text(data.shareCode);
-					$("#txtSetName").text(data.name);
-					$("#txtSetDescription").text(data.description);
+					$("#txtMapName").text(data.name);
+					$("#txtMapDescription").text(data.description);
 					clearLocations();
 					sharedId = ""; // Clear to avoid repeatitive insert to DB
 					for (var i = 0; i < data.locations.length; i++) {
@@ -819,8 +802,8 @@
 		createNewShare(group, function (data) {
 			$("#txtShareUrl").show();
 
-			$("#txtMapName").val(data.name);
-			$("#txtMapDescription").val(data.description);
+			$("#txtMapName").text(data.name);
+			$("#txtMapDescription").text(data.description);
 			window.location.hash = (data.shareCode === undefined) ? data.groupId : data.shareCode;
 			setFacebookShare();
 			$("#txtMapShareCodeInput").prop('disabled', false);
@@ -1324,7 +1307,7 @@
 	}
 
 	function addToTableNoElelemntsText() {
-		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td></td><td></td></tr>");
+		tb.append("<tr><td></td><td colspan='2' align='center'><i>No coordinates added yet</i></td><td></td><td></td></tr>");
 	}
 
 	function regenerateUtm(zone) {
