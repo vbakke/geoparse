@@ -843,50 +843,8 @@
 			// Callback
 			onFinished(data);
 		}, function (errorMsg) {
-			alert("createNewShare(): "+errorMsg);
+			console.error("Failed creating new share: "+errorMsg);
 		});
-	}
-	function createSet(set) {
-		var shareCode;
-
-		var result ;
-
-		var request = $.ajax({
-	        url: "./ws/index.php/set",
-	        type: "post",
-	        data: JSON.stringify(set)
-	    });
-		request.done( function (data) {
-			alert("OK: "+data);
-			var result = data;
-			set['sharecode'] = result;
-		})
-		request.fail( function (jqxhr, textStatus, error ) {
-			var err = textStatus + ", " + error;
-			alert( "DBG: Request Failed: " + err );
-			window.console && console.log( "Request Failed: " + err );
-		});
-		return shareCode;
-	}
-
-	function getSet(shareCode) {
-		var shareCode;
-
-		var result = undefined;
-		var returnVal = $.getJSON("./ws/index.php/set/aa")
-					.done( function (data) 
-						{
-							alert("OK: "+data);
-							result = data;
-						})
-					.fail( function (jqxhr, textStatus, error ) {
-							var err = textStatus + ", " + error;
-    						alert( "Request Failed: " + err );
-    						console.log( "Request Failed: " + err );
-						});
-
-		alert("getSet(): ReturnVal: "+returnVal)
-		return result;
 	}
 
 	// Ask browser for location

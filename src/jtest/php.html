@@ -184,6 +184,7 @@
         assert.notEqual(locationId, null, 'locationId='+locationId);
         var done = assert.async();
         var url = WS_LOCATION_ID.replace(':groupId', groupId).replace(':locationId', locationId);
+        testPos4.LABEL += ' UPDATED';
         testPos4.lat += 0.01;
         testPos4.lng += 0.01;
         var returnVal = $.ajax(
@@ -217,9 +218,9 @@
                     console.log("GET shareCode: " + shareCode);
                     console.log(data);
                     assert.equal(xhr.status, 200);
-                    assert.equal(data.label, testPos4.label);
-                    assert.close(data.lat, testPos4.lat, deviation);
-                    assert.close(data.lng, testPos4.lng, deviation);
+                    assert.equal(data.label, testPos4.label, testPos4.label);
+                    assert.close(data.lat, testPos4.lat, deviation, testPos4.lat);
+                    assert.close(data.lng, testPos4.lng, deviation, testPos4.lng);
                     done();
                 });
 
