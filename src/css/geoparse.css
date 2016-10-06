@@ -139,7 +139,7 @@ input:disabled {
     margin: 2px;
     padding: 3px;
     border: 2px;
-    border-style: groove;
+    border-style: solid;
     border-color: #D9E6FC;
 }
 
@@ -156,15 +156,15 @@ input:disabled {
     animation: fadeInInfo 1s ease-in-out;
 }
 @-webkit-keyframes fadeInInfo {
-    0%  { background-color: #5A80BB; }
+    0%  { background-color: #feffb7; }
     100% { background-color: #dfe4ff; }
 }
 @-moz-keyframes fadeInInfo {
-    0%  { background-color: #5A80BB; }
+    0%  { background-color: #feffb7; }
     100% { background-color: #dfe4ff; }
 }
 @-o-keyframes fadeInInfo {
-    0%  { background-color: #5A80BB; }
+    0%  { background-color: #feffb7; }
     100% { background-color: #dfe4ff; }
 }
 @keyframes fadeInInfo {

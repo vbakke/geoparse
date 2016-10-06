@@ -21,10 +21,6 @@
     var WS_LOCATION_ID = WS_BASE+"/groups/:groupId/locations/:locationId";
 
     QUnit.config.reorder = false;
-    QUnit.test( "a basic test example", function( assert ) {
-        var value = "hello";
-        assert.equal( value, "hello", "We expect value to be hello" );
-    });
 
     var testGroup = {
         "name": "UNIT TEST",
@@ -61,6 +57,7 @@
         console.log('--- '+assert.test.testName+' ---');
         var done = assert.async();
         var url = WS_GROUP + "/" + encodeURIComponent(shareCode);
+        console.log('GETing:',url);
         var returnVal = $.getJSON(url)
                 .then( function  (data, success, xhr)
                 {
@@ -68,7 +65,7 @@
                     console.log(data);
                     assert.equal(xhr.status, 200);
                     assert.equal(data.name, "JS-TEST");
-                    assert.equal(data.groupId, "1001-2");
+                    assert.equal(data.groupId, "0ABBA-2");
                     assert.equal(data.shareCode, shareCode);
                     assert.equal(data.locations.length, 2);
                     assert.equal(data.locations[0].label, "Pos1");
@@ -85,6 +82,9 @@
         console.log(groupId);
         var done = assert.async();
         var url = WS_GROUP;
+        console.log('GETing:',url);
+        console.log('Data:',JSON.stringify(testGroup));
+
         var request = $.ajax(
                 {
                     url: url,
@@ -120,6 +120,8 @@
         assert.notEqual(groupId, null, 'groupId: '+groupId);
         var done = assert.async();
         var url = WS_LOCATION.replace(':groupId', groupId);
+        console.log('POSTing to:',url);
+        console.log('Data:',JSON.stringify(testPos4));
         var request = $.ajax(
                 {
                     url: url,
@@ -152,6 +154,7 @@
         assert.notEqual(groupId, null, 'groupId: ' + groupId);
         var done = assert.async();
         var url = WS_GROUP_ID.replace(':groupId', groupId);
+        console.log('GETing:',url);
         var returnVal = $.getJSON(url)
                 .then(function (data, success, xhr) {
                     console.log("GET shareCode: " + shareCode);
@@ -187,6 +190,8 @@
         testPos4.LABEL += ' UPDATED';
         testPos4.lat += 0.01;
         testPos4.lng += 0.01;
+        console.log('PUTing to:',url);
+        console.log('Data:',JSON.stringify(testPos4));
         var returnVal = $.ajax(
                 {
                     url: url,
@@ -213,6 +218,7 @@
         assert.notEqual(groupId, null);
         var done = assert.async();
         var url = WS_LOCATION_ID.replace(':groupId', groupId).replace(':locationId', locationId);
+        console.log('GETing:',url);
         var returnVal = $.getJSON(url)
                 .then(function (data, success, xhr) {
                     console.log("GET shareCode: " + shareCode);

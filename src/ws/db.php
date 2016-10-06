@@ -10,13 +10,9 @@ $db_p = d($config["Pw"]);
 $db_tb_pre = $config["TablePrefix"];
 $db_key_max = ($config["KeyMax"]) ? intval($config["KeyMax"]) : 9999;
 $environment = strtoupper($config["Environment"]);
+$mysqlDatetimeformat = "Y-m-d H:i:s";
 
 
-
-// Enable debugMode from query string, unless it is Production
-if ($environment != "PROD") {
-	$debugMode = $_GET['debug']=='true';
-}
 $TestDB = true&&false;
 
 $table = array("groups" => "vafe.".$db_tb_pre."Groups"
@@ -109,7 +105,7 @@ function doesExistGroupIds($con, $ids) {
 function getIdsFromGroupId($groupId) {
 	$ids = explode("-", $groupId, 2);
 
-	$ids[0] = ctype_digit($ids[0]) ? intval($ids[0]) : -1;
+	$ids[0] = ctype_xdigit($ids[0]) ? intval($ids[0], 16) : -1;
 	$ids[1] = ctype_digit($ids[1]) ? intval($ids[1]) : -1;
 
 	return $ids;
@@ -180,7 +176,7 @@ function getIdsFromShareCode($con, $shareCode) {
 // READ GROUP - GET :id
 //
 function getGroup($groupCode) {
-	global $table, $NL, $debugMode;
+	global $table, $NL, $debugMode, $mysqlDatetimeformat;
 
 	$con = connectDb();
 
@@ -205,7 +201,7 @@ function getGroupDB($con, $groupRowId) {
 
 	$vars = [groupRowId=>$groupRowId];
 	// --- Get Group ---
-	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, shareCode, name, description FROM ".$table['groups']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)' ORDER BY CreatedDate DESC Limit 1";
+	$sql = "SELECT CONCAT('0', Hex(groupRandId), '-', groupRowId) as groupId, shareCode, name, description FROM ".$table['groups']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)' ORDER BY CreatedDate DESC Limit 1";
 	$sql = replaceFields($con, $sql, $vars);
 	
 	if ($debugMode)
@@ -274,7 +270,7 @@ function createGroup($jsonGroup) {
 // UPDATE GROUP - PUT
 //
 function updateGroup($groupCode, $jsonGroup) {
-	global $table, $NL, $debugMode;
+	global $table, $NL, $debugMode, $mysqlDatetimeformat;
 	
 	#print "updateGroup($groupCode): ";
 	#var_dump($jsonGroup);
@@ -282,6 +278,7 @@ function updateGroup($groupCode, $jsonGroup) {
 		throw new GeoException("No data", 400);
 	$wsGroup = json_decode($jsonGroup, true);
 	$wsGroup['updatedIp'] = $_SERVER['REMOTE_ADDR'];
+	$wsGroup['updatedDate'] = date($mysqlDatetimeformat);
 	
 	$con = connectDb();
 
@@ -319,6 +316,7 @@ function updateGroup($groupCode, $jsonGroup) {
 		if (array_key_exists($locationId, $locationsWS)) {
 			// Location, exists in both. Update if different.
 			if (!isLocationEqual($locationsWS[$locationId], $locationsDB[$locationId])) {
+				$locationsWS[$locationId]['updatedDate'] = date($mysqlDatetimeformat);
 				if ($debugMode) print "Location $locationId for $groupRowId has changed. Updates.";
 				updateLocationDB($con, $groupRowId, $locationId, $locationsWS[$locationId]);
 				$isEqual = false;
@@ -363,6 +361,7 @@ function updateGroupDB($con, $groupRowId, $group) {
 			"  , name = '$(name)' ".
 			"  , description = '$(description)' ".
 			"  , updatedIp = '$(updatedIp)' ".
+			"  , updatedDate = '$(updatedDate)' ".
 			"WHERE deletedDate is null AND groupRowId = $(groupRowId)  "; 
 	
 	$sql = replaceFields($con, $sql, $vars);
@@ -598,7 +597,7 @@ function updateLocationDB($con, $groupRowId, $locationId, $location) {
 	$location['groupRowId'] = $groupRowId;
 	$location['locationId'] = $locationId;  
 	$sql = "UPDATE ".$table['locations']." ".
-			"SET  label='$(label)', lat='$(lat)', lng='$(lng)', updatedDate = now() ".
+			"SET  label='$(label)', lat='$(lat)', lng='$(lng)', updatedDate = '$(updatedDate)' ".
 			"WHERE deletedDate is null AND groupRowId = $(groupRowId) AND locationId = $(locationId) ";  
 
 	if ($debugMode) {

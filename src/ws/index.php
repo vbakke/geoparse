@@ -13,7 +13,15 @@ $app = new \Slim\Slim(array(
     'debug' => false
 ));
 
-if (new DateTime() < new Datetime("2016-09-30"))
+if ($environment != "PROD" and new DateTime() < new Datetime("2016-10-30"))
+	$debugAllowed = true;
+
+// Enable debugMode from query string, unless it is Production
+if ($debugAllowed) {
+	$debugMode = $_GET['debug']=='true';
+}
+
+if ($debugAllowed)
 	$app->response->headers->set('Access-Control-Allow-Origin', 'http://localhost');
 $app->response->headers->set('Content-Type', 'application/json;charset=utf-8');
 
@@ -101,7 +109,7 @@ $app->post('/groups', function () {
 });
 
 $app->put('/groups/:groupId', function ($groupId) {
-	global $app, $environment, $NL;
+	global $app, $environment, $NL, $debugMode;
 	$request = $app->request();
 	$body = $request->getBody();
 
@@ -117,7 +125,10 @@ $app->put('/groups/:groupId', function ($groupId) {
 		$result["environment"] = $environment;
 	
 	if ($result)
-		$app->response()->setStatus(204);
+		if ($debugMode)
+			$app->response()->setStatus(200);
+		else
+			$app->response()->setStatus(204);
 	else
 		$app->response()->setStatus(404);
 	//echo(safe_json($result));

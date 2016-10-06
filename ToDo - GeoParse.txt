@@ -9,11 +9,25 @@ Bug: "555555, 6666666" failes if utm zone is unavailable
 Minor bug: Table bounces when starting up, before message 'No coordinates added yet'
 Bug: alert() ved feil fra WS
 GUI: Feedback, differ between Error feedback and Info feedback
+WS: Endre RandId til Hex
+GUI: Remove, auto-update: 
+GUI: Make, isModifid flag, and button Update shared map
+GUI: Share-view: Display info, if Group is loaded
+BUG: WS: Update does not set UPDATEDATE in DB
 
 
 Skal gjøres:
+GUI: ShareMap: INSERT or UPDATE
 ---
-GUI: Make, isModifid flag, and button Update shared map
+GUI: Open ShareCode
+GUI: Share-view: Not Shared yet: First button pressed in Name: INSERT, and display share URL
+WS: POST, Missing ShareCode, leaves ShareCode blank
+WS: POST, GUI Specifies wanted ShareCode. Return Error, if taken
+GUI: POST, Handle Error, if ShareCode was taken (race-condition)
+GUI: Share-view: Tick Easy share: Get freeShareCode
+GUI: Share-view: Edit Easy share: Check freeShareCode, display OK / Taken
+GUI: Share-view: Delete Shared map
+
 GUI: Clear button, breaks tie to existing share
 
 ---
