@@ -7,14 +7,14 @@ GUI: Show device location om map
 Bug: Input box keeps focus
 Bug: "555555, 6666666" failes if utm zone is unavailable
 Minor bug: Table bounces when starting up, before message 'No coordinates added yet'
+Bug: alert() ved feil fra WS
+GUI: Feedback, differ between Error feedback and Info feedback
 
 
 Skal gjøres:
 ---
-Bug: alert() ved feil fra WS
-GUI: Feedback, differ between Error feedback and Info feedback
-GUI: Clear button, breaks tie to existing share
 GUI: Make, isModifid flag, and button Update shared map
+GUI: Clear button, breaks tie to existing share
 
 ---
 GUI: Typing addresses, show drop down of multiple matches

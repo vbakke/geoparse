@@ -224,7 +224,7 @@
 			groupId = window.location.hash.substr(1);
 		if(groupId) {
 			console.log("initialize(): Hash: "+groupId);
-			showFeedback("INFO: Loading " + groupId);
+			showFeedback('INFO', 'Loading ' + groupId + '...');
 			if (googleIsOffline) {
 				loadGroup(groupId);
 			} else {
@@ -241,7 +241,7 @@
 			if(window.location.hash)
 				groupId = window.location.hash.substr(1);
 			if(groupId) {
-				showFeedback("INFO: Loading " + window.location.hash.substr(1));
+				showFeedback('INFO', 'Loading ' + window.location.hash.substr(1)+'...');
 				loadGroup(window.location.hash);
 			}
 		});
@@ -485,7 +485,7 @@
 				function (data) {
 					if (data.status == "ZERO_RESULTS") {
 						ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-'+encodeURIComponent(address));
-						showFeedback("Sorry, Google Maps doesn't find a matching address");
+						showFeedback('ERROR', "Sorry, Google Maps doesn't find a matching address");
 					} else if (data.status == "OK") {
 						if (data.results.length >= 1) {
 							var location = data.results[0].geometry.location;
@@ -497,11 +497,11 @@
 							addLatLonLocation(location.lat, location.lng, name);
 						} else {
 							ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-'+encodeURIComponent(address));
-							showFeedback("Sorry, Google Maps doesn't find a matching address");
+							showFeedback('ERROR', "Sorry, Google Maps doesn't find a matching address");
 						}
 					} else {
 						ga('send', 'event', 'debug-error', 'dbg-adr-error', 'dbg-adr-error-'+data.status+'-'+encodeURIComponent(address));
-						showFeedback("Sorry, Google Maps returned an error looking up the address");
+						showFeedback('ERROR', "Sorry, Google Maps returned an error looking up the address");
 					}
 				},
 				"json"
@@ -525,14 +525,14 @@
 		var latlon, utm;
 
 		if (attempts.feedback)
-			showFeedback(attempts.feedback + ": "+positionStr);
+			showFeedback('INFO', attempts.feedback + ": "+positionStr);
 
 		if (attempts.bestMatch == "latlon") {
 			latlon = attempts.pos.latlon;
 			utm = geoconverter.LatLonToUTM(latlon);
 
 			if (latlon.feedback && latlon.feedback.length>0)
-				showFeedback(latlon.feedback);
+				showFeedback('INFO', latlon.feedback);
 			else
 				clearFeedback();
 		}
@@ -543,13 +543,13 @@
 			geoconverter.LatLonToUTM(latlon, utm);
 
 			if (utm.feedback && utm.feedback.length>0)
-				showFeedback(utm.feedback);
+				showFeedback('INFO', utm.feedback);
 			else
 				clearFeedback();
 		}
 		else {
 			// Unknown format
-			showFeedback("Sorry, I don't recognize that coordinate");
+			showFeedback('ERROR', "Sorry, I don't recognize that coordinate");
 		}
 
 		if (latlon && utm) {
@@ -563,9 +563,9 @@
 
 	
 	function clearFeedback() {
-		showFeedback('');
+		showFeedback('', '');
 	}
-	function showFeedback(feedback) {
+	function showFeedback(type, feedback) {
 		var str = "";
 		if (typeof feedback === 'string') {
 			str = feedback;
@@ -587,7 +587,11 @@
 				feedbackDiv.html("&nbsp;");
 				feedbackDiv.addClass('feedback');
 				setTimeout(function () {
-					feedbackDiv.addClass('feedbackError');
+					if (type == 'ERROR')
+						feedbackDiv.addClass('feedbackError');
+					else
+						feedbackDiv.addClass('feedbackInfo');
+
 					feedbackDiv.html(str);
 				}, 100);
 			}
@@ -757,7 +761,7 @@
 				if (!data || data.error) {
 					showFeedback("ERROR: Could not find '" + groupId + "'");
 				} else if (!data.locations) {
-						showFeedback("INFO: No coordinates found for '" + groupId + "'");
+					showFeedback("INFO: No coordinates found for '" + groupId + "'");
 				} else {
 					clearFeedback();
 					$("#txtMapName").text(data.name);

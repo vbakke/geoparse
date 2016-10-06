@@ -138,49 +138,67 @@ input:disabled {
 .feedback {
     margin: 2px;
     padding: 3px;
-    border: 3px;
-    border-style: solid;
+    border: 2px;
+    border-style: groove;
     border-color: #D9E6FC;
 }
+
+/* -- Feedback - INFO -- */
 .feedbackInfo
 {
     background: #dfe4ff;
     border-color: #5A80BB;
 
     background-image:none !important;
-    -webkit-animation: fadeIt 1s ease-in-out;
-    -moz-animation: fadeIt 1s ease-in-out;
-    -o-animation: fadeIt 1s ease-in-out;
-    animation: fadeIt 1s ease-in-out;
+    -webkit-animation: fadeInInfo 1s ease-in-out;
+    -moz-animation: fadeInInfo 1s ease-in-out;
+    -o-animation: fadeInInfo 1s ease-in-out;
+    animation: fadeInInfo 1s ease-in-out;
 }
+@-webkit-keyframes fadeInInfo {
+    0%  { background-color: #5A80BB; }
+    100% { background-color: #dfe4ff; }
+}
+@-moz-keyframes fadeInInfo {
+    0%  { background-color: #5A80BB; }
+    100% { background-color: #dfe4ff; }
+}
+@-o-keyframes fadeInInfo {
+    0%  { background-color: #5A80BB; }
+    100% { background-color: #dfe4ff; }
+}
+@keyframes fadeInInfo {
+    0%  { background-color: #feffb7; }
+    100% { background-color: #dfe4ff; }
+}
+
+
+/* -- Feedback - ERROR -- */
 .feedbackError
 {
     background: #ff8f85;
     border-color: #ff4133;
 
     background-image:none !important;
-    -webkit-animation: fadeIt 1s ease-in-out;
-    -moz-animation: fadeIt 1s ease-in-out;
-    -o-animation: fadeIt 1s ease-in-out;
-    animation: fadeIt 1s ease-in-out;
+    -webkit-animation: fadeInError 1s ease-in-out;
+    -moz-animation: fadeInError 1s ease-in-out;
+    -o-animation: fadeInError 1s ease-in-out;
+    animation: fadeInError 1s ease-in-out;
 }
 
-@-webkit-keyframes fadeIt {
-    0%   { background-color: #FFFFFF; }
-    50%  { background-color: #FF0000; }
-    100% { background-color: #FFFFFF; }
+@-webkit-keyframes fadeInError {
+    0%  { background-color: #ff4133; }
+    100% { background-color: #ff8f85; }
 }
-@-moz-keyframes fadeIt {
-    0%   { background-color: #FFFFFF; }
-    50%  { background-color: #00FF00; }
-    100% { background-color: #FFFFFF; }
+@-moz-keyframes fadeInError {
+    0%  { background-color: #ff4133; }
+    100% { background-color: #ff8f85; }
 }
-@-o-keyframes fadeIt {
-    0%   { background-color: #FFFFFF; }
-    50%  { background-color: #FFFF00; }
-    100% { background-color: #FFFFFF; }
+@-o-keyframes fadeInError {
+    0%  { background-color: #ff4133; }
+    100% { background-color: #ff8f85; }
 }
-@keyframes fadeIt {
+@keyframes fadeInError {
     0%  { background-color: #ff4133; }
     100% { background-color: #ff8f85; }
 }
