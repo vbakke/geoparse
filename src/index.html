@@ -18,7 +18,6 @@
 	<script src="./js/geoconverter.js"></script>
 	<script src="./js/geoparse.js"></script>
 	<script src="./js/storage.js"></script>
-	<script src="./js/norgeskart.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
 	<script src="./lib/amplify.min.js"></script>
 	<title>Convert and view your GPS and UTM coordinates</title>
@@ -155,7 +154,6 @@
 	<div id="divMap">
 		<div id="divMap2"></div>
 		<div id="divMapHeader">
-			<button id="btnOpenNorgeskart" onclick="onClickOpenNorgeskart()" class="rounded-corners" style="float:right">Norgeskart.no</button>
 			<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
 			<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
 
@@ -285,7 +283,7 @@
 				//style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
 			}
 		};
-		
+
 		var NorgeskartType = new google.maps.ImageMapType({
 			maxZoom: 20,
 			minZoom: 1,
@@ -302,6 +300,7 @@
 		
 		map = new google.maps.Map(document.getElementById(div), mapOptions);
 		map.mapTypes.set('Norgeskart', NorgeskartType);
+
 
 
 
@@ -672,14 +671,6 @@
 		console.log(msg);
 	}
 
-	function onClickOpenNorgeskart() {
-		var viewport = {w: $(window).width(), h: $(window).height()};
-		var url = norgeskart.makeUrl(posArray, viewport, config.map.displayLabalsInMap);
-		ga('send', 'event', 'debug-click', 'openKart', 'openKart-'+url);
-		ga('send', 'event', 'user-click', 'openKart', 'openKart');
-		window.open(url);
-	}
-	
 	function onClickMapEditChk(elem) {
 		var checked = elem.checked;
 		config.map.editInMap = checked;
