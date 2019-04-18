@@ -129,13 +129,19 @@
 				
 		<div id="divUsage">
 			<p class="zoneReplacement smallText">
+				Update: 2019-04-18: v2.2: Adding Norgeskart as a map layer
+			</p>
+			<!--
+			<p class="zoneReplacement smallText">
 				Update: 2016-09-04: v2.1: Share your own maps. First draft release.
-			</p><p class="zoneReplacement smallText">
+			</p>
+			<p class="zoneReplacement smallText">
 			Update: 2016-08-08: v2.0: Load shared coordinates. Sharing your own is coming up.
-			</p><p class="smallText">
+			</p>
+			<p class="smallText">
 				Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
-			<!--p style="margin-bottom:0;">
+			<p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
 			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
 			</p>
@@ -273,10 +279,32 @@
 			zoom: initZoomLevel,
 			center: new google.maps.LatLng(0, 0),
 			scaleControl: true,
-			mapTypeId: google.maps.MapTypeId.ROADMAP
-		  };
+			mapTypeId: google.maps.MapTypeId.ROADMAP,
+			mapTypeControlOptions: {
+				mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart'],
+				//style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
+			}
+		};
+		
+		var NorgeskartType = new google.maps.ImageMapType({
+			maxZoom: 20,
+			minZoom: 1,
+			name: "Norgeskart",
+			tileSize: new google.maps.Size(256, 256),
+			credit: 'norgeskart',
+			getTileUrl: function (coord, zoom) {
+				var layer = 'norgeskart_bakgrunn';
+				var urlparam = 'layers='+layer+'&zoom='+zoom+'&x='+coord.x+'&y='+coord.y;
+				var url = 'http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?'+urlparam;
+				return url;
+			}
+		});
 		
 		map = new google.maps.Map(document.getElementById(div), mapOptions);
+		map.mapTypes.set('Norgeskart', NorgeskartType);
+
+
+
 		google.maps.event.addListener(map, 'click', function(event) {
 			if (config.map.editInMap) {
 				tmpMapZoom = map.getZoom();
