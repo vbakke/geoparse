@@ -1,7 +1,9 @@
 <?php
 $NL = "<br/>\n";
 
-$config = parse_ini_file("config.ini");
+$config = parse_ini_file("../conf/config.ini");
+
+$debugMode = false;
 
 $db_host = $config["Host"];
 $db_db = $config["DB"];
@@ -10,17 +12,18 @@ $db_p = d($config["Pw"]);
 $db_tb_pre = $config["TablePrefix"];
 $db_key_max = ($config["KeyMax"]) ? intval($config["KeyMax"]) : 9999;
 $environment = strtoupper($config["Environment"]);
+$mysqlDatetimeformat = "Y-m-d H:i:s";
+
+	if ($debugMode) {
+		print "Testing to '".$db_db."' on ".$db_host." using ".$db_u."  ".$NL;
+	}
 
 
-
-// Enable debugMode from query string, unless it is Production
-if ($environment != "PROD") {
-	$debugMode = $_GET['debug']=='true';
-}
 $TestDB = true&&false;
 
-$table = array("groups" => "vafe.".$db_tb_pre."Groups"
-				,"locations" => "vafe.".$db_tb_pre."Locations"
+$dbSchema = "vafenjix_vafe";
+$table = array("groups" => $dbSchema.".".$db_tb_pre."Groups"
+				,"locations" => $dbSchema.".".$db_tb_pre."Locations"
 				);
 
 $shareCodePrefix = "@";
@@ -64,6 +67,7 @@ function lookupGroupIds($con, $groupCode) {
 	if (!ctype_digit(left($groupCode,1))) {
 		// Validated against DB
 		$ids = getIdsFromShareCode($con, $groupCode);
+		
 		if ($debugMode)
 			print "lookupGroupIds() '".$groupCode."' is a SHARECODE for ids: ".join(", ", $ids).$NL;
 		return $ids;
@@ -88,7 +92,7 @@ function lookupGroupIds($con, $groupCode) {
 }
 
 function doesExistGroupIds($con, $ids) {
-	global $table, $NL;
+	global $table, $NL, $debugMode;
 	
 	$vars = array("groupRandId" => $ids[0], "groupRowId" => $ids[1]);
 
@@ -109,7 +113,7 @@ function doesExistGroupIds($con, $ids) {
 function getIdsFromGroupId($groupId) {
 	$ids = explode("-", $groupId, 2);
 
-	$ids[0] = ctype_digit($ids[0]) ? intval($ids[0]) : -1;
+	$ids[0] = ctype_xdigit($ids[0]) ? intval($ids[0], 16) : -1;
 	$ids[1] = ctype_digit($ids[1]) ? intval($ids[1]) : -1;
 
 	return $ids;
@@ -120,9 +124,14 @@ function getIdsFromGroupId($groupId) {
 // --------------------
 
 function isShareCodeFree($con, $shareCode) {
-	global $NL;
-	#print "DBG: isShareCodeFree($shareCode)".$NL;
+	global $NL, $debugMode;
+	if ($debugMode) {
+		print "DBG: isShareCodeFree($shareCode)".$NL;
+	}
 	$ids = getIdsFromShareCode($con, $shareCode);
+	if ($debugMode) {
+		print "DBG: isShareCodeFree($shareCode) DONE".$NL;
+	}
 	if (!$ids) {
 		return true;
 	} else {
@@ -130,19 +139,28 @@ function isShareCodeFree($con, $shareCode) {
 	}
 }
 function getFreeShareCode($con, $length, $prefix="") {
-	global $NL;
+	global $NL, $debugMode;
 
 	if (!$length)
 		$length = 4;
 	
+	#print "DBG: getFreeShareCode() length $length".$NL;
+
 	$attempts = 5;
 	$maxlength = 3*($length+1);
 	
 	for ($len=$length; $len<$maxlength; $len++) {  //Safe-guard to avoid infinit loops
+		#print "DBG: getFreeShareCode() loop 1: len = $len".$NL;
 		for ($i=0; $i<$attempts; $i++) {
+			#print "DBG: getFreeShareCode() loop 2: i = $i".$NL;
 			$shareCode = randomKey($len, $prefix);
+			#print "DBG: got ShareCode() $shareCode".$NL;
 
 			if (isShareCodeFree($con, $shareCode)) {
+				if ($debugMode) {
+					print "DBG: getFreeShareCode() returns; $shareCode".$NL;
+				}
+
 				return $shareCode;
 			} 
 		}
@@ -161,11 +179,13 @@ function getIdsFromShareCode($con, $shareCode) {
 	if ($debugMode)
 		print $NL."GROUP SQL testing shareCode: ".$sql.$NL;
 	$result = executeSql($sql, $con);
-	
+	#print "RESULT:".$result;
+	$ids = [];
 	if ($result !== FALSE) {
 		$group = mysqli_fetch_assoc($result);
-		if ($group)
+		if ($group) {
 			$ids = array($group['groupRandId'],$group['groupRowId']);
+		}
 	}
 	return $ids;
 }
@@ -180,7 +200,7 @@ function getIdsFromShareCode($con, $shareCode) {
 // READ GROUP - GET :id
 //
 function getGroup($groupCode) {
-	global $table, $NL, $debugMode;
+	global $table, $NL, $debugMode, $mysqlDatetimeformat;
 
 	$con = connectDb();
 
@@ -203,22 +223,32 @@ function getGroup($groupCode) {
 function getGroupDB($con, $groupRowId) {
 	global $table, $NL, $debugMode;
 
-	$vars = [groupRowId=>$groupRowId];
+	$vars = ['groupRowId'=>$groupRowId];
 	// --- Get Group ---
-	$sql = "SELECT CONCAT(groupRandId, '-', groupRowId) as groupId, shareCode, name, description FROM ".$table['groups']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)' ORDER BY CreatedDate DESC Limit 1";
+	$sql = "SELECT CONCAT('0', Hex(groupRandId), '-', groupRowId) as groupId, shareCode, name, description FROM ".$table['groups']." WHERE deletedDate is null AND groupRowId = '$(groupRowId)' ORDER BY CreatedDate DESC Limit 1";
 	$sql = replaceFields($con, $sql, $vars);
 	
 	if ($debugMode)
 		print $NL."GROUP SQL: ".$sql.$NL.$NL;
 	$result = executeSql($sql, $con);
+	if ($debugMode)
+		print "SQL executed: ".$NL;
 	if ($result !== FALSE) {
+		if ($debugMode)
+			print "SQL had values ".$NL;
+
 		$group = mysqli_fetch_assoc($result);
 		
 		if ($group) {
+			if ($debugMode)
+				print "Call getLocDB ".$NL;
 			$locations = getLocationsDB($con, $groupRowId);
 			if ($locations) {
 				$group["locations"] = $locations;
 			}
+			if ($debugMode)
+				print "SQL retunring group ".$NL;
+
 			return $group;
 		}
 	}
@@ -232,16 +262,17 @@ function createGroup($jsonGroup) {
 	global $table, $db_key_max, $NL, $debugMode;
 	if ($debugMode) print "createGroup(): ".$jsonGroup.$NL;
 	$groupObj = json_decode($jsonGroup, true);
-
 	$con = connectDb();
-
+	
+	
+	$groupObj['groupRandId'] = 0;
 	$groupObj['groupRandId'] = rand(0, $db_key_max);
 	$groupObj['createdIp'] = $_SERVER['REMOTE_ADDR'];
-	if (!$groupObj['shareCode'])
+	if (!isset($groupObj->shareCode)) {
 		$groupObj['shareCode'] = getFreeShareCode($con, 2);
+	}
 
 
-	
 	// -- Create Group ---
 	$sql = "INSERT INTO ".$table['groups']." ".
 			"(groupRandId, shareCode, name, description, createdIp) ".
@@ -274,7 +305,7 @@ function createGroup($jsonGroup) {
 // UPDATE GROUP - PUT
 //
 function updateGroup($groupCode, $jsonGroup) {
-	global $table, $NL, $debugMode;
+	global $table, $NL, $debugMode, $mysqlDatetimeformat;
 	
 	#print "updateGroup($groupCode): ";
 	#var_dump($jsonGroup);
@@ -282,6 +313,7 @@ function updateGroup($groupCode, $jsonGroup) {
 		throw new GeoException("No data", 400);
 	$wsGroup = json_decode($jsonGroup, true);
 	$wsGroup['updatedIp'] = $_SERVER['REMOTE_ADDR'];
+	$wsGroup['updatedDate'] = date($mysqlDatetimeformat);
 	
 	$con = connectDb();
 
@@ -300,8 +332,8 @@ function updateGroup($groupCode, $jsonGroup) {
 
 	
 	// Create assoc, with locationId as key. Using 'NULL' for missing keys.
-	$locationsDB = createHash($dbGroup['locations'], 'locationId');
-	$locationsWS = createHash($wsGroup['locations'], 'locationId');
+	$locationsDB = createHash($dbGroup['locations'], 'locationId');  // from DB
+	$locationsWS = createHash($wsGroup['locations'], 'locationId');  // received in WS
 
 	// Create locations without locationsId.
 	$isEqual = true;
@@ -319,6 +351,7 @@ function updateGroup($groupCode, $jsonGroup) {
 		if (array_key_exists($locationId, $locationsWS)) {
 			// Location, exists in both. Update if different.
 			if (!isLocationEqual($locationsWS[$locationId], $locationsDB[$locationId])) {
+				$locationsWS[$locationId]['updatedDate'] = date($mysqlDatetimeformat);
 				if ($debugMode) print "Location $locationId for $groupRowId has changed. Updates.";
 				updateLocationDB($con, $groupRowId, $locationId, $locationsWS[$locationId]);
 				$isEqual = false;
@@ -363,6 +396,7 @@ function updateGroupDB($con, $groupRowId, $group) {
 			"  , name = '$(name)' ".
 			"  , description = '$(description)' ".
 			"  , updatedIp = '$(updatedIp)' ".
+			"  , updatedDate = '$(updatedDate)' ".
 			"WHERE deletedDate is null AND groupRowId = $(groupRowId)  "; 
 	
 	$sql = replaceFields($con, $sql, $vars);
@@ -406,7 +440,7 @@ function deleteGroup($groupCode) {
 function deleteGroupDB($con, $groupRowId) {
 	global $table, $debugMode, $NL;
 	
-	$vars = [groupRowId=>$groupRowId];
+	$vars = ['groupRowId'=>$groupRowId];
 	
 	// -- Create Location ---
 	$sql = "UPDATE ".$table['groups']." ".
@@ -444,7 +478,7 @@ function getGroupLocations($groupCode) {
 	$locations = getLocationsDB($con, $groupRowId);
 	
 	closeConnection($con);
-	return Array(statuscode=>201, locations=>$locations);
+	return Array('statuscode'=>201, 'locations'=>$locations);
 }
 // --------------------------
 // GET: GROUP LOCATION - POST   
@@ -457,7 +491,7 @@ function getGroupLocation($groupCode, $locationId) {
 	// Lookup (and validate) shareCode / groupId
 	$ids = lookupGroupIds($con, $groupCode);
 	if (!$ids) {
-		$status = [statuscode=>404, statusmessage=>"Group Not found"];
+		$status = ['statuscode'=>404, 'statusmessage'=>"Group Not found"];
 	} else {
 		$groupRowId = $ids[1];
 
@@ -480,7 +514,7 @@ function getLocationsDB($con, $groupRowId, $locationId=null) {
 	
 	global $table, $debugMode, $NL;
 	
-	$vars = [groupRowId=>$groupRowId];
+	$vars = ['groupRowId'=>$groupRowId];
 	// -- Create Location ---
 	$sql = "SELECT locationId, label, lat, lng FROM ".$table['locations']." WHERE deletedDate is null AND groupRowId = $(groupRowId) ";  
 	// If locationId is spesified, include
@@ -514,7 +548,7 @@ function createGroupsLocation($groupCode, $jsonLocation) {
 	if ($location == null) {
 		if ($debugMode)
 			print "ERROR: Missing location".$NL;
-		return Array(statuscode=>400, statusmessage=>"ERROR: Missing location data");
+		return Array('statuscode'=>400, 'statusmessage'=>"ERROR: Missing location data");
 	}
 	
 	$con = connectDb();
@@ -522,14 +556,14 @@ function createGroupsLocation($groupCode, $jsonLocation) {
 	$ids = lookupGroupIds($con, $groupCode);
 	if (!$ids) {
 		// Return 404
-		return Array(statuscode=>404, statusmessage=>"ERROR: Not found: group");
+		return Array('statuscode'=>404, 'statusmessage'=>"ERROR: Not found: group");
 	}
 	$groupRowId = $ids[1];
 	
 	$locationId = insertLocationDB($con, $groupRowId, $location);
 	
 	closeConnection($con);
-	return Array(statuscode=>201, locationId=>$locationId);
+	return Array('statuscode'=>201, 'locationId'=>$locationId);
 }
 
 function insertLocationDB($con, $groupRowId, $location) {
@@ -556,9 +590,9 @@ function insertLocationDB($con, $groupRowId, $location) {
 // UPDATE GROUP LOCATION - UPDATE
 // ------------------------------
 function updateLocation($groupCode, $locationId, $jsonLocation) {
-	global $debugMode, $NL;
+	global $debugModeD1, $NL;
 	
-	if ($debugMode) print "updateLocation(".$groupCode."): ".$jsonLocation.$NL;
+	if ($debugModeD2) print "updateLocation(".$groupCode."): ".$jsonLocation.$NL;
 	$location = json_decode($jsonLocation, true);
 
 	if ($location == null) {
@@ -576,16 +610,16 @@ function updateLocation($groupCode, $locationId, $jsonLocation) {
 	
 	
 	if (!isLocationEqual($dbLocation, $location)) {
-		if ($debugMode) print "Location has changed, updates database.".$NL;
+		if ($debugModeD3) print "Location has changed, updates database.".$NL;
 		$updated = updateLocationDB($con, $groupRowId, $locationId, $location);
 		if (!$updated) {
-			if ($debugMode) print "Update failed!".$NL;
+			if ($debugModeD4) print "Update failed!".$NL;
 			throw new GeoException("ERROR: Update: Location not found", 404);
 		}
 		closeConnection($con);
 		return true;
 	} else {
-		if ($debugMode) print "Location has NOT been changed. Nothing to update".$NL;
+		if ($debugModeD5) print "Location has NOT been changed. Nothing to update".$NL;
 		closeConnection($con);
 		return false;
 	}
@@ -598,7 +632,7 @@ function updateLocationDB($con, $groupRowId, $locationId, $location) {
 	$location['groupRowId'] = $groupRowId;
 	$location['locationId'] = $locationId;  
 	$sql = "UPDATE ".$table['locations']." ".
-			"SET  label='$(label)', lat='$(lat)', lng='$(lng)', updatedDate = now() ".
+			"SET  label='$(label)', lat='$(lat)', lng='$(lng)', updatedDate = '$(updatedDate)' ".
 			"WHERE deletedDate is null AND groupRowId = $(groupRowId) AND locationId = $(locationId) ";  
 
 	if ($debugMode) {
@@ -685,7 +719,7 @@ function deleteLocation($groupCode, $locationId) {
 	$ids = lookupGroupIds($con, $groupCode);
 	if (!$ids) {
 		// Return 404
-		return Array(statuscode=>404, statusmessage=>"ERROR: Not found: group");
+		return Array('statuscode'=>404, 'statusmessage'=>"ERROR: Not found: group");
 	}
 	$groupRowId = $ids[1];
 	
@@ -694,15 +728,15 @@ function deleteLocation($groupCode, $locationId) {
 	closeConnection($con);
 	
 	if ($success)
-		return Array(statuscode=>200);
+		return Array('statuscode'=>200);
 	else
-		return Array(statuscode=>404, statusmessage=>"ERROR: Not found: location");
+		return Array('statuscode'=>404, 'statusmessage'=>"ERROR: Not found: location");
 }
 
 function deleteLocationDB($con, $groupRowId, $locationId) {
 	global $table, $debugMode, $NL;
 	
-	$vars = [groupRowId=>$groupRowId, locationId=>$locationId];
+	$vars = ['groupRowId'=>$groupRowId, 'locationId'=>$locationId];
 	
 	// -- Create Location ---
 	$sql = "UPDATE ".$table['locations']." ".
@@ -734,14 +768,16 @@ function replaceFields($con, $sql, $set) {
 		$closeConnection = true;
 	}
 	
-
 	foreach ($set as $field => $value) {
-		#print "DBG: replaceFields() SQL inject ".$field."=".$value." -> (".mysqli_real_escape_string ($con, $value).")".$NL;
-		$sql = str_replace("$(".$field.")", mysqli_real_escape_string ($con, $value), $sql);
+		if (! is_array($value) ) {
+			#print "DBG: replaceFields() SQL inject ".$field."=".$value." -> (".mysqli_real_escape_string ($con, $value).")".$NL;
+			$sql = str_replace("$(".$field.")", mysqli_real_escape_string ($con, $value), $sql);
+		}
 	}
 	if ($closeConnection) {
 		closeConnection($con);
 	}
+	#print "DBG: replaceFields() SQL injected returned ".$sql.$NL;
 	return $sql;
 }
 
@@ -755,7 +791,7 @@ function connectDb() {
 	global $db_p;
 	
 	if ($debugMode) {
-		print "Connecting to '".$db_db."'".$NL;
+		print "Connecting to '".$db_db."' on ".$db_host." using ".$db_u." ".$NL;
 	}
 
 	$con = mysqli_connect($db_host, $db_u, $db_p, $db_db);
@@ -800,7 +836,7 @@ function executeSql($sql, $con=null) {
 function randomKey($maxlength, $prefix="") {
 	global $NL;
 	$str = $prefix;
-
+	#print "DBG: randomKey(): max: $maxlength, prefix: $prefix".$NL;
 	$randBaseDigits = "23456789";
 	$randBaseUpperCase = "ABDEFGHJKLMNPQRSTUVWXYZ";
 	//$randBaseLowerCase = "abcdefghijkmnrty";
@@ -809,17 +845,18 @@ function randomKey($maxlength, $prefix="") {
 	$randBase = array(0 => $randBaseDigits, 1 => $randBaseUpperCase);
 	$digitCount = strlen($randBaseDigits);
 	$fullCount = $digitCount + strlen($randBaseUpperCase);
-
+	#print 'DBG: randomKey() get Char'.$NL;
 
 	$str = $str . randomChar($randBase, false);
 	$useDigit = null;
 	$useDigitPrevious = null;
+	$useSameAgain = false;
 	#print "0:$str:".$NL;
 	for ($i=1; $i<$maxlength; $i++) {
+		#print "Loop $i".$NL;
 		$useDigitPrevious = $useDigit;
-		// Find radnom type, unless we must use same type again. However, always change first time.
+		// Find random type, unless we must use same type again. However, always change first time.
 		if ($useSameAgain !== true || $useDigit === null) {
-			
 			$useDigit = (rand(0, $fullCount) < $digitCount) ? 1 : 0;
 			#print "Swapped from ".$useDigitPrevious." to ".$useDigit.$NL;
 		} 
@@ -841,6 +878,7 @@ function randomKey($maxlength, $prefix="") {
 }
 
 function randomChar($randBase, $useDigit) {
+	#print "DBG: randomChar()"
 	$type = ($useDigit) ? 0 : 1;
 	$max = strlen($randBase[$type])-1;
 

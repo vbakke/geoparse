@@ -70,9 +70,6 @@ var storage = (function () {
 	};
 
 
-	// ============
-	//  GROUP CRUD
-	// ============
 
 	_self.onAjaxError = function (jqxhr, textStatus, error, callback) {
 		var errorMsg;
@@ -87,15 +84,18 @@ var storage = (function () {
 			callback(errorMsg);
 	};
 
+	// ============
+	//  GROUP CRUD
+	// ============
+
 	_self.getSharedGroup = function (groupId, onFinished, onFail) {
 		var shareCode;
 		var result = undefined;
-		var url = WS_GROUP + "/" + encodeURIComponent(groupId);
+		var url = WS_GROUP_ID.replace(':groupId', groupId);
 		console.log("DBG: Get URL: "+url);
 		var returnVal = $.getJSON(url)
 			.done( function (data)
 			{
-
 				onFinished(data);
 			})
 			.fail( function (jqxhr, textStatus, error ) {
@@ -110,9 +110,22 @@ var storage = (function () {
 			data: JSON.stringify(group)
 		});
 		request.done(onFinished)
-		.fail( function (jqxhr, textStatus, error ) {
-			_self.onAjaxError(jqxhr, textStatus, error, onFail);
+			.fail( function (jqxhr, textStatus, error ) {
+				_self.onAjaxError(jqxhr, textStatus, error, onFail);
+			});
+	};
+
+	_self.updateShare = function (group, onFinished, onFail) {
+		var groupId = group.shareCode;
+		var request = $.ajax({
+			url: WS_GROUP_ID.replace(':groupId', groupId),
+			type: "put",
+			data: JSON.stringify(group)
 		});
+		request.done(onFinished)
+			.fail( function (jqxhr, textStatus, error ) {
+				_self.onAjaxError(jqxhr, textStatus, error, onFail);
+			});
 	};
 
 

@@ -35,27 +35,57 @@
 </script>
 <div id="divAll">
 	<div id="divPanel">
-		<div style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
-		<div id="divHeader"><span class="header" id="txtSetName">EARTH</span><br/>
-			<p style="font-size:0.7em;margin-top:0;" id="txtSetDescription">Convert between GPS and UTM coordinates</p>
+		<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
+		<div id="divHeader"><span class="header" id="spanMapName">MapShare</span><br/>
+			<p class="smallText" style="margin-top:0;" id="spanMapDescription">Share your locations</p>
 		</div>
 		<div id="divInput">
-			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
-			<div id="divMyLocation" style="float:right">
-				<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
+			<div>
+				Enter coordinate / address:
 			</div>
+			<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
 			<form id="convertPos" name="convertPos" target="dummy_iframe">
-				<div style="float:left;margin-right:5px;margin-top:4px;">
-					Enter coordinate / address:
-				</div>
 				<div id="divEnterPos" style="float:left;margin-right:5px;">
-					  <input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
-					  <button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
+			  		<input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c" >
+			  		<button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
+					<button id="btnAddMyPos" class="rounded-corners"  onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
+				</div>
+				<div id="divMyLocation" style="float:right">
+					<button id="btnShareMenu" class="rounded-corners"  onclick="onClickShareMenu()" tabindex="3" title="Share this map"><img src="./img/share.png" height="16"></button>
 				</div>
 			</form>
 			<div style="clear: both"></div>
 			<div id="divFeedback"></div>
 		</div>
+		<div id="divShare" hidden >
+			<span >Share your map with others</span>
+			<input id="txtMapNameInput" placeholder="Name of map" class="rounded-corners largeText" style="width:100%">
+			<textarea id="txtMapDescriptionInput" placeholder="Description" rows="5" class="rounded-corners" style="width:100%"></textarea>
+
+			<input id="txtMapShareCodeInput" class="rounded-corners" disabled placeholder="Share code" style="width:25%">
+			<span class="smallText">
+				<input type="checkbox" id="chkShareUseShareCode">Use easy name
+			</span>
+			<button id="btnShareMap" class="rounded-corners" disabled onclick="onClickShareMap()">Share map</button>
+			<button id="btnLoad" class="rounded-corners" onclick="onClickShareCancel()">Cancel</button><br/>
+
+			<input id="txtShareUrl" class="rounded-corners" readonly hidden style="width:100%">
+
+		</div>
+		<!-- div id="divStorageTable">
+			<table id="setsTable">
+
+				<thead style="font-size:0.9em;">
+				<th>Set</th>
+				<th>Last modified</th>
+				<th>Share Code</th>
+				<th></th>
+				</thead>
+				<tbody style="font-size:0.9em;">
+				</tbody>
+			</table>
+		</div -->
+
 		<div id="divTable">
 			 <table id="posTable">
 			  		 <thead>
@@ -69,6 +99,7 @@
 			  		 	</tr>
 					 </thead>
 					 <tbody>
+					 	<tr><td></td><td colspan='2' align='center'><i>No coordinates added yet</i></td><td></td><td></td></tr>
 					 </tbody>
 					 <tfoot>
 				  		 <tr>
@@ -97,9 +128,11 @@
 		</div>
 				
 		<div id="divUsage">
-			<p class="zoneReplacement" style="margin-bottom:0;font-size:0.7em;">
-				Update: 2016-08-08: v2.0: Load shared coordinates. Sharing your own is coming up.
-			</p><p style="margin-bottom:0;font-size:0.7em;">
+			<p class="zoneReplacement smallText">
+				Update: 2016-09-04: v2.1: Share your own maps. First draft release.
+			</p><p class="zoneReplacement smallText">
+			Update: 2016-08-08: v2.0: Load shared coordinates. Sharing your own is coming up.
+			</p><p class="smallText">
 				Update: 2016-07-14: Now you can enter street addresses and place names.
 			</p>
 			<!--p style="margin-bottom:0;">
@@ -110,36 +143,8 @@
 				Cheers, :)
 			</p-->
 		</div>
-		<!--
-		<div id="divStorage">
-			<button id="btnShare" class="rounded-corners" onclick="onClickShare()">Share</button>
-			<button id="btnLoad" class="rounded-corners" onclick="onClickLoadDBG()">Load</button><br/>
-			GroupId: <input id="txtSetGroupId" readonly style="width:15%">
-			ShareCode: <input id="txtSetShareCode" style="width:15%">
-			Name: <input id="txtSetName" style="width:15%">
-			Description: <input id="txtSetDescription" style="width:60%">
-			<div id="divStorageTable">
-				<table id="setsTable">
 
-					<thead style="font-size:0.9em;">
-						<th>Set</th>
-						<th>Last modified</th>
-						<th>Share Code</th>
-						<th></th>
-					</thead>
-					<tbody style="font-size:0.9em;">
-				</tbody>
-				</table>
-			</div>
-		</div>
-		-->
-		<script>
-			$("#txtSetShareCode").keyup(function(event){
-				if(event.keyCode == 13){
-					$("#btnLoad").click();
-				}
-			});
-		</script>
+
 	</div>
 	<div id="divMap">
 		<div id="divMap2"></div>
@@ -159,7 +164,8 @@
 <script type="text/javascript">
 	var googleIsOffline = false;
 	var posArray = [];
-	var sharedId = "";
+	var sharedMap = null;
+	var isModified = false;
 	var centerLocationIndex = null;
 	var initZoomLevel = 2;
 	var initKnownLocationZoomLevel = 10;
@@ -187,7 +193,7 @@
 	var tb = $("#posTable tbody");
 	var tbSets = $("#setsTable tbody");
 	var txtCoordinate = $("#txtCoordinate");
-	addToTableNoElelemntsText();
+	//addToTableNoElelemntsText();
 
 	// Add on load event to initialize the whole shebang
 	if (googleIsOffline)
@@ -214,11 +220,12 @@
 		//generateSetsTable();
 
 		var groupId = "";
+		setFacebookShare();
 		if(window.location.hash)
 			groupId = window.location.hash.substr(1);
 		if(groupId) {
 			console.log("initialize(): Hash: "+groupId);
-			showFeedback("INFO: Loading " + groupId);
+			showFeedback('INFO', 'Loading map \'' + groupId.toUpperCase() + '\'...');
 			if (googleIsOffline) {
 				loadGroup(groupId);
 			} else {
@@ -231,10 +238,11 @@
 		$(window).on('hashchange', function () {
 			console.log("HASH change: "+window.location.hash);
 			var groupId = "";
+			setFacebookShare();
 			if(window.location.hash)
 				groupId = window.location.hash.substr(1);
 			if(groupId) {
-				showFeedback("INFO: Loading " + window.location.hash.substr(1));
+				showFeedback('INFO', 'Loading map \'' + window.location.hash.substr(1).toUpperCase()+'\'...');
 				loadGroup(window.location.hash);
 			}
 		});
@@ -253,6 +261,10 @@
 				this.isEnterFocus = false;
 			}
 		});
+
+		$("#txtMapNameInput").on("keyup",onMapInfoKeyUp);
+		$("#txtMapDescriptionInput").on("keyup",onMapInfoKeyUp);
+		$("#txtMapShareCodeInput").on("keyup",onMapInfoKeyUp);
 
 	}
 	function initMap(div, onFinished) {
@@ -286,21 +298,54 @@
 
 		// Get current location
 		if (navigator.geolocation) {
-			console.log("Asking for browser location");
+			showFeedback('CONSOLE', "Asking for browser location");
 			navigator.geolocation.getCurrentPosition(function (location) {
-				console.log("Received browser location");
+				showFeedback('CONSOLE', "Received browser location");
 				var lat = location.coords.latitude;
 				var lon = location.coords.longitude;
+				var accuracy = location.coords.accuracy;
 
 				myLocation = new geoLatLon(lat, lon);
 
-				map.setCenter(new google.maps.LatLng(lat, lon));
-				map.setZoom(initKnownLocationZoomLevel);
+				// Don't move map, if a group is loading/has been loaded
+				if (posArray.length == 0) {
+					showFeedback('CONSOLE', "Moving map");
+					map.setCenter(new google.maps.LatLng(lat, lon));
+					map.setZoom(initKnownLocationZoomLevel);
+				}
+
 
 				var tmpUtm = geoconverter.LatLonToUTM(myLocation);
 				var gridZone = tmpUtm.getGridZone() || "33W";
 				$(".zoneReplacement").text(function(i, val) {
 					return val.replace("%gridZone%", gridZone)
+				});
+
+				// Draw center of
+				var accuracyCircle = new google.maps.Circle({
+					strokeColor: '#A5BCE2',
+					strokeOpacity: 0.8,
+					strokeWeight: 2,
+					fillColor: '#E8F1FF',
+					fillOpacity: 0.5,
+					map: map,
+					center: {lat: lat, lng: lon},
+					radius: accuracy
+				});
+				var r = 7;
+				var myCircle = {
+					path: 'M -r 0 A r r 0 1 0 r 0 A r r 0 1 0 -r 0 z '.replace(/r/g, r), // Replace all "r" with the value of r
+					fillColor: 'yellow',
+					fillOpacity: 0.7,
+					scale: 1,
+					strokeColor: 'gold',
+					strokeWeight: 2
+				};
+				var marker = new google.maps.Marker({
+					position: {lat: lat, lng: lon},
+					icon:  myCircle,
+					draggable: false,
+					map: map
 				});
 			});
 		}
@@ -372,7 +417,15 @@
 		}
 			
 	}
-	
+
+	function onMapInfoKeyUp(e) {
+		var id = e.target.id;
+		setModified(true);
+		if (id == "txtMapShareCodeInput") {
+			// verify validity
+		}
+	}
+
 	function updateLabelFromInput(input, store) {
 		var index = input.closest("tr").index();
 
@@ -382,8 +435,10 @@
 
 		var location = posArray[index];
 		location.marker.set("labelContent", label);
-		if (store)
+		if (store && location.label != label) {
+			setModified(true);
 			location.label = label;
+		}
 
 		return label;
 	}
@@ -450,7 +505,7 @@
 				function (data) {
 					if (data.status == "ZERO_RESULTS") {
 						ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-'+encodeURIComponent(address));
-						showFeedback("Sorry, Google Maps doesn't find a matching address");
+						showFeedback('ERROR', "Sorry, Google Maps doesn't find a matching address");
 					} else if (data.status == "OK") {
 						if (data.results.length >= 1) {
 							var location = data.results[0].geometry.location;
@@ -462,11 +517,11 @@
 							addLatLonLocation(location.lat, location.lng, name);
 						} else {
 							ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-'+encodeURIComponent(address));
-							showFeedback("Sorry, Google Maps doesn't find a matching address");
+							showFeedback('ERROR', "Sorry, Google Maps doesn't find a matching address");
 						}
 					} else {
 						ga('send', 'event', 'debug-error', 'dbg-adr-error', 'dbg-adr-error-'+data.status+'-'+encodeURIComponent(address));
-						showFeedback("Sorry, Google Maps returned an error looking up the address");
+						showFeedback('ERROR', "Sorry, Google Maps returned an error looking up the address");
 					}
 				},
 				"json"
@@ -490,14 +545,14 @@
 		var latlon, utm;
 
 		if (attempts.feedback)
-			showFeedback(attempts.feedback + ": "+positionStr);
+			showFeedback('INFO', attempts.feedback + ": "+positionStr);
 
 		if (attempts.bestMatch == "latlon") {
 			latlon = attempts.pos.latlon;
 			utm = geoconverter.LatLonToUTM(latlon);
 
 			if (latlon.feedback && latlon.feedback.length>0)
-				showFeedback(latlon.feedback);
+				showFeedback('INFO', latlon.feedback);
 			else
 				clearFeedback();
 		}
@@ -508,30 +563,36 @@
 			geoconverter.LatLonToUTM(latlon, utm);
 
 			if (utm.feedback && utm.feedback.length>0)
-				showFeedback(utm.feedback);
+				showFeedback('INFO', utm.feedback);
 			else
 				clearFeedback();
 		}
 		else {
 			// Unknown format
-			showFeedback("Sorry, I don't recognize that coordinate");
+			showFeedback('ERROR', "Sorry, I don't recognize that coordinate");
 		}
 
 		if (latlon && utm) {
 			addLocation(positionStr, latlon, utm);
 		} else {
 			// What to do
-			console.log("ERROR: Not adding location");
+			console.error("ERROR: Not adding location");
 	}
 
 	}
 
 	
 	function clearFeedback() {
-		showFeedback('');
+		var feedbackDiv = $("#divFeedback");
+		if (feedbackDiv.length > 0) {
+			feedbackDiv.html("");
+			feedbackDiv.removeClass();
+		}
 	}
-	function showFeedback(feedback) {
+	function showFeedback(type, feedback) {
 		var str = "";
+		if (typeof feedback === 'undefined')
+			feedback = type;
 		if (typeof feedback === 'string') {
 			str = feedback;
 		} else {
@@ -543,22 +604,46 @@
 			}
 		}
 
-		var feedbackDiv = $("#divFeedback");
-		if (feedbackDiv.length>0) {
-			feedbackDiv.html("");
-			feedbackDiv.removeClass();
+		var feedbacTypesCssClasses = {ERROR: 'feedbackError', INFO: 'feedbackInfo'}
+		console.log('['+type+']: '+feedback);
+		if (type && feedbacTypesCssClasses.hasOwnProperty(type) ) {
+			var feedbackDiv = $("#divFeedback");
+			if (feedbackDiv.length > 0) {
+				feedbackDiv.html("");
+				feedbackDiv.removeClass();
 
-			if (str.length > 0) {
-				feedbackDiv.html("&nbsp;");
-				feedbackDiv.addClass('feedback');
-				setTimeout(function () {
-					feedbackDiv.addClass('feedbackError');
-					feedbackDiv.html(str);
-				}, 100);
+				if (str.length > 0) {
+					feedbackDiv.html("&nbsp;");
+					feedbackDiv.addClass('feedback');
+
+					setTimeout(function () {
+						feedbackDiv.addClass(feedbacTypesCssClasses[type]);
+
+						feedbackDiv.html(str);
+					}, 100);
+				}
 			}
 		}
 	}
-	
+
+	function getModified() {
+		return value;
+	}
+	function setModified(value) {
+		isModified = value;
+		console.log("setModified()",value, "shared:",sharedMap);
+		if (isModified && sharedMap) {
+			$("#btnShareMap").text('Share changes');
+		} else {
+			$("#btnShareMap").text('Share map');
+		}
+		$("#btnShareMap").prop("disabled",  (!isModified)?true:false);
+
+		var msg = (value) ? "Has been modified" : "Is Unmodified";
+		//showFeedback('INFO', msg);
+		console.log(msg);
+	}
+
 	function onClickOpenNorgeskart() {
 		var viewport = {w: $(window).width(), h: $(window).height()};
 		var url = norgeskart.makeUrl(posArray, viewport, config.map.displayLabalsInMap);
@@ -639,13 +724,16 @@
 		// Regenerate table
 		generateTable();
 	}
-	
+
+	// ToDo: Distinguish Clear all points, from Stop connect to the database share
 	function onClickClearLocations() {
 		ga('send', 'event', 'user-click', 'clear', 'clear-'+posArray.length);
-		sharedId = "";
+		sharedMap = null;
+
 		window.location.hash = "";
-		$("#txtSetName").text("EARTH");
-		$("#txtSetDescription").text("Convert between GPS and UTM coordinates");
+		setFacebookShare();
+		$("#txtSetName").text("MapShare");
+		$("#txtSetDescription").text("Share your locations");
 		var btn = $("#btnAddMyPos");
 		//btn.prop("disabled", false);
 		clearLocations();
@@ -709,69 +797,90 @@
 		amplify.store("localSets", store);
 	}
 
-	function onClickLoadDBG() {
-		clearFeedback();
-		var groupId = $("#txtSetShareCode").val();
-		if (groupId == "")
-			groupId = "1001-2";
-
-		loadGroup(groupId);
-		window.location.hash = groupId;
-
-	}
 
 	function loadGroup(groupId) {
 		console.log("loadGroup("+groupId+")");
 		if (groupId && groupId[0] == '#') // If url hash is passed as argument
 			groupId = groupId.substr(1);
-
 		storage.getSharedGroup(groupId,
 			function (data) {
 				console.log(data);
 				if (!data || data.error) {
-					showFeedback("ERROR: Could not find '" + groupId + "'");
+					showFeedback('ERROR', "Could not find '" + groupId + "'");
 				} else if (!data.locations) {
-						showFeedback("INFO: No coordinates found for '" + groupId + "'");
+					showFeedback('INFO',  "No coordinates found for '" + groupId + "'");
 				} else {
-					clearFeedback();
-					$("#txtSetGroupId").text(data.groupId);
-					$("#txtSetShareCode").text(data.shareCode);
-					$("#txtSetName").text(data.name);
-					$("#txtSetDescription").text(data.description);
+					showFeedback('INFO', 'Loaded map \''+groupId+'\'');
 					clearLocations();
-					sharedId = ""; // Clear to avoid repeatitive insert to DB
+					sharedMap = null; // Clear to avoid repeatitive insert to DB
 					for (var i = 0; i < data.locations.length; i++) {
 						var location = data.locations[i];
 						var meta = {locationId: location.locationId};
 						addLatLonLocation(location.lat, location.lng, location.label, meta, true);
 					}
-					sharedId = data.groupId; // Add this AFTER addLatLonLocation
+					sharedMap = {groupId: data.groupId, name: data.name, description: data.description}; // Add this AFTER addLatLonLocation
+					setModified(false);
 					zoomToLocations();
+					$("#spanMapName").text(data.name);
+					$("#spanMapDescription").text(data.description);
+					$("#txtMapNameInput").val(data.name);
+					$("#txtMapDescriptionInput").val(data.description);
+					$("#txtMapShareCodeInput").val(data.groupId);
 				}
 
 			},
 			function (errorMsg) {
-				alert("getSharedGroup(): "+errorMsg);
+				console.error("ERROR: getSharedGroup(): "+errorMsg);
+				showFeedback('ERROR', 'Could not load map \''+groupId+'\': '+errorMsg);
 			}
 		);
 
 	}
-	function onClickShare(elem) {
+	function onClickShareMenu() {
 		clearFeedback();
-		if ("Create New Share") {
-			createNewShare();
+		$("#divShare").toggle('fast');
+		if (sharedMap) {
+			$("#txtMapNameInput").val(sharedMap.name);
+			$("#txtMapDescriptionInput").val(sharedMap.description);
 		} else {
-			// LOAD
-			var result = getSet("shareCode");
-
+			$("#txtMapNameInput").val('');
+			$("#txtMapDescriptionInput").val('');
 		}
 	}
+	function onClickShareCancel() {
+		clearFeedback();
+		$("#divShare").hide('fast');
+	}
 
-	function createNewShare() {
-		var group = {"name": $("#txtSetName").text()
-			, description: $("#txtSetDescription").text()
-			, shareCode: $("#txtSetShareCode").text()
+
+	function onClickShareMap(elem) {
+		clearFeedback();
+		var group = {"name": $("#txtMapNameInput").val()
+			, description: $("#txtMapDescriptionInput").val()
 		};
+		if ($("#txtMapShareCodeInput").val()) {
+			group['shareCode'] = $("#txtMapShareCodeInput").val();
+		}
+
+
+		shareMap(group, function (data) {
+			$("#txtShareUrl").show();
+
+			$("#txtMapName").text(data.name);
+			$("#txtMapDescription").text(data.description);
+			window.location.hash = (data.shareCode === undefined) ? data.groupId : data.shareCode;
+			setFacebookShare();
+			$("#txtMapShareCodeInput").prop('disabled', false);
+			$("#txtMapShareCodeInput").prop('readonly', true);
+			$("#txtMapShareCodeInput").val(data.shareCode);
+
+			$("#txtShareUrl").val(window.location);
+			$("#txtShareUrl").select();
+		});
+	}
+
+	function shareMap(group, onFinished) {
+
 		if (posArray.length > 0) {
 			group.locations = [];
 			for (var i= 0; i<posArray.length; i++) {
@@ -780,100 +889,74 @@
 					, lat: posArray[i].latlon.lat
 					, lng: posArray[i].latlon.lon
 				};
+				if (posArray[i].meta !== undefined && posArray[i].meta.locationId !== undefined) {
+					location['locationId'] = posArray[i].meta.locationId;
+				}
 				group.locations.push(location);
 			}
 		}
-		storage.createNewShare(group, function (data) {
-			console.log("index.html: data: "+data);
-			// Store sharecode in local storage
-			sharedId = data.groupId;
-			var count = Math.min(data.locations.length, posArray.length);
-			for (var i=0; i<count; i++) {
-				if (data.locations[i].label != posArray[i].label)
-					console.log("DBG: Mismatch location #"+i+": local: '"+posArray[i].label+"', remote: '"+data.locations[i].label+"'");
 
-				posArray[i].meta = {locationId: data.locations[i].locationId};
-			}
-			$("#txtSetGroupId").val(data.groupId);
-			$("#txtSetShareCode").val(data.shareCode);
-			window.location.hash = data.shareCode;
-		}, function (errorMsg) {
-			alert("createNewShare(): "+errorMsg);
-		});
-	}
-	function createSet(set) {
-		var shareCode;
+		if (sharedMap) {
+			storage.updateShare(group, function (data) {
+				console.log("index.html: Map updated: " + data);
+				setModified(false);
+				// Callback
+				onFinished(group);
+			}, function (errorMsg) {
+				console.error("Failed creating new share: "+errorMsg);
+			});
+		} else {
+			storage.createNewShare(group, function (data) {
+				console.log("index.html: data: " + data);
+				setModified(false);
+				// Store sharecode in local storage
+				sharedMap = {groupId: data.groupId, name: data.name, description: data.description};
+				var count = Math.min(data.locations.length, posArray.length);
+				for (var i = 0; i < count; i++) {
+					if (data.locations[i].label != posArray[i].label)
+						console.log("DBG: Mismatch location #" + i + ": local: '" + posArray[i].label + "', remote: '" + data.locations[i].label + "'");
 
-		var result ;
+					posArray[i].meta = {locationId: data.locations[i].locationId};
+				}
 
-		var request = $.ajax({
-	        url: "./ws/index.php/set",
-	        type: "post",
-	        data: JSON.stringify(set)
-	    });
-		request.done( function (data) {
-			alert("OK: "+data);
-			var result = data;
-			set['sharecode'] = result;
-		})
-		request.fail( function (jqxhr, textStatus, error ) {
-			var err = textStatus + ", " + error;
-			alert( "DBG: Request Failed: " + err );
-			window.console && console.log( "Request Failed: " + err );
-		});
-		return shareCode;
-	}
-
-	function getSet(shareCode) {
-		var shareCode;
-
-		var result = undefined;
-		var returnVal = $.getJSON("./ws/index.php/set/aa")
-					.done( function (data) 
-						{
-							alert("OK: "+data);
-							result = data;
-						})
-					.fail( function (jqxhr, textStatus, error ) {
-							var err = textStatus + ", " + error;
-    						alert( "Request Failed: " + err );
-    						console.log( "Request Failed: " + err );
-						});
-
-		alert("getSet(): ReturnVal: "+returnVal)
-		return result;
+				// Callback
+				onFinished(data);
+			}, function (errorMsg) {
+				console.error("Failed creating new share: " + errorMsg);
+			});
+		}
 	}
 
 	// Ask browser for location
 	function onClickAddMyPos() {
 		clearFeedback();
 		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(addMyLocation);
+			navigator.geolocation.getCurrentPosition(function (pos) {
+				if (pos == undefined) {
+					showFeedback("Could not retrieve your location");
+				} else {
+					var me = $("#btnAddMyPos");
+					//me.prop("disabled", true);
+
+					var label = "Me";
+					var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label);
+
+
+					var utmLogMsg = approxUtm(location.utm);
+					ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+utmLogMsg);
+					ga('send', 'event', 'debug-click', 'addMyPos', 'addMyPos-'+location.utm.toString());
+					ga('send', 'pageview', {
+						'page': '/geoparse/addMyPos',
+						'title': utmLogMsg
+					});
+				}
+			});
 		} else {
 			showFeedback("Geolocation is not supported by this browser.");
 		}
 	}
 
-	function addMyLocation(pos) {
-		if (pos == undefined) {
-			showFeedback("Could not retrieve your location");
-		} else {
-			var me = $("#btnAddMyPos");
-			//me.prop("disabled", true);
 
-			var label = "Me";
-			var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label);
-
-
-			var utmLogMsg = approxUtm(location.utm);
-			ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-'+utmLogMsg); 
-			ga('send', 'event', 'debug-click', 'addMyPos', 'addMyPos-'+location.utm.toString());
-			ga('send', 'pageview', {
-					'page': '/geoparse/addMyPos',
-					'title': utmLogMsg
-			});
-		}
-	}
 				
 	function addLatLonLocation(lat, lon, label, meta, freezeMap) {
 		//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
@@ -890,6 +973,7 @@
 		location.orgStr = "";
 		location.latlon = latlon;
 		location.utm = utm;
+		setModified(true);
 		updateLocationInTable(tb, location);
 	}
 	function getLabelLetter() {
@@ -925,7 +1009,8 @@
 
 		var location = {orgStr: orgStr, latlon: latlon, utm: utm, meta: meta, label: label};
 
-		if (sharedId && !skipDB) {
+		/* --Auto-uppdate disabled --
+		if (sharedMap && !skipDB) {
 			var locationDB = {label: label, lat: latlon.lat, lng: latlon.lon};
 			addLocationToDb(locationDB, function (locationDB) {
 						meta = {locationId: locationDB.locationId};
@@ -934,10 +1019,12 @@
 					}
 			);
 		} else {
+		*/
+			setModified(true);
 			addLocationToTable(tb, location);
 			addLocationToMap(location, freezeMap);
 			posArray.push(location);
-		}
+		// }
 
 
 		return location;
@@ -951,22 +1038,22 @@
 
 
 	function addLocationToDb(locationDB, onFinished) {
-		storage.addLocation(sharedId, locationDB,
+		storage.addLocation(sharedMap.groupId, locationDB,
 				onFinished				,
 				function (err) {
-					console.log("ERROR: Adding location: " + err);
+					console.error("ERROR: Adding location: " + err);
 				}
 		);
 	}
 
 	function removeLocationFromDb(location) {
 		var locationDB = {locationId: location.meta.locationId};
-		storage.removeLocation(sharedId, locationDB.locationId,
+		storage.removeLocation(sharedMap.groupId, locationDB.locationId,
 				function (data) {
 					console.log("Removed location: " + data);
 				},
 				function (err) {
-					console.log("ERROR: Removing location: " + err);
+					console.error("ERROR: Removing location: " + err);
 				}
 		);
 	}
@@ -1146,6 +1233,8 @@
 	function clearLocations() {
 		clearLocationsFromMap();
 		clearLocationsFromTable();
+		if (posArray && posArray.length > 0)
+			setModified(true);
 		posArray = [];
 	}
 	
@@ -1211,9 +1300,12 @@
 
 
 	function removeLocation(index) {
-		if (sharedId) {
+		/* --Auto-update--
+		if (sharedMap) {
 			removeLocationFromDb(posArray[index]);
 		}
+		*/
+		setModified(true);
 		removeLocationFromMap(index);
 		removeLocationFromTable(index);
 		posArray.splice(index, 1); // Remove the element
@@ -1262,7 +1354,7 @@
 	}
 
 	function addToTableNoElelemntsText() {
-		tb.append("<tr><td></td><td><i>No coordinates added yet</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td></td><td></td></tr>");
+		tb.append("<tr><td></td><td colspan='2' align='center'><i>No coordinates added yet</i></td><td></td><td></td></tr>");
 	}
 
 	function regenerateUtm(zone) {
@@ -1356,6 +1448,10 @@
 		
 	}
 
+	function setFacebookShare() {
+		var div = $("#divFacebook");
+		div.attr('data-href', window.location.href);
+	}
 </script>
 <script id="_webengage_script_tag" type="text/javascript">
 	var _weq = _weq || {};
