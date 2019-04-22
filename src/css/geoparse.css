@@ -34,12 +34,8 @@ body {
 
 .panel-left
 {
-  flex: 0 0 auto;
-  width: 33%; 
-  min-width: 310px;
-  padding: 0px;
-  margin: 5px 3px;
-  margin-bottom: 0.4em;
+    flex: 0 0 auto;
+    width: 33%; 
 }
 
 .splitter 
@@ -54,14 +50,22 @@ body {
 .panel-right 
 {
     flex: 1 1 auto;
-    /* width: 100%; */
-    display: flex;
-    flex-direction: column;
+}
+
+#divPanel
+{
+    min-width: 310px;
+    padding: 0px 3px;
+    margin: 5px 0px;
+    margin-bottom: 0.4em;
+
 }
 
 #divMap
 {
-  padding: 5px 0px;
+  display: flex;
+  flex-direction: column;
+  padding: 5px 3px;
 }
 #divMap2 
 {
@@ -70,11 +74,9 @@ body {
 #divMapHeader 
 {
     flex: 0 1 40px;
-  /* width: 100%; */
-  /* bottom: 0px; */
 }
 
-@media screen and (max-width:1024px) {
+@media screen and (max-width:1023px) {
   .panel-container 
   {
       display: block;
@@ -82,9 +84,7 @@ body {
   .panel-left
   {
     display: block;
-    background-color: red;
-    /*max-width: 575px;* /
-    float:left; */
+    /* background-color: red; */
     width: 100%;
   }
   .splitter 
@@ -93,8 +93,7 @@ body {
   }
   .panel-right
   {
-    background-color: orange;
-    /*float:right; */
+    /* background-color: orange; */
     width: 100%;
     height: 90%;
 

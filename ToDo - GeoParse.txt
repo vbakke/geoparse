@@ -7,7 +7,7 @@ Bug: Change geocoding to JS methods: https://developers.google.com/maps/document
 - Parse: Handle more than one address result
 - GUI: Make check boxes nicer
 
-- 
+Bug: Share displays the long URL
 - GUI: Draw 1km squares (optionally)
    - Draw optionaly 100m, or 10m according to scale
 

@@ -36,7 +36,7 @@
 	
 </script>
 <div id="divAll" class="panel-container">
-	<div id="div Panel" class="panel-left">
+	<div id="divPanel" class="panel-left">
 		<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
 		<div id="divHeader"><span class="header" id="spanMapName">MapShare</span><br/>
 			<p class="smallText" style="margin-top:0;" id="spanMapDescription">Share your locations</p>
@@ -130,11 +130,14 @@
 		</div>
 				
 		<div id="divUsage">
-			<p class="zoneReplacement smallText">
+			<p class="smallText">
+				Update: 2019-04-18: v2.2: Adding Norgeskart as a map layer
+			</p>
+			<p class="smallText">
 				Update: 2019-04-18: v2.2: Adding Norgeskart as a map layer
 			</p>
 			<!--
-			<p class="zoneReplacement smallText">
+			<p class="smallText">
 				Update: 2016-09-04: v2.1: Share your own maps. First draft release.
 			</p>
 			<p class="zoneReplacement smallText">
@@ -154,7 +157,7 @@
 
 
 	</div>
-	<div id="div Splitter" class="splitter"></div>
+	<div id="divSplitter" class="splitter"></div>
 	<div id="divMap" class="panel-right">
 		<div id="divMap2"></div>
 		<div id="divMapHeader">
@@ -214,18 +217,18 @@
 		loadGoogleApi(initialize);
 
 	function loadGoogleApi(initFunc) {
-		console.log("loadGoogleApi()");
+		//console.log("loadGoogleApi()");
 		$.get("./conf/gkey.txt", null, function (data) {
-			console.log("loadGoogleApi() got gkey");
+			//console.log("loadGoogleApi() got gkey");
 			var apiUrl = "https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry&key=" + data.trim();
 			$.getScript(apiUrl, function () {
-				console.log("loadGoogleApi() got API");
+				//console.log("loadGoogleApi() got API");
 				$.getScript("./lib/markerwithlabel.js", initFunc);
 			});
 		}, "text");
 	}
 	function initialize() {
-		console.log("initialize()");
+		//console.log("initialize()");
 
 		initMap("divMap2");
 		clearLocations();
@@ -236,7 +239,7 @@
 		if(window.location.hash)
 			groupId = window.location.hash.substr(1);
 		if(groupId) {
-			console.log("initialize(): Hash: "+groupId);
+			//console.log("initialize(): Hash: "+groupId);
 			showFeedback('INFO', 'Loading map \'' + groupId.toUpperCase() + '\'...');
 			if (googleIsOffline) {
 				loadGroup(groupId);
@@ -248,7 +251,7 @@
 		}
 
 		$(window).on('hashchange', function () {
-			console.log("HASH change: "+window.location.hash);
+			//console.log("HASH change: "+window.location.hash);
 			var groupId = "";
 			setFacebookShare();
 			if(window.location.hash)
@@ -666,7 +669,7 @@
 	}
 	function setModified(value) {
 		isModified = value;
-		console.log("setModified()",value, "shared:",sharedMap);
+		//console.log("setModified()",value, "shared:",sharedMap);
 		if (isModified && sharedMap) {
 			$("#btnShareMap").text('Share changes');
 		} else {
@@ -674,9 +677,9 @@
 		}
 		$("#btnShareMap").prop("disabled",  (!isModified)?true:false);
 
-		var msg = (value) ? "Has been modified" : "Is Unmodified";
+		//var msg = (value) ? "Has been modified" : "Is Unmodified";
 		//showFeedback('INFO', msg);
-		console.log(msg);
+		//console.log(msg);
 	}
 
 	function onClickMapEditChk(elem) {
@@ -826,12 +829,12 @@
 
 
 	function loadGroup(groupId) {
-		console.log("loadGroup("+groupId+")");
+		//console.log("loadGroup("+groupId+")");
 		if (groupId && groupId[0] == '#') // If url hash is passed as argument
 			groupId = groupId.substr(1);
 		storage.getSharedGroup(groupId,
 			function (data) {
-				console.log(data);
+				//console.log(data);
 				if (!data || data.error) {
 					showFeedback('ERROR', "Could not find '" + groupId + "'");
 				} else if (!data.locations) {
@@ -934,7 +937,7 @@
 			});
 		} else {
 			storage.createNewShare(group, function (data) {
-				console.log("index.html: data: " + data);
+				//console.log("index.html: data: " + data);
 				setModified(false);
 				// Store sharecode in local storage
 				sharedMap = {groupId: data.groupId, name: data.name, description: data.description};
