@@ -7,7 +7,6 @@ Bug: Change geocoding to JS methods: https://developers.google.com/maps/document
 - Parse: Handle more than one address result
 - GUI: Make check boxes nicer
 
-Bug: Share displays the long URL
 - GUI: Draw 1km squares (optionally)
    - Draw optionaly 100m, or 10m according to scale
 
@@ -54,6 +53,7 @@ Done
 ====
 2019
 v2.2
+Bug: Share displays the long ID
 - GUI: Add movable divider
 - Parse: Allow EØ VW osv
 - Incorporate Norgeskart

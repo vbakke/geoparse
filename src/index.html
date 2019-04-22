@@ -851,11 +851,12 @@
 					sharedMap = {groupId: data.groupId, name: data.name, description: data.description}; // Add this AFTER addLatLonLocation
 					setModified(false);
 					zoomToLocations();
+					var shareCode = (data.shareCode) ? data.shareCode : data.groupId;
 					$("#spanMapName").text(data.name);
 					$("#spanMapDescription").text(data.description);
 					$("#txtMapNameInput").val(data.name);
 					$("#txtMapDescriptionInput").val(data.description);
-					$("#txtMapShareCodeInput").val(data.groupId);
+					$("#txtMapShareCodeInput").val(shareCode);
 				}
 
 			},
