@@ -41,8 +41,8 @@
 	};
 
 	_self.parse = function (str, hintLocation, hintFormat) {
-		//alert('OBSOLETE parse()!');
 		// Try parsing (tokenizing)
+		str = str.replace(/[Øø]/, 'E').replace(/[Vv]/, 'W');
 		var utm = _self.parseUtm(str);
 		var latlon = _self.parseLatLon(str);
 	

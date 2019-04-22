@@ -20,6 +20,7 @@
 	<script src="./js/storage.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
 	<script src="./lib/amplify.min.js"></script>
+	<script src="./lib/jquery-resizable.js"></script>
 	<title>Convert and view your GPS and UTM coordinates</title>
 </head>
 <body>
@@ -31,9 +32,11 @@
 		js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.4&appId=407181112820036";
 		fjs.parentNode.insertBefore(js, fjs);
 	}(document, 'script', 'facebook-jssdk'));
+
+	
 </script>
-<div id="divAll">
-	<div id="divPanel">
+<div id="divAll" class="panel-container">
+	<div id="div Panel" class="panel-left">
 		<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
 		<div id="divHeader"><span class="header" id="spanMapName">MapShare</span><br/>
 			<p class="smallText" style="margin-top:0;" id="spanMapDescription">Share your locations</p>
@@ -151,21 +154,26 @@
 
 
 	</div>
-	<div id="divMap">
+	<div id="div Splitter" class="splitter"></div>
+	<div id="divMap" class="panel-right">
 		<div id="divMap2"></div>
 		<div id="divMapHeader">
 			<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners" >Allow editing in map</div>
 			<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners" >Display labels in map</div>
 
-			<div class="clearfix"></div>
 		</div>
 	</div>
 
 
-<div style="clear: both"></div>
 </div>
 
 <script type="text/javascript">
+
+	$(".panel-left").resizable({
+		handleSelector: ".splitter",
+		resizeHeight: false
+	});
+
 	var googleIsOffline = false;
 	var posArray = [];
 	var sharedMap = null;
@@ -557,7 +565,7 @@
 
 
 	function addConvertedPos(positionStr) {
-
+		positionStr = positionStr.replace(/[Øø]/, 'E').replace(/[Vv]/, 'W');
 		var hint = undefined;
 		if (posArray && posArray.length>0) {
 			var lastLoation = posArray[posArray.length-1];

@@ -18,62 +18,85 @@ body {
 
 #divAll
 {
-  position: relative;
-  width:100%;
-  height: 100%;
-  padding: 0.3em;
-  margin: 0px;
+    /* border: 1px solid #385074; */
+    width:100%;
+    height: 100%;
+    padding: 0em;
+    margin: 0px;
+}
+
+.panel-container
+{
+    display: flex;
+    flex-direction: row;
 }
 
 
-#divPanel
+.panel-left
 {
-  /*background-color: gray;*/
-  position: relative;
-  width: 100%;
+  flex: 0 0 auto;
+  width: 33%; 
   min-width: 310px;
   padding: 0px;
-  margin: 0px;
+  margin: 5px 3px;
   margin-bottom: 0.4em;
+}
+
+.splitter 
+{
+    flex: 0 0 auto;
+    background: url(../img/splitter-20.png) center center/10px no-repeat;
+    background-color: #e4ebf6;
+    cursor: col-resize;
+    width: 10px;
+}
+
+.panel-right 
+{
+    flex: 1 1 auto;
+    /* width: 100%; */
+    display: flex;
+    flex-direction: column;
 }
 
 #divMap
 {
-  /* background:#FFFFCD;*/
-  /*background-color: yellow;*/
-  position: relative;
-  padding: 0px;
-  height: 75%;
+  padding: 5px 0px;
 }
 #divMap2 
 {
-  position: absolute;
-  top: 1px;
-  bottom: 3.2em;
-  left: 1px;
-  right: 1px;
+    flex: 1 1 auto;
 }
 #divMapHeader 
 {
-  position: absolute;
-  width: 100%;
-  bottom: 0px;
+    flex: 0 1 40px;
+  /* width: 100%; */
+  /* bottom: 0px; */
 }
 
-@media screen and (min-width:760px) {
-  #divPanel
+@media screen and (max-width:1024px) {
+  .panel-container 
   {
-    /*background-color: red;*/
-    /*max-width: 575px;*/
-    float:left;
-    width: 45%;
+      display: block;
   }
-  #divMap
+  .panel-left
   {
-    /*background-color: orange;*/
-    float:right;
-    width: 54%;
-    height: 98%;
+    display: block;
+    background-color: red;
+    /*max-width: 575px;* /
+    float:left; */
+    width: 100%;
+  }
+  .splitter 
+  {
+    display: none;
+  }
+  .panel-right
+  {
+    background-color: orange;
+    /*float:right; */
+    width: 100%;
+    height: 90%;
 
   }
 }

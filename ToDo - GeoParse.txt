@@ -2,19 +2,24 @@ ToDo
 ====
 
 v2
+- GUI: Add Custom columns 
+Bug: Change geocoding to JS methods: https://developers.google.com/maps/documentation/javascript/geocoding
+- Parse: Handle more than one address result
+- GUI: Make check boxes nicer
+
+- 
+- GUI: Draw 1km squares (optionally)
+   - Draw optionaly 100m, or 10m according to scale
+
 
 ---
 Bug: "555555, 6666666" failes if utm zone is unavailable
-Bug: Ony show Norgeskart button if one of the markers are within Norway.
 Bug: Center icon disappears when changing coordinate format
 Bug: Input box keeps focus
 Bug: Adding more than 26 points, gives no-name labels
 
-- Parse: Allow EØ VW osv
 - GUI: Add checkbox UTM: 'Bigger km'
 - GUI: Add checkbox UTM: 'Leading zero'
-- GUI: Draw 1km squares (optionally)
-   - Draw optionaly 100m, or 10m according to scale
 - GUI: Remove marker, should reposition map?
 
 Help
@@ -27,12 +32,9 @@ Help
 
 Backlog
 =======
-- Parse: Handle more than one address result
 - GUI: Add function for explaining prose text
 - GUI: Add myLocation on page, in writing
-- GUI: Make check boxes nicer
 - GUI: Show difference in altitude between positions
-- GUI: Map: Choose between different maps
 - JS: Load JS asynchronously
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 
@@ -50,6 +52,12 @@ Backlog
 
 Done
 ====
+2019
+v2.2
+- GUI: Add movable divider
+- Parse: Allow EØ VW osv
+- Incorporate Norgeskart
+- GUI: Map: Choose between different maps
 2016
 v2.0.1
 - Bug: Mobile, moving map make the keyboard popup when text input previously had focus
