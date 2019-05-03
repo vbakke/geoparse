@@ -7,17 +7,16 @@
 }
 
 html { 
-  height: 100%;
+    height: 100%;
 }
 body { 
-  height: 100%;
-  font-family:sans-serif;   
-  background-color: #D9E6FC;
-  margin: 0px;
+    height: 100%;
+    font-family:sans-serif;   
+    background-color: #D9E6FC;
+    margin: 0px;
 }
 
-#divAll
-{
+#divAll {
     /* border: 1px solid #385074; */
     width:100%;
     height: 100%;
@@ -25,21 +24,18 @@ body {
     margin: 0px;
 }
 
-.panel-container
-{
+.panel-container {
     display: flex;
     flex-direction: row;
 }
 
 
-.panel-left
-{
+.panel-left {
     flex: 0 0 auto;
     width: 33%; 
 }
 
-.splitter 
-{
+.splitter  {
     flex: 0 0 auto;
     background: url(../img/splitter-20.png) center center/10px no-repeat;
     background-color: #e4ebf6;
@@ -47,13 +43,11 @@ body {
     width: 10px;
 }
 
-.panel-right 
-{
+.panel-right  {
     flex: 1 1 auto;
 }
 
-#divPanel
-{
+#divPanel {
     min-width: 310px;
     padding: 0px 3px;
     margin: 5px 0px;
@@ -61,60 +55,50 @@ body {
 
 }
 
-#divMap
-{
-  display: flex;
-  flex-direction: column;
-  padding: 5px 3px;
+#divMap {
+    display: flex;
+    flex-direction: column;
+padding: 5px 3px;
 }
-#divMap2 
-{
+
+#divMap2  {
     flex: 1 1 auto;
 }
-#divMapHeader 
-{
+#divMapHeader  {
     flex: 0 1 40px;
 }
 
 @media screen and (max-width:1023px) {
-  .panel-container 
-  {
-      display: block;
-  }
-  .panel-left
-  {
-    display: block;
-    /* background-color: red; */
-    width: 100% !important;
-  }
-  .splitter 
-  {
-    display: none;
-  }
-  .panel-right
-  {
-    /* background-color: orange; */
-    width: 100%;
-    height: 90%;
-
-  }
+    .panel-container {
+        display: block;
+    }
+    .panel-left {
+        display: block;
+        /* background-color: red; */
+        width: 100% !important;
+    }
+    .splitter {
+        display: none;
+    }
+    .panel-right {
+        /* background-color: orange; */
+        width: 100%;
+        height: 90%;
+    }
 }
 
-#divUsage
-{
+#divUsage {
   position: relative;
   background: #C4D9FA;
   padding: 0.5em;
 }
 
 
-#divInput
-{
+#divInput {
     padding-bottom:6px;
 }
 
-#divShare
-{
+#divShare {
     background-color: #C4D9FA;
     border-color: #5A80BB;
     border-style: solid;
@@ -129,21 +113,17 @@ body {
     margin: 4px 0;
 }
 
-.utmKmText
-{
+.utmKmText {
     font-size: 1.166em;
 }
 
-.smallText
-{
+.smallText {
     font-size: 0.7em;
 }
-.largeText
-{
+.largeText {
     font-size: 1.0em;
 }
-.boldText
-{
+.boldText {
     font-weight: bold;
 }
 
@@ -151,10 +131,8 @@ input:disabled {
     background: #C4D9FA;
 }
 
-#divFeedback
-{
+#divFeedback {
     font-size: 0.8em;
-
 }
 
 .feedback {
@@ -166,8 +144,7 @@ input:disabled {
 }
 
 /* -- Feedback - INFO -- */
-.feedbackInfo
-{
+.feedbackInfo {
     background: #dfe4ff;
     border-color: #5A80BB;
 
@@ -177,6 +154,7 @@ input:disabled {
     -o-animation: fadeInInfo 1s ease-in-out;
     animation: fadeInInfo 1s ease-in-out;
 }
+
 @-webkit-keyframes fadeInInfo {
     0%  { background-color: #feffb7; }
     100% { background-color: #dfe4ff; }
@@ -196,8 +174,7 @@ input:disabled {
 
 
 /* -- Feedback - ERROR -- */
-.feedbackError
-{
+.feedbackError {
     background: #ff8f85;
     border-color: #ff4133;
 
@@ -225,7 +202,7 @@ input:disabled {
     100% { background-color: #ff8f85; }
 }
 
-.backgroundAnimated{
+.backgroundAnimated {
     background-image:none !important;
     -webkit-animation: fadeIt 1s ease-in-out;
     -moz-animation: fadeIt 1s ease-in-out;
@@ -234,15 +211,15 @@ input:disabled {
 }
 
 table {
-       width:100%;
-           border:solid;
-           border-color:#5A80BB;
-           border-width:3px;
-           border-collapse:collapse;
-           border-radius: 10px;
-           -moz-border-radius:10px;
-           -webkit-border-radius:10px;
-           margin:0px;
+    width:100%;
+    border:solid;
+    border-color:#5A80BB;
+    border-width:3px;
+    border-collapse:collapse;
+    border-radius: 10px;
+    -moz-border-radius:10px;
+    -webkit-border-radius:10px;
+    margin:0px;
 }
 
 th {
@@ -256,81 +233,78 @@ th {
 }
 
 td {
-   background-color:#C4D9FA;
-   border:medium;
-   border-color:#5A80BB;
-   border-style:solid;
-   vertical-align:middle;
-   padding:2px;
+    background-color:#C4D9FA;
+    border:medium;
+    border-color:#5A80BB;
+    border-style:solid;
+    vertical-align:middle;
+    padding:2px;
 }
 
 input {
-	background-color: #E8F1FF;
-	border-color: #A5BCE2;
+    background-color: #E8F1FF;
+    border-color: #A5BCE2;
 }
 
 .inputText {
-  width: 220px;
-  font-size: 1.2em;
+    width: 220px;
+    font-size: 1.2em;
 }
 
-.header
-{
- font-family:sans-serif;
- font-size:2em;
+.header {
+    font-family:sans-serif;
+    font-size:2em;
 }
 
-.dotted
-{
-  color: #385074;
-  border-bottom: 1px dashed #385074;
-}
-.hand
-{
-  cursor: pointer;
-  cursor: hand;
+.dotted {
+    color: #385074;
+    border-bottom: 1px dashed #385074;
 }
 
-.rounded-corners
-{
- background-color: #E8F1FF;
- border-color: #A5BCE2;
- padding-top:4px;
- padding-bottom:4px;
- padding-left:6px;
- padding-right:6px;
+.hand {
+    cursor: pointer;
+    cursor: hand;
+}
 
- border-radius: 4px 4px 4px 4px;
- -ms-border-radius: 4px 4px 4px 4px;
- -moz-border-radius: 4px 4px 4px 4px;
- -webkit-border-radius: 4px 4px 4px 4px;
- -khtml-border-radius: 4px 4px 4px 4px;
+.rounded-corners {
+    background-color: #E8F1FF;
+    border-color: #A5BCE2;
+    padding-top:4px;
+    padding-bottom:4px;
+    padding-left:6px;
+    padding-right:6px;
+
+    border-radius: 4px 4px 4px 4px;
+    -ms-border-radius: 4px 4px 4px 4px;
+    -moz-border-radius: 4px 4px 4px 4px;
+    -webkit-border-radius: 4px 4px 4px 4px;
+    -khtml-border-radius: 4px 4px 4px 4px;
 }
 
  .markerlabel {
-   color: #5A80BB;
-   background-color: #C4D9FA;
-   font-family: sans-serif;
-   font-size: 14px;
-   font-weight: bold;
-   text-align: center;
-   /*width: 40px; */
-   padding: 2px;
-   border: 1px solid #5A80BB;
-   border-radius: 3px;
-   white-space: nowrap;
+    color: #5A80BB;
+    background-color: #C4D9FA;
+    font-family: sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    /*width: 40px; */
+    padding: 2px;
+    border: 1px solid #5A80BB;
+    border-radius: 3px;
+    white-space: nowrap;
  }
  
  .clearfix:after { 
-   content: "."; 
-   visibility: hidden; 
-   display: block; 
-   height: 0; 
-   clear: both;
+    content: "."; 
+    visibility: hidden; 
+    display: block; 
+    height: 0; 
+    clear: both;
 }
 
 .mapOptions {
-  float:left;
-  padding-right:1em;
-  /*padding-top:0.5em;*/
+    float:left;
+    padding-right:1em;
+    /*padding-top:0.5em;*/
 }

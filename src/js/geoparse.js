@@ -7,18 +7,18 @@
 
 	var _NORTH = "N";
 	var _SOUTH = "S";
-	var _EAST  = "E";
+	var _EAST = "E";
 	var _WEST = "W";
-	
-	var _dirChars = _NORTH+_SOUTH+_EAST+_WEST;
+
+	var _dirChars = _NORTH + _SOUTH + _EAST + _WEST;
 	var _digitChars = "0-9";
 	var _numChars = "0-9,.";
 	var _degreesChars = "0-9.,°°ºo^~\*'\"-";
 	var _delimChars = ",|\\/ ";
 	var _zoneBandChars = "A-HJ-NP-Z+-";
-	var _latLonStr = "\s*(["+_dirChars+"]?)\s*(["+_degreesChars+"]+)\s*(["+_dirChars+"]?)["+_delimChars+"]+(["+_dirChars+"]?)(["+_degreesChars+"]+)\s*(["+_dirChars+"]?)";
+	var _latLonStr = "\s*([" + _dirChars + "]?)\s*([" + _degreesChars + "]+)\s*([" + _dirChars + "]?)[" + _delimChars + "]+([" + _dirChars + "]?)([" + _degreesChars + "]+)\s*([" + _dirChars + "]?)";
 	var _latLonRe = RegExp(_latLonStr);
-	var _utmRe = RegExp("\s*(["+_digitChars+"]{1,2})? *(["+_zoneBandChars+"])?? *(["+_dirChars+"]?) *(["+_numChars+"]+) *(["+_dirChars+"]?)["+_delimChars+"]*(["+_dirChars+"]?) *(["+_numChars+"]+) *(["+_dirChars+"]?)");
+	var _utmRe = RegExp("\s*([" + _digitChars + "]{1,2})? *([" + _zoneBandChars + "])?? *([" + _dirChars + "]?) *([" + _numChars + "]+) *([" + _dirChars + "]?)[" + _delimChars + "]*([" + _dirChars + "]?) *([" + _numChars + "]+) *([" + _dirChars + "]?)");
 	var _self = {};
 
 	_self.makeHint = function (pos, hintSource) {
@@ -45,9 +45,9 @@
 		str = str.replace(/[Øø]/, 'E').replace(/[Vv]/, 'W');
 		var utm = _self.parseUtm(str);
 		var latlon = _self.parseLatLon(str);
-	
+
 		// Evaluate
-		var attempts = {pos: {"utm": utm, "latlon": latlon}};
+		var attempts = { pos: { "utm": utm, "latlon": latlon } };
 		var attempts = _self.findBestMatch(attempts);
 
 
@@ -64,7 +64,7 @@
 	};
 
 	_self.findBestMatch = function (attempts) {
-		attempts.eval = {utm: 0, latlon: 0};
+		attempts.eval = { utm: 0, latlon: 0 };
 		if (attempts.pos.utm) {
 			attempts.eval.utm = _self.evalUtm(attempts.pos.utm);
 		}
@@ -100,7 +100,7 @@
 		var feedback = '';
 		if (!utm.zone) {
 			utm.zone = hintLocation.utm.zone;
-			feedback += 'zone '+utm.zone;
+			feedback += 'zone ' + utm.zone;
 		}
 
 		if (!utm.band) {
@@ -110,7 +110,7 @@
 				feedback += utm.band;
 			else
 				feedback +=
-			feedback += 'zoneband '+utm.band;
+					feedback += 'zoneband ' + utm.band;
 		}
 		if (feedback) {
 			feedback = 'Added ' + feedback;
@@ -121,10 +121,10 @@
 
 
 		// Swap NS and EW if that is "closer to home"
-		var scoreUnmodified = Math.abs(utm.easting-hintLocation.utm.easting) + Math.abs(utm.northing-hintLocation.utm.northing);
-		var scoreReversed = Math.abs(utm.easting-hintLocation.utm.northing) + Math.abs(utm.northing-hintLocation.utm.easting);
-		if (scoreReversed*10 < scoreUnmodified) {
-			var tempPos=utm.easting; utm.easting=utm.northing; utm.northing=tempPos;
+		var scoreUnmodified = Math.abs(utm.easting - hintLocation.utm.easting) + Math.abs(utm.northing - hintLocation.utm.northing);
+		var scoreReversed = Math.abs(utm.easting - hintLocation.utm.northing) + Math.abs(utm.northing - hintLocation.utm.easting);
+		if (scoreReversed * 10 < scoreUnmodified) {
+			var tempPos = utm.easting; utm.easting = utm.northing; utm.northing = tempPos;
 			_self.addFeedback(utm, 'DBG: I SWAPPED. It it a lot closer to home');
 
 		}
@@ -135,17 +135,17 @@
 	_self.addFeedback = function (obj, feedback) {
 		if (!obj.feedback)
 			obj.feedback = [];
-		obj.feedback.push( feedback );
+		obj.feedback.push(feedback);
 	};
 
 	_self.addLatLonHintLocation = function (latlon, hintLocation) {
 		hintLocation = hintLocation.latlon;
 		//if (latlon.isWithoutNSEW) {}
-		var diff = Math.abs(latlon.lat-hintLocation.lat) + Math.abs(latlon.lon-hintLocation.lon);
-		var diffReverse = Math.abs(latlon.lat-hintLocation.lon) + Math.abs(latlon.lon-hintLocation.lat);
-		if (diffReverse < diff*2)  {
+		var diff = Math.abs(latlon.lat - hintLocation.lat) + Math.abs(latlon.lon - hintLocation.lon);
+		var diffReverse = Math.abs(latlon.lat - hintLocation.lon) + Math.abs(latlon.lon - hintLocation.lat);
+		if (diffReverse < diff * 2) {
 			// swap lat and lon
-			var tempDeg=latlon.lat; latlon.lat=latlon.lon; latlon.lon=tempDeg;
+			var tempDeg = latlon.lat; latlon.lat = latlon.lon; latlon.lon = tempDeg;
 			_self.addFeedback('')
 		}
 		return latlon;
@@ -163,8 +163,8 @@
 			if (Math.abs(utm.easting) < 180)
 				val += -5;
 			else
-			if (utm.easting > 100000)
-				val += 25;
+				if (utm.easting > 100000)
+					val += 25;
 			if (utm.easting < 999999)
 				val += 25;
 		}
@@ -214,7 +214,7 @@
 		var utm = _self.parseTokensUtm(tokens, options);
 		var latlon = _self.parseTokensLatLon(tokens, options);
 	};
-	
+
 	_self.makeHint = function (pos, hintSource) {
 		var hint = {};
 		hint.source = hintSource;
@@ -239,9 +239,9 @@
 		// Try parsing (tokenizing)
 		var utm = _self.parseUtm(str);
 		var latlon = _self.parseLatLon(str);
-	
+
 		// Evaluate
-		var attempts = {pos: {"utm": utm, "latlon": latlon}};
+		var attempts = { pos: { "utm": utm, "latlon": latlon } };
 		var attempts = _self.findBestMatch(attempts);
 
 
@@ -258,7 +258,7 @@
 	};
 
 	_self.findBestMatch = function (attempts) {
-		attempts.eval = {utm: 0, latlon: 0};
+		attempts.eval = { utm: 0, latlon: 0 };
 		if (attempts.pos.utm) {
 			attempts.eval.utm = _self.evalUtm(attempts.pos.utm);
 		}
@@ -294,7 +294,7 @@
 		var feedback = '';
 		if (!utm.zone) {
 			utm.zone = hintLocation.utm.zone;
-			feedback += 'zone '+utm.zone;
+			feedback += 'zone ' + utm.zone;
 		}
 
 		if (!utm.band) {
@@ -304,7 +304,7 @@
 				feedback += utm.band;
 			else
 				feedback +=
-			feedback += 'zoneband '+utm.band;
+					feedback += 'zoneband ' + utm.band;
 		}
 		if (feedback) {
 			feedback = 'Added ' + feedback;
@@ -315,10 +315,10 @@
 
 
 		// Swap NS and EW if that is "closer to home"
-		var scoreUnmodified = Math.abs(utm.easting-hintLocation.utm.easting) + Math.abs(utm.northing-hintLocation.utm.northing);
-		var scoreReversed = Math.abs(utm.easting-hintLocation.utm.northing) + Math.abs(utm.northing-hintLocation.utm.easting);
-		if (scoreReversed*10 < scoreUnmodified) {
-			var tempPos=utm.easting; utm.easting=utm.northing; utm.northing=tempPos;
+		var scoreUnmodified = Math.abs(utm.easting - hintLocation.utm.easting) + Math.abs(utm.northing - hintLocation.utm.northing);
+		var scoreReversed = Math.abs(utm.easting - hintLocation.utm.northing) + Math.abs(utm.northing - hintLocation.utm.easting);
+		if (scoreReversed * 10 < scoreUnmodified) {
+			var tempPos = utm.easting; utm.easting = utm.northing; utm.northing = tempPos;
 			_self.addFeedback(utm, 'DBG: I SWAPPED. It it a lot closer to home');
 
 		}
@@ -329,17 +329,17 @@
 	_self.addFeedback = function (obj, feedback) {
 		if (!obj.feedback)
 			obj.feedback = [];
-		obj.feedback.push( feedback );
+		obj.feedback.push(feedback);
 	};
 
 	_self.addLatLonHintLocation = function (latlon, hintLocation) {
 		hintLocation = hintLocation.latlon;
 		//if (latlon.isWithoutNSEW) {}
-		var diff = Math.abs(latlon.lat-hintLocation.lat) + Math.abs(latlon.lon-hintLocation.lon);
-		var diffReverse = Math.abs(latlon.lat-hintLocation.lon) + Math.abs(latlon.lon-hintLocation.lat);
-		if (diffReverse < diff*2)  {
+		var diff = Math.abs(latlon.lat - hintLocation.lat) + Math.abs(latlon.lon - hintLocation.lon);
+		var diffReverse = Math.abs(latlon.lat - hintLocation.lon) + Math.abs(latlon.lon - hintLocation.lat);
+		if (diffReverse < diff * 2) {
 			// swap lat and lon
-			var tempDeg=latlon.lat; latlon.lat=latlon.lon; latlon.lon=tempDeg;
+			var tempDeg = latlon.lat; latlon.lat = latlon.lon; latlon.lon = tempDeg;
 			_self.addFeedback('')
 		}
 		return latlon;
@@ -357,8 +357,8 @@
 			if (Math.abs(utm.easting) < 180)
 				val -= 5;
 			else
-			if (utm.easting > 100000)
-				val += 25;
+				if (utm.easting > 100000)
+					val += 25;
 			if (utm.easting < 999999)
 				val += 25;
 		}
@@ -407,9 +407,9 @@
 		// Try parsing (tokenizing)
 		var utm = _self.parseTokensUtm(tokens, options);
 		var latlon = _self.parseTokensLatLon(tokens, options);
-	
+
 		// Evaluate
-		var attempts = {pos: {"utm": utm, "latlon": latlon}};
+		var attempts = { pos: { "utm": utm, "latlon": latlon } };
 		var attempts = _self.findBestMatch(attempts);
 		//attempts.bestMatch = 'utm';
 		//attempts.eval = {utm: 100, latlon:20};
@@ -459,9 +459,9 @@
 		var zone, band, easting, northing;
 		var dir1, pos1, dir2, pos2, dirTemp;
 		// Zone number and band
-		var zoneBandRe = RegExp("["+_zoneBandChars+"]");
-		var delimRe = RegExp("["+_delimChars+"]");
-		var dirRe = RegExp("m?["+_dirChars+"]");
+		var zoneBandRe = RegExp("[" + _zoneBandChars + "]");
+		var delimRe = RegExp("[" + _delimChars + "]");
+		var dirRe = RegExp("m?[" + _dirChars + "]");
 		if (tokens[i] && tokens[i].value <= 60) {
 			zone = tokens[i].value;
 			i++;
@@ -488,8 +488,8 @@
 		}
 		if (tokens[i] && dirRe.exec(tokens[i].value)) {
 			dirTemp = tokens[i].value;
-			if (dirTemp	&& dirTemp[0] == 'M')
-				dirTemp	= dirTemp.substring(1);
+			if (dirTemp && dirTemp[0] == 'M')
+				dirTemp = dirTemp.substring(1);
 			i++;
 		}
 		if (tokens[i] && delimRe.exec(tokens[i].value)) {
@@ -521,23 +521,23 @@
 
 		// If northing is placed before easting, swap them
 		if (dir1 == _NORTH || dir2 == _EAST) {
-			var tempDir=dir1, dir1=dir2, dir2=tempDir;
-			var tempPos=pos1, pos1=pos2, pos2=tempPos;
+			var tempDir = dir1, dir1 = dir2, dir2 = tempDir;
+			var tempPos = pos1, pos1 = pos2, pos2 = tempPos;
 			_self.dbg("swapping");
 		}
 		// If no directions are used, guess that that 6 digit position is easting
 		if (dir1 == undefined && dir2 == undefined && pos1 != undefined && pos2 != undefined) {
 			if (_self.numPositiveDigits(pos1) != 6 && _self.numPositiveDigits(pos2) == 6) {
-				feedback.push("You did not specify any directions (NSEW). Assuming '"+pos2+"' that has 6 digits is the Easting, since '"+pos1+"' doesn't."); // Must be executed before swapping
-				var tempPos=pos1; pos1=pos2; pos2=tempPos;
+				feedback.push("You did not specify any directions (NSEW). Assuming '" + pos2 + "' that has 6 digits is the Easting, since '" + pos1 + "' doesn't."); // Must be executed before swapping
+				var tempPos = pos1; pos1 = pos2; pos2 = tempPos;
 			}
 		}
-		
+
 		// Convert to number
 		var easting = _self.parseNum(pos1);
 		var northing = _self.parseNum(pos2);
-		
-		
+
+
 		// Adujst for negative signs
 		if (dir1 == _SOUTH) {
 			northing = -northing;
@@ -564,22 +564,22 @@
 		// Parse the elements
 		var dir1, pos1, dir2, pos2, dirTemp;
 		// Zone number and band
-		var delimRe = RegExp("["+_delimChars+"]");
-		var dirRe = RegExp("["+_dirChars+"]");
-		var degRe = RegExp("["+options.units.degrees+"]");
-		var minRe = RegExp("["+options.units.minutes+"]");
+		var delimRe = RegExp("[" + _delimChars + "]");
+		var dirRe = RegExp("[" + _dirChars + "]");
+		var degRe = RegExp("[" + options.units.degrees + "]");
+		var minRe = RegExp("[" + options.units.minutes + "]");
 
 		// First number
 		while (tokens[i] && tokens[i].type != "number") {
 			i++;
 		}
 		if (_self.hasNoDelimiters(tokens, i)) {
-			var lastNumber = tokens.length-1;
+			var lastNumber = tokens.length - 1;
 			while (tokens[lastNumber] && tokens[lastNumber].type != "number")
 				lastNumber--;
-			var splitCoordinate = (i+lastNumber+1) / 2;
+			var splitCoordinate = (i + lastNumber + 1) / 2;
 		}
-		if (i>0) {
+		if (i > 0) {
 			i--; // Check for preceeding NSWE
 			if (tokens[i] && dirRe.exec(tokens[i].value)) {
 				dir1 = tokens[i].value;
@@ -642,15 +642,15 @@
 
 		// If longitude is placed before latitude, swap them
 		if (dir1 == _EAST || dir1 == _WEST || dir2 == _NORTH || dir2 == _SOUTH) {
-			var tempDir=dir1, dir1=dir2, dir2=tempDir;
-			var tempPos=pos1, pos1=pos2, pos2=tempPos;
+			var tempDir = dir1, dir1 = dir2, dir2 = tempDir;
+			var tempPos = pos1, pos1 = pos2, pos2 = tempPos;
 		}
-		
+
 		// Parse the degrees string
 		var latitude = pos1;
 		var longititude = pos2;
-		
-		
+
+
 		// Adujst for negative signs
 		if (dir1 == _SOUTH) {
 			latitude = -latitude;
@@ -658,7 +658,7 @@
 		if (dir2 == _WEST) {
 			longititude = -longititude;
 		}
-		
+
 		var geo = new geoLatLon(latitude, longititude);
 		return geo;
 
@@ -668,10 +668,10 @@
 	// Parse string containing latitude and longitude
 	//
 	_self.parseTokensDegrees = function (tokens, options, i, splitCoordinate) {
-		var secRe = RegExp("["+options.units.seconds+"]");
+		var secRe = RegExp("[" + options.units.seconds + "]");
 		var pos = 0.0;
 		var sign = 1; // 1= positive
-		if (splitCoordinate==undefined)
+		if (splitCoordinate == undefined)
 			splitCoordinate = tokens.length;
 		// ToDo: HAS NO DELIMITER? GUESS ON SPLIT
 
@@ -684,24 +684,24 @@
 			}
 			i++;
 		}
-		if (tokens[i] && tokens[i].type == "delim") 
-			return {i: i, pos: pos};
+		if (tokens[i] && tokens[i].type == "delim")
+			return { i: i, pos: pos };
 		if (tokens[i] && tokens[i].type == "other") {
 			i++;
 		}
-		if (tokens[i] && tokens[i].type == "number" && i<splitCoordinate) {
-			if(!tokens[i+1] || !secRe.exec(tokens[i+1].value)) { // Skip if not minutes, but seconds
+		if (tokens[i] && tokens[i].type == "number" && i < splitCoordinate) {
+			if (!tokens[i + 1] || !secRe.exec(tokens[i + 1].value)) { // Skip if not minutes, but seconds
 				pos += _self.parseNum(tokens[i].value) / 60.0;
 				i++;
 			}
 		}
-		if (tokens[i] && tokens[i].type == "delim") 
-			return {i: i, pos: pos};
+		if (tokens[i] && tokens[i].type == "delim")
+			return { i: i, pos: pos };
 		if (tokens[i] && tokens[i].type == "other") {
 			i++;
 		}
-		
-		if (tokens[i] && tokens[i].type == "number" && i<splitCoordinate) {
+
+		if (tokens[i] && tokens[i].type == "number" && i < splitCoordinate) {
 			pos += _self.parseNum(tokens[i].value) / 60.0 / 60.0;
 			i++;
 		}
@@ -711,7 +711,7 @@
 
 
 
-		return {i: i, pos: sign*pos};
+		return { i: i, pos: sign * pos };
 	};
 
 	// =====================================================
@@ -736,7 +736,7 @@
 
 		if (str == undefined || str == null)
 			return undefined;
-		
+
 		// Check if it matches the reg.exp.
 		str = str.toUpperCase() + " ";
 		var parts = _latLonRe.exec(str);
@@ -744,7 +744,7 @@
 		// If no match, return undefined
 		if (parts == null) {
 			return undefined;
-		} 
+		}
 
 		var dir1 = parts[1];
 		var deg1 = parts[2];
@@ -753,9 +753,9 @@
 		var deg2 = parts[5];
 		var dir2b = parts[6];
 
-		_self.dbg("<br/>"+str);
+		_self.dbg("<br/>" + str);
 		// If directions are placed _after_ degrees, move them
-		if (dir1 == "") { 
+		if (dir1 == "") {
 			dir1 = dir1b;
 			dir1b = "";
 		}
@@ -768,16 +768,16 @@
 
 		// If longitude is placed before latitude, swap them
 		if (dir1 == _EAST || dir1 == _WEST || dir2 == _NORTH || dir2 == _SOUTH) {
-			var tempDir=dir1, dir1=dir2, dir2=tempDir;
-			var tempDeg=deg1, deg1=deg2, deg2=tempDeg;
+			var tempDir = dir1, dir1 = dir2, dir2 = tempDir;
+			var tempDeg = deg1, deg1 = deg2, deg2 = tempDeg;
 			_self.dbg("swapping");
 		}
-		
+
 		// Parse the degrees string
 		var latitude = _self.parseDeg(deg1);
 		var longititude = _self.parseDeg(deg2);
-		
-		
+
+
 		// Adujst for negative signs
 		if (dir1 == _SOUTH) {
 			latitude = -latitude;
@@ -785,12 +785,12 @@
 		if (dir2 == _WEST) {
 			longititude = -longititude;
 		}
-		
+
 		var geo = new geoLatLon(latitude, longititude);
 		return geo;
 	};
 
-	
+
 	// =====================================================
 	// Parse string containing UTM coordinates
 	//
@@ -798,42 +798,42 @@
 		//alert('OBSOLETE parseUtm()');
 		if (str == undefined || str == null)
 			return undefined;
-		
+
 		var parts = _utmRe.exec(str.toUpperCase());
-		_self.dbg("<br/><b>"+str+"</b>");
+		_self.dbg("<br/><b>" + str + "</b>");
 		_self.dbg(parts);
 
 		// If no match, return undefined
 		if (parts == null) {
 			return undefined;
-		} 
-		
-		var zone  = parts[1];
-		var band  = parts[2];
+		}
+
+		var zone = parts[1];
+		var band = parts[2];
 		var dir1 = parts[3];
-		var pos1  = parts[4];
+		var pos1 = parts[4];
 		var dir1b = parts[5];
 		var dir2 = parts[6];
-		var pos2  = parts[7];
+		var pos2 = parts[7];
 		var dir2b = parts[8];
-	
-		_self.dbg("-" + zone + "-" + band + "-" + dir1 + "-" + pos1 + "-" + dir1b  + "-" + dir2 + "-" + pos2 + "-" + dir2b + "-");
+
+		_self.dbg("-" + zone + "-" + band + "-" + dir1 + "-" + pos1 + "-" + dir1b + "-" + dir2 + "-" + pos2 + "-" + dir2b + "-");
 		// If directions are placed _after_ position, move them forwards
 		dir1 = (dir1 == "") ? dir1b : dir1;
 		dir2 = (dir2 == "") ? dir2b : dir2;
 
 		// If northing is placed before easting, swap them
 		if (dir1 == _NORTH || dir2 == _EAST) {
-			var tempDir=dir1, dir1=dir2, dir2=tempDir;
-			var tempPos=pos1, pos1=pos2, pos2=tempPos;
+			var tempDir = dir1, dir1 = dir2, dir2 = tempDir;
+			var tempPos = pos1, pos1 = pos2, pos2 = tempPos;
 			_self.dbg("swapping");
 		}
-		
+
 		// Parse the degrees string
 		var easting = _self.parseNum(pos1);
 		var northing = _self.parseNum(pos2);
-		
-		
+
+
 		// Adujst for negative signs
 		if (dir1 == _SOUTH) {
 			northing = -northing;
@@ -841,7 +841,7 @@
 		if (dir2 == _WEST) {
 			easting = -easting;
 		}
-		
+
 		var utm = new geoUtm(zone, band, easting, northing);
 		return utm;
 	};
@@ -851,11 +851,11 @@
 	//
 	_self.parseDeg = function (str) {
 		//alerts('OBSOLETE');
-		_self.dbg("<b>"+str+"</b>");
+		_self.dbg("<b>" + str + "</b>");
 		if (!str) {
 			return 0.0;
 		}
-		
+
 		var deg = 0.0;
 		var start = 0;
 		var end = 0;
@@ -864,7 +864,7 @@
 
 		// Sign
 		start = _self.findSign(str, start);
-		if (start>-1) {
+		if (start > -1) {
 			if (str[start] == "-") {
 				sign = -1;
 				start++;
@@ -872,52 +872,52 @@
 				start++;
 			}
 		}
-		_self.dbg("Sign: "+sign);
-		
+		_self.dbg("Sign: " + sign);
+
 		// Degrees
 		start = _self.findNum(str, start);
-		end = _self.findDelim(str, start+1);
-		if (start>-1 && end>-1) {
-			var numStr = str.substring(start, end).replace(",",".");
+		end = _self.findDelim(str, start + 1);
+		if (start > -1 && end > -1) {
+			var numStr = str.substring(start, end).replace(",", ".");
 			var num = _self.parseNum(numStr);
 			deg += num;
-			_self.dbg("Parsing Degrees: -"+numStr+"- gives "+num+": "+deg);
+			_self.dbg("Parsing Degrees: -" + numStr + "- gives " + num + ": " + deg);
 		}
-		if (start == -1 || end == -1)	{
+		if (start == -1 || end == -1) {
 			_self.dbg("-end-");
 			return sign * deg;
 		}
-		
+
 		// Minutes
-		start = _self.findNum(str, end+1);
-		end = _self.findDelim(str, start+1);
-		if (start>-1 && end>-1) {
-			var numStr = str.substring(start, end).replace(",",".");
+		start = _self.findNum(str, end + 1);
+		end = _self.findDelim(str, start + 1);
+		if (start > -1 && end > -1) {
+			var numStr = str.substring(start, end).replace(",", ".");
 			var num = _self.parseNum(numStr);
-			deg += num/60.0;
-			_self.dbg("Parsing Minutes: -"+numStr+"- gives "+num+": "+deg);
+			deg += num / 60.0;
+			_self.dbg("Parsing Minutes: -" + numStr + "- gives " + num + ": " + deg);
 		}
-		if (start == -1 || end == -1)	{
+		if (start == -1 || end == -1) {
 			_self.dbg("-end-");
 			return sign * deg;
 		}
-		
+
 		// Seconds
-		start = _self.findNum(str, end+1);
-		end = _self.findDelim(str, start+1);
-		if (start>-1 && end>-1) {
+		start = _self.findNum(str, end + 1);
+		end = _self.findDelim(str, start + 1);
+		if (start > -1 && end > -1) {
 			var numStr = str.substring(start, end);
 			var num = _self.parseNum(numStr);
-			deg += num/3600.0;
-			_self.dbg("Parsing Seconds: -"+numStr+"- gives "+num+": "+deg);
+			deg += num / 3600.0;
+			_self.dbg("Parsing Seconds: -" + numStr + "- gives " + num + ": " + deg);
 		}
 
 
 		return sign * deg;
 	};
 
-	
-	
+
+
 	// =====================================================
 	// Parse string containing a number
 	//
@@ -930,8 +930,8 @@
 		var num = parseFloat(str);
 		return num;
 	};
-	
-	
+
+
 	// =====================================
 	// Find starting position of a number, 
 	// including a leading sign (+ or -)
@@ -947,7 +947,7 @@
 		}
 		return -1;
 	};
-	
+
 	// =====================================
 	// Find starting position of a number.
 	// No leading sign (+ or -) is allowed
@@ -963,7 +963,7 @@
 		}
 		return -1;
 	};
-	
+
 	// ======================================
 	// Find a delimiter between two numbers.
 	// Any character not part of the number is considered a delimiter
@@ -981,7 +981,7 @@
 		}
 		return -1;
 	};
-	
+
 	// ======================================
 	_self.tokenizeString = function (str, options) {
 		var tokens = [];
@@ -1039,8 +1039,10 @@
 
 	// ======================================
 	_self.createToken = function (str, start, end, type) {
-		var token = {start: start, end: end, type:type, 
-					value: str.substring(start, end)};
+		var token = {
+			start: start, end: end, type: type,
+			value: str.substring(start, end)
+		};
 		return token;
 	};
 
@@ -1051,25 +1053,24 @@
 	// either comma or dot as desimal point.
 	_self.readNumber = function (str, i) {
 		var start = i;
-		
+
 		if (str[i] == '+' || str[i] == '-')
 			i++;
 
-		if (str[i]>='0' && str[i]<='9')
-		{
+		if (str[i] >= '0' && str[i] <= '9') {
 			i++;
-			while (str[i]>='0' && str[i]<='9')
+			while (str[i] >= '0' && str[i] <= '9')
+				i++;
+
+			if (str[i] == ',' || str[i] == '.') {
+				i++;
+				while (str[i] >= '0' && str[i] <= '9')
 					i++;
-	
-				if (str[i]==',' || str[i]=='.') {
-					i++;
-					while (str[i]>='0' && str[i]<='9')
-						i++;
-				}
-	
-				if (str[i-1]==',' || str[i-1]=='.') {
-					i--;
-				}
+			}
+
+			if (str[i - 1] == ',' || str[i - 1] == '.') {
+				i--;
+			}
 		} else {
 			// Normally no effect, unless a single + or - was read, with no following digit
 			i = start;
@@ -1082,8 +1083,8 @@
 	// containing letters only.
 	_self.readLetters = function (str, i) {
 		var start = i;
-		
-		while ((str[i]>='A' && str[i]<='Z') || (str[i]>='a' && str[i]<='z'))
+
+		while ((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'a' && str[i] <= 'z'))
 			i++;
 
 		return i;
@@ -1092,7 +1093,7 @@
 	// ======================================
 	// Find end one pos further
 	_self.readOther = function (str, i) {
-		if (str[i]!=undefined)
+		if (str[i] != undefined)
 			i++;
 		return i;
 	};
@@ -1101,18 +1102,18 @@
 	// Find end position for a delimiter.
 	_self.readDelimiter = function (str, i, delimiters) {
 		var start = i;
-		
+
 		while (delimiters.indexOf(str[i]) > -1)
 			i++;
 
 		return i;
 	};
-	
+
 	// ======================================
 	// Find end position for a unit.
 	_self.readUnit = function (str, i, units) {
 		var start = i;
-		
+
 		while (units[str[i]])
 			i++;
 
@@ -1131,13 +1132,13 @@
 		var i = 0;
 
 		// Count (i.e. skip) leading zeros
-		while (i<str.length && str[i] == '0') {
+		while (i < str.length && str[i] == '0') {
 			i++;
 		}
 		var zeroCount = i;
 
 		// Count remaining digits
-		while (i<str.length) {
+		while (i < str.length) {
 			if (str[i] < '0' || str[i] > '9')
 				break;
 			i++;
@@ -1145,7 +1146,7 @@
 
 		return i - zeroCount;
 	};
-	
+
 	// ==============
 	// Debug methods
 	var _dbgDiv = "";
@@ -1160,6 +1161,6 @@
 			}
 		}
 	};
-	
+
 	return _self;
 }());

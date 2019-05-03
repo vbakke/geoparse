@@ -9,12 +9,12 @@ var storage = (function () {
 
 	var WS_BASE = "./ws";
 	if (document.URL.indexOf("http://localhost") > -1)
-		WS_BASE = "https://www.vafe.net/geo-test/ws"; 
-	var WS_GROUP = WS_BASE+"/groups";
-	var WS_GROUP_ID = WS_BASE+"/groups/:groupId";
-	var WS_LOCATION = WS_BASE+"/groups/:groupId/locations";
-	var WS_LOCATION_ID = WS_BASE+"/groups/:groupId/locations/:locationId";
-	var WS_SET = WS_BASE+"/set";  // DEL
+		WS_BASE = "https://www.vafe.net/geo-test/ws";
+	var WS_GROUP = WS_BASE + "/groups";
+	var WS_GROUP_ID = WS_BASE + "/groups/:groupId";
+	var WS_LOCATION = WS_BASE + "/groups/:groupId/locations";
+	var WS_LOCATION_ID = WS_BASE + "/groups/:groupId/locations/:locationId";
+	var WS_SET = WS_BASE + "/set";  // DEL
 
 	var _self = {};
 
@@ -28,21 +28,21 @@ var storage = (function () {
 		var store = amplify.store("localSets");
 		return store;
 	};
-	
+
 	_self.storeSet = function (index, set, onFinished, onFail) {
 		if (set[SHARECODE]) {
 			set[MODIFIED] = new Date().getTime();
-			_self._updateSharedSet(index, set, 
+			_self._updateSharedSet(index, set,
 				function (set) {
 					get_set_from_WS
 
 					_self._storeSetLocally(index, set, onFinished);
-				}, 
+				},
 				function (e) {
 					if (local_out_of_sync)
 						alert("Local out of sync. Fix this!");
 
-					if(onFail) 
+					if (onFail)
 						onFail(e);
 				});
 		} else {
@@ -52,10 +52,10 @@ var storage = (function () {
 
 	};
 
-	_self._storeSetLocally = function(index, set, onFinished) {
+	_self._storeSetLocally = function (index, set, onFinished) {
 		var store = amplify.store("localSets");
 
-		if (index>=0) {
+		if (index >= 0) {
 			var dbg_set = store.sets[index];
 			// remove set from old position
 			store.sets.splice(index, 1);
@@ -76,9 +76,9 @@ var storage = (function () {
 		if (jqxhr.statusText == "error" && jqxhr.status == 0 && jqxhr.readyState == 0 && jqxhr.responseText == "") {
 			errorMsg = "Request failed. Possibly because of a CORS error";
 		} else {
-			errorMsg = jqxhr.status +" - "+jqxhr.statusText+": "+jqxhr.responseText;
+			errorMsg = jqxhr.status + " - " + jqxhr.statusText + ": " + jqxhr.responseText;
 		}
-		console.log("ERROR: "+errorMsg);
+		console.log("ERROR: " + errorMsg);
 
 		if (callback != undefined)
 			callback(errorMsg);
@@ -92,13 +92,12 @@ var storage = (function () {
 		var shareCode;
 		var result = undefined;
 		var url = WS_GROUP_ID.replace(':groupId', groupId);
-		console.log("DBG: Get URL: "+url);
+		console.log("DBG: Get URL: " + url);
 		var returnVal = $.getJSON(url)
-			.done( function (data)
-			{
+			.done(function (data) {
 				onFinished(data);
 			})
-			.fail( function (jqxhr, textStatus, error ) {
+			.fail(function (jqxhr, textStatus, error) {
 				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
 	};
@@ -110,7 +109,7 @@ var storage = (function () {
 			data: JSON.stringify(group)
 		});
 		request.done(onFinished)
-			.fail( function (jqxhr, textStatus, error ) {
+			.fail(function (jqxhr, textStatus, error) {
 				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
 	};
@@ -123,7 +122,7 @@ var storage = (function () {
 			data: JSON.stringify(group)
 		});
 		request.done(onFinished)
-			.fail( function (jqxhr, textStatus, error ) {
+			.fail(function (jqxhr, textStatus, error) {
 				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
 	};
@@ -140,13 +139,13 @@ var storage = (function () {
 			type: "post",
 			data: JSON.stringify(location)
 		});
-		request.done( function (data) {
+		request.done(function (data) {
 			var result = data;
 			//set['sharecode'] = result;
 			if (onFinished)
 				onFinished(data);
 		})
-			.fail( function (jqxhr, textStatus, error ) {
+			.fail(function (jqxhr, textStatus, error) {
 				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
 	};
@@ -157,13 +156,13 @@ var storage = (function () {
 			url: url,
 			type: "delete",
 		});
-		request.done( function (data) {
+		request.done(function (data) {
 			var result = data;
 			//set['sharecode'] = result;
 			if (onFinished)
 				onFinished(data);
 		})
-			.fail( function (jqxhr, textStatus, error ) {
+			.fail(function (jqxhr, textStatus, error) {
 				_self.onAjaxError(jqxhr, textStatus, error, onFail);
 			});
 	};
@@ -183,14 +182,13 @@ var storage = (function () {
 		var result = undefined;
 		var url = WS_SET + "/" + encodeURIComponent(shareCode);
 		var returnVal = $.getJSON(url)
-			.done( function (data)
-			{
+			.done(function (data) {
 				onFinished(data);
 			})
-			.fail( function (jqxhr, textStatus, error ) {
+			.fail(function (jqxhr, textStatus, error) {
 				var err = textStatus + ", " + error;
-				alert( "Request Failed: " + err );
-				console.log( "Request Failed: " + err );
+				alert("Request Failed: " + err);
+				console.log("Request Failed: " + err);
 			});
 	};
 
@@ -198,33 +196,33 @@ var storage = (function () {
 	_self._createSharedSet = function (index, set, onFinished, onFail) {
 		// Set meta data
 		set[MODIFIED] = new Date().getTime();
-		
+
 		if (set[SHARECODE]) {
-			set[PARENTSHARECODE] = set[SHARECODE]+"_v"+set[VERSION];
+			set[PARENTSHARECODE] = set[SHARECODE] + "_v" + set[VERSION];
 			index = -1;  // New set is created. Don't overwrite existsing set
 			set[CREATED] = set[MODIFIED];
 		}
 
 		var request = $.ajax({
-	        url: WS_SET,
-	        type: "post",
-	        data: JSON.stringify(set)
-	    });
-		request.done( function (data) {
-			alert("Created new share: "+data);
+			url: WS_SET,
+			type: "post",
+			data: JSON.stringify(set)
+		});
+		request.done(function (data) {
+			alert("Created new share: " + data);
 			var resultSet = data;
 			// Store the set locally as well
 			_self._storeSetLocally(index, resultSet, onFinished);
 		})
-		request.fail( function (jqxhr, textStatus, error ) {
+		request.fail(function (jqxhr, textStatus, error) {
 			var err = textStatus + ", " + error;
-			alert( "DBG: Request Failed: " + err );
-			window.console && console.log( "Request Failed: " + err );
+			alert("DBG: Request Failed: " + err);
+			window.console && console.log("Request Failed: " + err);
 			onFail(err);
 		});
 
 
-		
+
 	};
 
 	_self._updateSharedSet = function (set, onFinished, onFail) {
@@ -232,25 +230,25 @@ var storage = (function () {
 		set[MODIFIED] = new Date().getTime();
 
 		var request = $.ajax({
-	        url: WS_SET,
-	        type: "post",
-	        data: JSON.stringify(set)
-	    });
-		request.done( function (data) {
-			alert("Created new share: "+data);
+			url: WS_SET,
+			type: "post",
+			data: JSON.stringify(set)
+		});
+		request.done(function (data) {
+			alert("Created new share: " + data);
 			var result = data;
 			set[SHARECODE] = result;
 			// Store the set locally as well
 			_self._storeSetLocally(index, set, onFinished);
 		})
-		request.fail( function (jqxhr, textStatus, error ) {
+		request.fail(function (jqxhr, textStatus, error) {
 			var err = textStatus + ", " + error;
-			alert( "DBG: Request Failed: " + err );
-			window.console && console.log( "Request Failed: " + err );
+			alert("DBG: Request Failed: " + err);
+			window.console && console.log("Request Failed: " + err);
 			onFail(err);
 		});
 	};
-	
-	
+
+
 	return _self;
 }());
