@@ -308,7 +308,7 @@
 				scaleControl: true,
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				mapTypeControlOptions: {
-					mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart'],
+					mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart', 'Norge i bilder'],
 					//style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
 				}
 			};
@@ -323,12 +323,30 @@
 					var layer = 'norgeskart_bakgrunn';
 					var urlparam = 'layers=' + layer + '&zoom=' + zoom + '&x=' + coord.x + '&y=' + coord.y;
 					var url = 'http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?' + urlparam;
+
+					// var urlparam = '/' + zoom + '/' + coord.y + '/' + coord.x;
+					// var url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile' + urlparam;
+					return url;
+				}
+			});
+
+			var NorgeIBilderType = new google.maps.ImageMapType({
+				maxZoom: 18,
+				minZoom: 1,
+				name: "Norge i bilder",
+				tileSize: new google.maps.Size(256, 256),
+				// credit: 'norgeskart',
+				getTileUrl: function (coord, zoom) {
+					var urlparam = '/' + zoom + '/' + coord.y + '/' + coord.x;
+					// var url = 'http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?' + urlparam;
+					var url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile' + urlparam;
 					return url;
 				}
 			});
 
 			map = new google.maps.Map(document.getElementById(div), mapOptions);
 			map.mapTypes.set('Norgeskart', NorgeskartType);
+			map.mapTypes.set('Norge i bilder', NorgeIBilderType);
 
 
 

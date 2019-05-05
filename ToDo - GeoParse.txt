@@ -2,17 +2,14 @@ ToDo
 ====
 
 v2
-- Bug: Left pane still shows when hidden
-- GUI: Add Custom columns 
 - Bug: Change geocoding to JS methods: https://developers.google.com/maps/documentation/javascript/geocoding
 - Parse: Handle more than one address result
+
+- GUI: Add Custom columns 
 
 - GUI: Draw 1km UTM grid (optionally)
    - Draw optionaly 100m, or 10m according to scale
 
-Sjekk ut layer: Nibcache_UTM33_EUREF89 og 'cells'
-  https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/18/76472/138446
-  Norge i bilder
 
 
 
@@ -53,6 +50,8 @@ Done
 ====
 2019
 v2.2
+- GUI: Add layer: Nibcache_UTM33_EUREF89  Norge i bilder
+- Bug: Left pane still shows when hidden
 - GUI: Click splitter to toggle full screen map
 - Bug: Share displays the long ID
 - GUI: Add movable divider
