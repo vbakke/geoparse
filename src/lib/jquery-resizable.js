@@ -124,25 +124,26 @@ Licensed under MIT License
 
             function doDrag(e) {
 
-                var pos = getMousePos(e), newWidth, newHeight;
+                var pos = getMousePos(e);
 
-                if (opt.resizeWidthFrom === 'left') {
-                    newWidth = startPos.width - pos.x + startPos.x;
-                } else {
-                    newWidth = startPos.width + pos.x - startPos.x;
-                }
-                if (opt.resizeHeightFrom === 'top') {
-                    newHeight = startPos.height - pos.y + startPos.y;
-                } else {
-                    newHeight = startPos.height + pos.y - startPos.y;
-                }
-                if (!opt.onDrag || opt.onDrag(e, $el, newWidth, newHeight, opt) !== false) {
+                if (!treatMovementAsClick(startPos, pos)) {
+                    var newSize = calcSize(startPos, pos);
+                    if (!opt.onDrag || opt.onDrag(e, $el, newSize.width, newSize.height, opt) !== false) {
                     if (opt.resizeHeight) {
-                        $el.height(newHeight);
+                            $el.height(newSize.height);
                     }
 
                     if (opt.resizeWidth) {
-                        $el.width(newWidth);
+                            if (newSize.width < 5) {
+                                $el.hide();
+                                unhideSize = {width: startPos.width, height: startPos.height};
+                            } else {
+                                if ($el.is(':hidden')) {
+                                    $el.show();
+                                }
+                                $el.width(newSize.width);
+                            }
+                        }
                     }
                 }
             }
@@ -171,19 +172,22 @@ Licensed under MIT License
                 }
 
                 var pos = getMousePos(e);
-                var movementApprox = Math.abs(startPos.x - pos.x) + Math.abs(startPos.y - pos.y);
-                if (movementApprox < 5) {
-                    if (!unhideSize) {
-                        unhideSize = { width: startPos.width, height: startPos.height };
-                        $el.width(0);
-                    } else {
+                var newSize = calcSize(startPos, pos);
+                if (treatMovementAsClick(startPos, pos)) {
+                    if ($el.is(':hidden')) {
+                        $el.show();
                         $el.width(unhideSize.width);
                         unhideSize = undefined;
-
-                    }
                 } else {
-                    unhideSize = undefined;
+                        unhideSize = {width: startPos.width, height: startPos.height};
+                        $el.width(0);
+                        setTimeout(() => { $el.hide() }, 300);
                 }
+                } else 
+                // if {
+                //     // End of dragging (not click), clear startPos
+                //     startPos = undefined;
+                // }
 
                 return false;
             }
@@ -200,6 +204,28 @@ Licensed under MIT License
                     return null;
 
                 return pos;
+            }
+            function calcSize(startPos, pos) {
+                var height, width;
+                if (startPos === undefined) {
+                    console.log('STOP')
+                }
+                if (opt.resizeWidthFrom === 'left') {
+                    width = startPos.width - pos.x + startPos.x;
+                } else {
+                    width = startPos.width + pos.x - startPos.x;
+                }
+                if (opt.resizeHeightFrom === 'top') {
+                    height = startPos.height - pos.y + startPos.y;
+                } else {
+                    height = startPos.height + pos.y - startPos.y;
+                }
+                return { width, height };
+            }
+
+            function treatMovementAsClick(pos1, pos2) {
+                var movementApprox = Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
+                return (movementApprox < 5);
             }
 
             function getHandle(selector, $el) {
