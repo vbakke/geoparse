@@ -2,24 +2,25 @@ ToDo
 ====
 
 v2
+- Bug: Left pane still shows when hidden
 - GUI: Add Custom columns 
-Bug: Change geocoding to JS methods: https://developers.google.com/maps/documentation/javascript/geocoding
+- Bug: Change geocoding to JS methods: https://developers.google.com/maps/documentation/javascript/geocoding
 - Parse: Handle more than one address result
-- GUI: Make check boxes nicer
 
-- GUI: Draw 1km squares (optionally)
+- GUI: Draw 1km UTM grid (optionally)
    - Draw optionaly 100m, or 10m according to scale
 
+Sjekk ut layer: Nibcache_UTM33_EUREF89 og 'cells'
+  https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/18/76472/138446
+  Norge i bilder
 
----
-Bug: "555555, 6666666" failes if utm zone is unavailable
-Bug: Center icon disappears when changing coordinate format
-Bug: Input box keeps focus
-Bug: Adding more than 26 points, gives no-name labels
 
-- GUI: Add checkbox UTM: 'Bigger km'
-- GUI: Add checkbox UTM: 'Leading zero'
-- GUI: Remove marker, should reposition map?
+
+- Bug: Center icon disappears when changing coordinate format
+- Put 'Add' inside <input> 
+    http://stackoverflow.com/questions/15314407/how-to-add-button-inside-input
+
+- GUI: Make check boxes nicer
 
 Help
 ====
@@ -31,20 +32,19 @@ Help
 
 Backlog
 =======
+- Bug: "555555, 6666666" failes if utm zone is unavailable
+- Bug: Input box keeps focus
+- Bug: Adding more than 26 points, gives no-name labels
+
+- GUI: Add checkbox UTM: 'Bigger km'
+- GUI: Add checkbox UTM: 'Leading zero'
+- GUI: Remove marker, should reposition map?
 - GUI: Add function for explaining prose text
 - GUI: Add myLocation on page, in writing
 - GUI: Show difference in altitude between positions
 - JS: Load JS asynchronously
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 
-- GUI: Make table width draggable
-- GUI: Make columns selectable
-
-
-
-- Put 'Convert' inside <input> 
-    http://stackoverflow.com/questions/15314407/how-to-add-button-inside-input
-- Add image for Add My Location
 
  - AndroidApp: Log position
 
@@ -53,7 +53,8 @@ Done
 ====
 2019
 v2.2
-Bug: Share displays the long ID
+- GUI: Click splitter to toggle full screen map
+- Bug: Share displays the long ID
 - GUI: Add movable divider
 - Parse: Allow EØ VW osv
 - Incorporate Norgeskart

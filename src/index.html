@@ -40,7 +40,7 @@
 	</script>
 	<div id="divAll" class="panel-container">
 		<div id="divPanel" class="panel-left">
-			<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://geo.vafe.net" data-layout="button" data-action="like"
+			<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://www.vafe.net/geo/" data-layout="button" data-action="like"
 			 data-show-faces="false" data-share="true"></div>
 			<div id="divHeader"><span class="header" id="spanMapName">MapShare</span><br/>
 				<p class="smallText" style="margin-top:0;" id="spanMapDescription">Share your locations</p>
@@ -99,11 +99,11 @@
 					<thead>
 						<!-- <tr><th>Label</th><th>Latitude / longitude <button class="rounded-corners" style="float:right">C</button></th><th>UTM <button class="rounded-corners" style="float:right">C</button></th></tr> -->
 						<tr>
-							<th>&nbsp;</th>
-							<th>Latitude / longitude</th>
-							<th>UTM</th>
-							<th>km</th>
-							<th><img id="hiddenImgRemoveRow" style="visibility:hidden;"></th>
+							<th class="colName">&nbsp;</th>
+							<th class="colLatLon">Latitude / longitude</th>
+							<th class="colUTM">UTM</th>
+							<th class="colDist">km</th>
+							<th class="colMenu"><span class="context-menu-one btn btn-neutral"><img id="hiddenImgRemoveRow"></span></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -116,8 +116,8 @@
 					</tbody>
 					<tfoot>
 						<tr>
-							<td></td>
-							<td>
+							<td class="colName"></td>
+							<td class="colLatLon">
 								<select id="optDegrees" class="rounded-corners" onchange="onClickFormatChange(this, 'degrees')">
 									<option value="d">d°</option>
 									<option value="dm">d°m'</option>
@@ -129,7 +129,7 @@
 								<div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners"
 									 value="posNE">Use negative for S and W</div>
 							</td>
-							<td>
+							<td class="colUTM">
 								<div>Fixed zone: <input id="txtUtmZone" size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
 								<div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners"
 									 value="posEN">E&nbsp;before&nbsp;N</div>
@@ -146,7 +146,7 @@
 
 			<div id="divUsage">
 				<p class="smallText">
-					Update: 2019-04-18: v2.2: Adding Norgeskart as a map layer
+					Update: 2019-04-22: v2.2.1: Adding slider
 				</p>
 				<p class="smallText">
 					Update: 2019-04-18: v2.2: Adding Norgeskart as a map layer
@@ -172,7 +172,7 @@
 
 
 		</div>
-		<div id="divSplitter" class="splitter"></div>
+		<div id="divSplitter" class="splitter" title="Drag or click"></div>
 		<div id="divMap" class="panel-right">
 			<div id="divMap2"></div>
 			<div id="divMapHeader">
@@ -188,12 +188,6 @@
 	</div>
 
 	<script type="text/javascript">
-
-		$(".panel-left").resizable({
-			handleSelector: ".splitter",
-			resizeHeight: false
-		});
-
 		var googleIsOffline = false;
 		var posArray = [];
 		var sharedMap = null;
@@ -249,7 +243,7 @@
 		function initialize() {
 			//console.log("initialize()");
 
-			initMap("divMap2");
+			if(!googleIsOffline) initMap("divMap2");
 			clearLocations();
 			//generateSetsTable();
 
@@ -269,6 +263,7 @@
 				}
 			}
 
+			// Register event handlers
 			$(window).on('hashchange', function () {
 				//console.log("HASH change: "+window.location.hash);
 				var groupId = "";
@@ -294,6 +289,10 @@
 					e.preventDefault();
 					this.isEnterFocus = false;
 				}
+			});
+			$(".panel-left").resizable({
+				handleSelector: ".splitter",
+				resizeHeight: false
 			});
 
 			$("#txtMapNameInput").on("keyup", onMapInfoKeyUp);
@@ -1115,6 +1114,11 @@
 				tb.empty();
 				centerLocationIndex = 0;
 			}
+			var thead = tb.siblings('thead');
+			var columns = {
+				hiddenUtm: thead.find('th.colUTM').hasClass('hidden'),
+				hiddenLatLon: thead.find('th.colLatLon').hasClass('hidden'),
+			};
 
 			var index = posArray.length;
 			var dist = undefined;
@@ -1122,7 +1126,7 @@
 				dist = getDistance(posArray[centerLocationIndex], location);
 			}
 
-			var str = generateTableRowStr(index, location, dist);
+			var str = generateTableRowStr(index, location, dist, columns);
 			tb.append("<tr>" + str + "</tr>");
 		}
 		function updateAllDistancesInTable(tb, exceptIndex) {
@@ -1134,7 +1138,11 @@
 		function updateLocationInTable(tb, location) {
 			var index = posArray.indexOf(location);
 			var tableRow = tb.find("tr")[index];
-
+			var thead = tb.siblings('thead');
+			var columns = {
+				hiddenUtm: thead.find('th.colUTM').hasClass('hidden'),
+				hiddenLatLon: thead.find('th.colLatLon').hasClass('hidden'),
+			};
 			var dist = undefined;
 			if (index != centerLocationIndex) {
 				dist = getDistance(posArray[centerLocationIndex], location);
@@ -1142,10 +1150,10 @@
 				updateAllDistancesInTable(tb, index);
 			}
 
-			var str = generateTableRowStr(index, location, dist);
+			var str = generateTableRowStr(index, location, dist, columns);
 			tableRow.innerHTML = str;
 		}
-		function generateTableRowStr(index, location, dist) {
+		function generateTableRowStr(index, location, dist, columns) {
 			var distPrecision, distStr, distStyle, distTooltip, distFunction;
 			var labelStr = location.label;
 			var format = latlonFormats[config.latlon.format];
@@ -1165,12 +1173,14 @@
 				distTooltip = "Measure all distances from point '" + labelStr + "'";
 			}
 
+			var utmClass = (columns && columns.hiddenUtm) ? 'hidden' : '';
+			var latLonClass = (columns && columns.hiddenLatLon) ? 'hidden' : '';
 
-			var str = "<td onclick=\"onClickLabelCell(this)\"><span class='hand dotted'>" + labelStr + "</span></td>" +
-				"<td onclick=\"onClickTableCell(this)\"><span class='hand dotted'>" + latlonStr + "</span></td>" +
-				"<td onclick=\"onClickTableCell(this)\"><span class='hand dotted'>" + utmStr + "</span></td>" +
-				"<td onclick=\"" + distFunction + "\"><span " + distStyle + ' title="' + distTooltip + '">' + distStr + "</span></td>" +
-				'<td style="text-align:center;"><img class=\"hand\"  src="' + imgRemoveRow + '" hover-src="' + imgRemoveRowHover + '" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
+			var str = '<td class="colName" onclick="onClickLabelCell(this)"><span class="hand dotted">' + labelStr + '</span></td>';
+			str += '<td class="colLatLon ' + latLonClass + '" onclick="onClickTableCell(this)"><span class="hand dotted">' + latlonStr + '</span></td>';
+			str += '<td class="colUTM ' + utmClass + '" onclick="onClickTableCell(this)"><span class="hand dotted">' + utmStr + '</span></td>';
+			str += '<td class="colDist" onclick="' + distFunction + '"><span ' + distStyle + ' title="' + distTooltip + '">' + distStr + '</span></td>';
+			str += '<td class="colMenu" style="text-align:center;"><img class="hand"  src="' + imgRemoveRow + '" hover-src="' + imgRemoveRowHover + '" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 			return str;
 		}
 
@@ -1407,7 +1417,7 @@
 		}
 
 		function addToTableNoElelemntsText() {
-			tb.append("<tr><td></td><td colspan='2' align='center'><i>No coordinates added yet</i></td><td></td><td></td></tr>");
+			tb.append("<tr><td colspan='99' align='center'><i>No coordinates added yet</i></td></tr>");
 		}
 
 		function regenerateUtm(zone) {
@@ -1522,10 +1532,10 @@
 	</script>
 	<script>
 		(function (i, s, o, g, r, a, m) {
-		i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-			(i[r].q = i[r].q || []).push(arguments)
-		}, i[r].l = 1 * new Date(); a = s.createElement(o),
-			m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+			i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+				(i[r].q = i[r].q || []).push(arguments)
+			}, i[r].l = 1 * new Date(); a = s.createElement(o),
+				m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
 		})(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
 		if (document.URL.indexOf("http://localhost") > -1)

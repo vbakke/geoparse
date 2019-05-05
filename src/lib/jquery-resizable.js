@@ -46,15 +46,17 @@ Licensed under MIT License
             // instance id
             instanceId: null
     };
-        if (typeof options == "object")
+        if (typeof options == "object") {
             defaultOptions = $.extend(defaultOptions, options);
+        }
 
         return this.each(function () {
             var opt = $.extend({}, defaultOptions);
-            if (!opt.instanceId)
+            if (!opt.instanceId) {
                 opt.instanceId = "rsz_" + new Date().getTime();            
+            }
 
-            var startPos, startTransition;
+            var startPos, startTransition, unhideSize;
 
             // get the element to resize 
             var $el = $(this);
@@ -67,8 +69,9 @@ Licensed under MIT License
 
                 $handle = getHandle(opt.handleSelector, $el);
                 $handle.off("mousedown." + opt.instanceId + " touchstart." + opt.instanceId);
-                if (opt.touchActionNone)
+                if (opt.touchActionNone) {
                     $handle.css("touch-action", "");
+                }
                 $el.removeClass("resizable");
                 return;
             }
@@ -79,8 +82,9 @@ Licensed under MIT License
 
             $handle = getHandle(opt.handleSelector, $el);
 
-            if (opt.touchActionNone)
+            if (opt.touchActionNone) {
                 $handle.css("touch-action", "none");
+            }
 
             $el.addClass("resizable");
             $handle.on("mousedown." + opt.instanceId + " touchstart." + opt.instanceId, startDragging);
@@ -122,22 +126,24 @@ Licensed under MIT License
                 
                 var pos = getMousePos(e), newWidth, newHeight;
 
-                if (opt.resizeWidthFrom === 'left')
+                if (opt.resizeWidthFrom === 'left') {
                     newWidth = startPos.width - pos.x + startPos.x;
-                else
+                } else {
                     newWidth = startPos.width + pos.x - startPos.x;
-
-                if (opt.resizeHeightFrom === 'top')
+                }
+                if (opt.resizeHeightFrom === 'top') {
                     newHeight = startPos.height - pos.y + startPos.y;
-                else
+                } else {
                     newHeight = startPos.height + pos.y - startPos.y;
-
+                }
                 if (!opt.onDrag || opt.onDrag(e, $el, newWidth, newHeight, opt) !== false) {
-                    if (opt.resizeHeight)
-                        $el.height(newHeight);                    
+                    if (opt.resizeHeight) {
+                        $el.height(newHeight);
+                    }
 
-                    if (opt.resizeWidth)
-                        $el.width(newWidth);                    
+                    if (opt.resizeWidth) {
+                        $el.width(newWidth);
+                    }
                 }
             }
 
@@ -154,12 +160,30 @@ Licensed under MIT License
                 }
                 $(document).off('selectstart.' + opt.instanceId, noop);                
 
+                
+                
                 // reset changed values
                 $el.css("transition", startTransition);
                 $("iframe").css("pointer-events","auto");
-
-                if (opt.onDragEnd)
+                
+                if (opt.onDragEnd) {
                     opt.onDragEnd(e, $el, opt);
+                }
+                
+                var pos = getMousePos(e);
+                var movementApprox = Math.abs(startPos.x-pos.x) + Math.abs(startPos.y-pos.y);
+                if (movementApprox < 5) {
+                    if (!unhideSize) {
+                        unhideSize = {width: startPos.width, height: startPos.height};
+                        $el.width(0);
+                    } else {
+                        $el.width(unhideSize.width);
+                        unhideSize = undefined;
+                        
+                    }
+                } else {
+                    unhideSize = undefined;
+                }
 
                 return false;
             }
