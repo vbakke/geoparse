@@ -2,7 +2,8 @@ ToDo
 ====
 
 v2
-- Bug: Change geocoding to JS methods: https://developers.google.com/maps/documentation/javascript/geocoding
+
+
 - Parse: Handle more than one address result
 
 - GUI: Add Custom columns 
@@ -50,6 +51,7 @@ Done
 ====
 2019
 v2.2
+- Bug: Change geocoding to JS methods: https://developers.google.com/maps/documentation/javascript/geocoding
 - GUI: Add layer: Nibcache_UTM33_EUREF89  Norge i bilder
 - Bug: Left pane still shows when hidden
 - GUI: Click splitter to toggle full screen map

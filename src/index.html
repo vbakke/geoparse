@@ -146,6 +146,12 @@
 
 			<div id="divUsage">
 				<p class="smallText">
+					Update: 2019-05-08: v2.2.3: Fixed address search
+				</p>
+				<p class="smallText">
+					Update: 2019-05-03: v2.2.2: Adding Norge i bilder
+				</p>
+				<p class="smallText">
 					Update: 2019-04-22: v2.2.1: Adding slider
 				</p>
 				<p class="smallText">
@@ -216,7 +222,7 @@
 
 		var myLocation = undefined; // a geoLatLon object
 		var markers;
-		var map;
+		var map, geocoder;
 		var clickedMapPos, tmpMapZoom;
 		var tb = $("#posTable tbody");
 		var tbSets = $("#setsTable tbody");
@@ -243,7 +249,7 @@
 		function initialize() {
 			//console.log("initialize()");
 
-			if(!googleIsOffline) initMap("divMap2");
+			if (!googleIsOffline) initMap("divMap2");
 			clearLocations();
 			//generateSetsTable();
 
@@ -323,9 +329,6 @@
 					var layer = 'norgeskart_bakgrunn';
 					var urlparam = 'layers=' + layer + '&zoom=' + zoom + '&x=' + coord.x + '&y=' + coord.y;
 					var url = 'http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?' + urlparam;
-
-					// var urlparam = '/' + zoom + '/' + coord.y + '/' + coord.x;
-					// var url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile' + urlparam;
 					return url;
 				}
 			});
@@ -338,15 +341,18 @@
 				// credit: 'norgeskart',
 				getTileUrl: function (coord, zoom) {
 					var urlparam = '/' + zoom + '/' + coord.y + '/' + coord.x;
-					// var url = 'http://opencache.statkart.no/gatekeeper/gk/gk.open_gmaps?' + urlparam;
 					var url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile' + urlparam;
 					return url;
 				}
 			});
 
+			// Init the map
 			map = new google.maps.Map(document.getElementById(div), mapOptions);
 			map.mapTypes.set('Norgeskart', NorgeskartType);
 			map.mapTypes.set('Norge i bilder', NorgeIBilderType);
+
+			// Init the GeoCoder
+			geocoder = new google.maps.Geocoder();
 
 
 
@@ -563,43 +569,37 @@
 			return false;
 		}
 
-		function addAddress(address) {
-			var url = "https://maps.googleapis.com/maps/api/geocode/json";
-			url += "?address=" + encodeURIComponent(address);
 
+		function addAddress(address) {
+			// Base address search on current viewport
 			var bbox = map.getBounds();
-			if (bbox) {
-				var sw = bbox.getSouthWest();
-				var ne = bbox.getNorthEast();
-				var bounds = sw.lat() + "," + sw.lng() + "|" + ne.lat() + "," + ne.lng();
-				url += "&bounds=" + bounds;
-			}
-			$.get(url,
-				null,
-				function (data) {
-					if (data.status == "ZERO_RESULTS") {
+			var requestOptions = {
+				address: address,
+				bounds: bbox,
+			};
+			// Ask Google for a location
+			geocoder.geocode(requestOptions, function (results, status) {
+				if (status == "ZERO_RESULTS") {
+					ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-' + encodeURIComponent(address));
+					showFeedback('ERROR', "Sorry, Google Maps doesn't find a matching address");
+				} else if (status == "OK") {
+					if (results.length >= 1) {
+						var location = results[0].geometry.location;
+						//var name = results[0].address_components[1].short_name;
+						var name = results[0].formatted_address;
+						var index = name.indexOf(",");
+						if (index >= 0)
+							name = name.substring(0, index);
+						addLatLonLocation(location.lat(), location.lng(), name);
+					} else {
 						ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-' + encodeURIComponent(address));
 						showFeedback('ERROR', "Sorry, Google Maps doesn't find a matching address");
-					} else if (data.status == "OK") {
-						if (data.results.length >= 1) {
-							var location = data.results[0].geometry.location;
-							//var name = data.results[0].address_components[1].short_name;
-							var name = data.results[0].formatted_address;
-							var index = name.indexOf(",");
-							if (index >= 0)
-								name = name.substring(0, index);
-							addLatLonLocation(location.lat, location.lng, name);
-						} else {
-							ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-' + encodeURIComponent(address));
-							showFeedback('ERROR', "Sorry, Google Maps doesn't find a matching address");
-						}
-					} else {
-						ga('send', 'event', 'debug-error', 'dbg-adr-error', 'dbg-adr-error-' + data.status + '-' + encodeURIComponent(address));
-						showFeedback('ERROR', "Sorry, Google Maps returned an error looking up the address");
 					}
-				},
-				"json"
-			);
+				} else {
+					ga('send', 'event', 'debug-error', 'dbg-adr-error', 'dbg-adr-error-' + status + '-' + encodeURIComponent(address));
+					showFeedback('ERROR', "Sorry, Google Maps returned an error looking up the address");
+				}
+			});
 		}
 
 
