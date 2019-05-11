@@ -102,6 +102,7 @@
 							<th class="colName">&nbsp;</th>
 							<th class="colLatLon">Latitude / longitude</th>
 							<th class="colUTM">UTM</th>
+							<th class="colElevation">Elevation</th>
 							<th class="colDist">km</th>
 							<th class="colMenu"><span class="context-menu-one btn btn-neutral"><img id="hiddenImgRemoveRow"></span></th>
 						</tr>
@@ -135,6 +136,11 @@
 									 value="posEN">E&nbsp;before&nbsp;N</div>
 								<div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners"
 									 value="strict">Strict UTM</div>
+							</td>
+							<td class="colElevation" style="text-align:center;">
+								<div><input id="chkRelativeElevation" type="checkbox" onchange="onClickFormatChange(this, 'elevation')" class="rounded-corners"
+									 value="elevation">Relative</div>
+
 							</td>
 							<td colspan="2" style="text-align:center;">
 								<button id="btnClear" class="rounded-corners" onclick="onClickClearLocations()">Clear</button>
@@ -222,7 +228,7 @@
 
 		var myLocation = undefined; // a geoLatLon object
 		var markers;
-		var map, geocoder;
+		var map, geocoder, elevator;
 		var clickedMapPos, tmpMapZoom;
 		var tb = $("#posTable tbody");
 		var tbSets = $("#setsTable tbody");
@@ -354,6 +360,8 @@
 			// Init the GeoCoder
 			geocoder = new google.maps.Geocoder();
 
+			// Init the Elevation object
+			elevator = new google.maps.ElevationService;
 
 
 
@@ -435,15 +443,18 @@
 		}
 		function onClickInMap() {
 			if (tmpMapZoom == map.getZoom() && clickedMapPos) {
-				var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, undefined, true);
-				clickedMapPos = null;
+				loadElevations(clickedMapPos, function (elevations, status) {
+					var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
+					var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, elevation, undefined, true);
+					clickedMapPos = null;
 
-				var utmLogMsg = approxUtm(location.utm);
-				ga('send', 'event', 'user-click', 'addMapPos', 'addMapPos-' + utmLogMsg);
-				ga('send', 'event', 'debug-click', 'addMapPos', 'addMapPos-' + location.utm.toString());
-				ga('send', 'pageview', {
-					'page': '/geoparse/addMyPos',
-					'title': utmLogMsg
+					var utmLogMsg = approxUtm(location.utm);
+					ga('send', 'event', 'user-click', 'addMapPos', 'addMapPos-' + utmLogMsg);
+					ga('send', 'event', 'debug-click', 'addMapPos', 'addMapPos-' + location.utm.toString());
+					ga('send', 'pageview', {
+						'page': '/geoparse/addMyPos',
+						'title': utmLogMsg
+					});
 				});
 			}
 		}
@@ -590,14 +601,17 @@
 						var index = name.indexOf(",");
 						if (index >= 0)
 							name = name.substring(0, index);
-						addLatLonLocation(location.lat(), location.lng(), name);
+						loadElevations(location, function (elevations, status) {
+							var elevation = (status == 'OK') ? elevations[0].elevation : 0;
+							addLatLonLocation(location.lat(), location.lng(), name, elevation);
+						});
 					} else {
 						ga('send', 'event', 'debug-error', 'dbg-adr-notfound', 'dbg-adr-notfound-' + encodeURIComponent(address));
 						showFeedback('ERROR', "Sorry, Google Maps doesn't find a matching address");
 					}
 				} else {
 					ga('send', 'event', 'debug-error', 'dbg-adr-error', 'dbg-adr-error-' + status + '-' + encodeURIComponent(address));
-					showFeedback('ERROR', "Sorry, Google Maps returned an error looking up the address");
+					showFeedback('ERROR', "Sorry, Google Maps returned an error when looking up this address");
 				}
 			});
 		}
@@ -647,7 +661,11 @@
 			}
 
 			if (latlon && utm) {
-				addLocation(positionStr, latlon, utm);
+				var location = {lat: latlon.lat, lng: latlon.lon};
+				loadElevations(location, function (elevations, status) {
+					var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
+					addLocation(positionStr, latlon, utm, undefined, elevation);
+				});
 			} else {
 				// What to do
 				console.error("ERROR: Not adding location");
@@ -755,24 +773,24 @@
 				config.latlon.format = elem.value;
 				vDbg = config.latlon.format;
 			}
-			if (type == "degOrder") {
+			else if (type == "degOrder") {
 				config.latlon.orderNE = elem.checked;
 				vDbg = config.latlon.orderNE;
 			}
-			if (type == "degNeg") {
+			else if (type == "degNeg") {
 				config.latlon.useNeg = elem.checked;
 				vDbg = config.latlon.useNeg;
 			}
 			// UTM
-			if (type == "utmOrder") {
+			else if (type == "utmOrder") {
 				config.utm.orderEN = elem.checked;
 				vDbg = config.utm.orderEN;
 			}
-			if (type == "utmStrict") {
+			else if (type == "utmStrict") {
 				config.utm.strict = elem.checked;
 				vDbg = config.utm.strict;
 			}
-			if (type == "utmZone") {
+			else if (type == "utmZone") {
 				var orgZone = config.utm.zone;
 				if (!elem.value || elem.value.trim() == "" || parseInt(elem.value) == NaN)
 					config.utm.zone = null;
@@ -781,6 +799,11 @@
 				vDbg = config.utm.zone;
 				if (orgZone != config.utm.zone)
 					regenerateUtm(config.utm.zone);
+			}
+			// Elevation
+			else if (type == 'elevation') {
+				config.elevationRelative = elem.checked;
+				vDbg = config.elevationRelative;
 			}
 
 			amplify.store('config', config);
@@ -879,21 +902,26 @@
 					} else {
 						showFeedback('INFO', 'Loaded map \'' + groupId + '\'');
 						clearLocations();
-						sharedMap = null; // Clear to avoid repeatitive insert to DB
-						for (var i = 0; i < data.locations.length; i++) {
-							var location = data.locations[i];
-							var meta = { locationId: location.locationId };
-							addLatLonLocation(location.lat, location.lng, location.label, meta, true);
-						}
-						sharedMap = { groupId: data.groupId, name: data.name, description: data.description }; // Add this AFTER addLatLonLocation
-						setModified(false);
-						zoomToLocations();
-						var shareCode = (data.shareCode) ? data.shareCode : data.groupId;
-						$("#spanMapName").text(data.name);
-						$("#spanMapDescription").text(data.description);
-						$("#txtMapNameInput").val(data.name);
-						$("#txtMapDescriptionInput").val(data.description);
-						$("#txtMapShareCodeInput").val(shareCode);
+						loadElevations(data.locations, function (elevations, status) {
+
+
+							sharedMap = null; // Clear to avoid repeatitive insert to DB
+							for (var i = 0; i < data.locations.length; i++) {
+								var location = data.locations[i];
+								var meta = { locationId: location.locationId };
+								var elevation = (status == 'OK' && i < elevations.length) ? elevations[i].elevation : 0;
+								addLatLonLocation(location.lat, location.lng, location.label, elevation, meta, true);
+							}
+							sharedMap = { groupId: data.groupId, name: data.name, description: data.description }; // Add this AFTER addLatLonLocation
+							setModified(false);
+							zoomToLocations();
+							var shareCode = (data.shareCode) ? data.shareCode : data.groupId;
+							$("#spanMapName").text(data.name);
+							$("#spanMapDescription").text(data.description);
+							$("#txtMapNameInput").val(data.name);
+							$("#txtMapDescriptionInput").val(data.description);
+							$("#txtMapShareCodeInput").val(shareCode);
+						});
 					}
 
 				},
@@ -904,6 +932,25 @@
 			);
 
 		}
+
+		function loadElevations(locations, callback) {
+			if (!Array.isArray(locations)) locations = [locations];
+			var array = [];
+			for (var i = 0; i < locations.length; i++) {
+				var location = locations[i];
+				if (typeof location.lat == 'function') {
+					array.push({ lat: location.lat(), lng: location.lng() });
+				} else if (typeof location.lat == 'string') {
+					array.push({ lat: parseFloat(location.lat), lng: parseFloat(location.lng) });
+				} else {
+					array.push({ lat: location.lat, lng: location.lng });
+				}
+			}
+			var elevationRequest = { locations: array };
+
+			elevator.getElevationForLocations(elevationRequest, callback);
+		}
+
 		function onClickShareMenu() {
 			clearFeedback();
 			$("#divShare").toggle('fast');
@@ -1004,19 +1051,22 @@
 					if (pos == undefined) {
 						showFeedback("Could not retrieve your location");
 					} else {
-						var me = $("#btnAddMyPos");
-						//me.prop("disabled", true);
+						var location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+						loadElevations(location, function (elevations, status) {
+							var me = $("#btnAddMyPos");
 
-						var label = "Me";
-						var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label);
+							var label = "Me";
+							var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
+							var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label, elevation);
 
 
-						var utmLogMsg = approxUtm(location.utm);
-						ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-' + utmLogMsg);
-						ga('send', 'event', 'debug-click', 'addMyPos', 'addMyPos-' + location.utm.toString());
-						ga('send', 'pageview', {
-							'page': '/geoparse/addMyPos',
-							'title': utmLogMsg
+							var utmLogMsg = approxUtm(location.utm);
+							ga('send', 'event', 'user-click', 'addMyPos', 'addMyPos-' + utmLogMsg);
+							ga('send', 'event', 'debug-click', 'addMyPos', 'addMyPos-' + location.utm.toString());
+							ga('send', 'pageview', {
+								'page': '/geoparse/addMyPos',
+								'title': utmLogMsg
+							});
 						});
 					}
 				});
@@ -1027,11 +1077,11 @@
 
 
 
-		function addLatLonLocation(lat, lon, label, meta, freezeMap) {
+		function addLatLonLocation(lat, lon, label, elevation, meta, freezeMap) {
 			//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
 			var latlon = new geoLatLon(lat, lon);
 			var utm = geoconverter.LatLonToUTM(latlon);
-			var location = addLocation("", latlon, utm, label, meta, freezeMap);
+			var location = addLocation("", latlon, utm, label, elevation, meta, freezeMap);
 			return location;
 		}
 
@@ -1069,14 +1119,14 @@
 			return label;
 
 		}
-		function addLocation(orgStr, latlon, utm, label, meta, freezeMap, skipDB) {
+		function addLocation(orgStr, latlon, utm, label, elevation, meta, freezeMap, skipDB) {
 			if (skipDB == undefined) skipDB = false;
 
 			if (!label) {
 				label = getLabelLetter();
 			}
 
-			var location = { orgStr: orgStr, latlon: latlon, utm: utm, meta: meta, label: label };
+			var location = { orgStr: orgStr, latlon: latlon, utm: utm, elevation: elevation, meta: meta, label: label };
 
 			/* --Auto-uppdate disabled --
 			if (sharedMap && !skipDB) {
@@ -1103,6 +1153,12 @@
 			var latLngB = new google.maps.LatLng(locationB.latlon.lat, locationB.latlon.lon);
 			var dist = google.maps.geometry.spherical.computeDistanceBetween(latLngA, latLngB);
 			return dist;
+		}
+		function getElevation(location, locationBase) {
+			var elevation = { absolute: location.elevation };
+			if (locationBase && location !== locationBase && locationBase.hasOwnProperty('elevation'))
+				elevation.relative = location.elevation - locationBase.elevation;
+			return elevation;
 		}
 
 
@@ -1140,11 +1196,11 @@
 
 			var index = posArray.length;
 			var dist = undefined;
+			var elevation = getElevation(location, posArray[centerLocationIndex]);
 			if (index != centerLocationIndex) {
-				dist = getDistance(posArray[centerLocationIndex], location);
+				dist = getDistance(location, posArray[centerLocationIndex]);
 			}
-
-			var str = generateTableRowStr(index, location, dist, columns);
+			var str = generateTableRowStr(index, location, dist, elevation, columns);
 			tb.append("<tr>" + str + "</tr>");
 		}
 		function updateAllDistancesInTable(tb, exceptIndex) {
@@ -1162,25 +1218,42 @@
 				hiddenLatLon: thead.find('th.colLatLon').hasClass('hidden'),
 			};
 			var dist = undefined;
+			var elevation = elevation = getElevation(location, posArray[centerLocationIndex]);
 			if (index != centerLocationIndex) {
-				dist = getDistance(posArray[centerLocationIndex], location);
+				dist = getDistance(location, posArray[centerLocationIndex]);
 			} else {
 				updateAllDistancesInTable(tb, index);
 			}
 
-			var str = generateTableRowStr(index, location, dist, columns);
+			var str = generateTableRowStr(index, location, dist, elevation, columns);
 			tableRow.innerHTML = str;
 		}
-		function generateTableRowStr(index, location, dist, columns) {
+		function generateTableRowStr(index, location, dist, elevation, columns) {
 			var distPrecision, distStr, distStyle, distTooltip, distFunction;
 			var labelStr = location.label;
 			var format = latlonFormats[config.latlon.format];
 			var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 			var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ', 'utmKmText');
+			var elevationStr = "";
+			var accuracy = 10;
+			if (config.elevationRelative) {
+				if (elevation.hasOwnProperty('relative')) {
+					if (Math.abs(elevation.relative) < accuracy / 2) {
+						elevationStr = '± 0';
+					} else {
+						elevationStr += (elevation.relative > 0) ? elevationStr += '+ ' : '- ';
+						elevationStr += Math.abs(Math.round(elevation.relative / accuracy) * accuracy).toString() + 'm';
+					}
+				} else {
+					elevationStr = '-';
+				}
+			} else {
+				elevationStr += (Math.round(elevation.absolute / accuracy) * accuracy).toString() + 'm';
+			}
 
 			if (dist == undefined) {
 				distFunction = 'onClickCellDistanceZoom(this)';
-				distStr = '&nbsp;<i class="fa fa-dot-circle-o"></i>';
+				distStr = '<i class="fa fa-dot-circle-o"></i>';
 				distStyle = "";
 				distTooltip = "Click to zoom in on this point";
 			} else {
@@ -1197,6 +1270,7 @@
 			var str = '<td class="colName" onclick="onClickLabelCell(this)"><span class="hand dotted">' + labelStr + '</span></td>';
 			str += '<td class="colLatLon ' + latLonClass + '" onclick="onClickTableCell(this)"><span class="hand dotted">' + latlonStr + '</span></td>';
 			str += '<td class="colUTM ' + utmClass + '" onclick="onClickTableCell(this)"><span class="hand dotted">' + utmStr + '</span></td>';
+			str += '<td class="colElevation"><span>' + elevationStr + '</span></td>';
 			str += '<td class="colDist" onclick="' + distFunction + '"><span ' + distStyle + ' title="' + distTooltip + '">' + distStr + '</span></td>';
 			str += '<td class="colMenu" style="text-align:center;"><img class="hand"  src="' + imgRemoveRow + '" hover-src="' + imgRemoveRowHover + '" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 			return str;
@@ -1464,6 +1538,7 @@
 			$("#chkLatlonOrderNE").attr("checked", config.latlon.orderNE);
 			$("#chkUtmStrict").attr("checked", config.utm.strict);
 			$("#chkUtmOrderEN").attr("checked", config.utm.orderEN);
+			$("#chkRelativeElevation").attr("checked", config.elevationRelative);
 		}
 
 		function updateMapOptions() {
