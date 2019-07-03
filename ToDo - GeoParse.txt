@@ -2,9 +2,9 @@ ToDo
 ====
 
 v2
+- Add altitude
 
 
-- Parse: Handle more than one address result
 
 - GUI: Add Custom columns 
 
@@ -19,6 +19,7 @@ v2
     http://stackoverflow.com/questions/15314407/how-to-add-button-inside-input
 
 - GUI: Make check boxes nicer
+- Parse: Handle more than one address result
 
 Help
 ====

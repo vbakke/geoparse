@@ -12,10 +12,11 @@
 	<meta property="og:title" content="Convert and view your UTM coordinates" />
 	<meta property="og:description" content="Enter UTM or latitude/lonigitude coordinates, in the format you like. View them formatted in the writing style you prefer, as well as on the map. Easily convert between UTM zones if you need to."
 	/>
-	<meta property="og:url" content="http://vafe.net/geo/" />
-	<meta property="og:image" content="http://vafe.net/geo/img/site-sample-2.jpg" />
+	<meta property="og:url" content="https://www.vafe.net/geo/" />
+	<meta property="og:image" content="https://www.vafe.net/geo/img/site-sample-2.jpg" />
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="./css/geoparse.css">
+	<script src="https://browser.sentry-cdn.com/5.4.3/bundle.min.js" crossorigin="anonymous"></script>
 	<script src="./js/geoclasses.js"></script>
 	<script src="./js/geoconverter.js"></script>
 	<script src="./js/geoparse.js"></script>
@@ -28,6 +29,21 @@
 
 <body>
 	<div id="fb-root"></div>
+	<script>
+		var geoparseVersion = "v2.2.5";
+		var environment;
+		if (document.URL.indexOf("http://localhost") > -1)
+			environment =  'development';
+		else 
+			environment = window.location.pathname.split('/')[1];
+		if (!environment) environment = 'unknown';
+
+		Sentry.init({ 
+			dsn: 'https://1b25dc1bde63441abba98172e144b393@sentry.io/1495455',
+			environment: environment,
+			release: geoparseVersion,
+		});
+	</script>
 	<script>(function (d, s, id) {
 			var js, fjs = d.getElementsByTagName(s)[0];
 			if (d.getElementById(id)) return;
@@ -152,27 +168,12 @@
 
 			<div id="divUsage">
 				<p class="smallText">
+					Update: 2019-05-11: v2.2.4: Added elevation
+				</p>
+				<p class="smallText">
 					Update: 2019-05-08: v2.2.3: Fixed address search
 				</p>
-				<p class="smallText">
-					Update: 2019-05-03: v2.2.2: Adding Norge i bilder
-				</p>
-				<p class="smallText">
-					Update: 2019-04-22: v2.2.1: Adding slider
-				</p>
-				<p class="smallText">
-					Update: 2019-04-18: v2.2: Adding Norgeskart as a map layer
-				</p>
 				<!--
-			<p class="smallText">
-				Update: 2016-09-04: v2.1: Share your own maps. First draft release.
-			</p>
-			<p class="zoneReplacement smallText">
-			Update: 2016-08-08: v2.0: Load shared coordinates. Sharing your own is coming up.
-			</p>
-			<p class="smallText">
-				Update: 2016-07-14: Now you can enter street addresses and place names.
-			</p>
 			<p style="margin-bottom:0;">
 			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
 			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
@@ -410,16 +411,16 @@
 					});
 
 					// Draw center of
-					var accuracyCircle = new google.maps.Circle({
-						strokeColor: '#A5BCE2',
-						strokeOpacity: 0.8,
-						strokeWeight: 2,
-						fillColor: '#E8F1FF',
-						fillOpacity: 0.5,
-						map: map,
-						center: { lat: lat, lng: lon },
-						radius: accuracy
-					});
+					// var accuracyCircle = new google.maps.Circle({
+					// 	strokeColor: '#A5BCE2',
+					// 	strokeOpacity: 0.8,
+					// 	strokeWeight: 2,
+					// 	fillColor: '#E8F1FF',
+					// 	fillOpacity: 0.5,
+					// 	map: map,
+					// 	center: { lat: lat, lng: lon },
+					// 	radius: accuracy
+					// });
 					var r = 7;
 					var myCircle = {
 						path: 'M -r 0 A r r 0 1 0 r 0 A r r 0 1 0 -r 0 z '.replace(/r/g, r), // Replace all "r" with the value of r
@@ -1235,7 +1236,7 @@
 			var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 			var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ', 'utmKmText');
 			var elevationStr = "";
-			var accuracy = 10;
+			var accuracy = 5;
 			if (config.elevationRelative) {
 				if (elevation.hasOwnProperty('relative')) {
 					if (Math.abs(elevation.relative) < accuracy / 2) {
@@ -1245,7 +1246,7 @@
 						elevationStr += Math.abs(Math.round(elevation.relative / accuracy) * accuracy).toString() + 'm';
 					}
 				} else {
-					elevationStr = '-';
+					elevationStr = 'Base';
 				}
 			} else {
 				elevationStr += (Math.round(elevation.absolute / accuracy) * accuracy).toString() + 'm';
