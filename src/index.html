@@ -30,7 +30,7 @@
 <body>
 	<div id="fb-root"></div>
 	<script>
-		var geoparseVersion = "v2.2.5";
+		var geoparseVersion = "v2.2.6";
 		var environment;
 		if (document.URL.indexOf("http://localhost") > -1)
 			environment =  'development';
@@ -369,8 +369,8 @@
 			google.maps.event.addListener(map, 'click', function (event) {
 				if (config.map.editInMap) {
 					tmpMapZoom = map.getZoom();
-					clickedMapPos = event.latLng;
-					setTimeout("onClickInMap()", 600);
+					clickedMapPos = {lat: event.latLng.lat(), lng: event.latLng.lng()};
+					onClickInMap(clickedMapPos);
 				}
 			});
 
@@ -442,20 +442,22 @@
 				onFinished();
 
 		}
-		function onClickInMap() {
+		function onClickInMap(clickedMapPos) {
 			if (tmpMapZoom == map.getZoom() && clickedMapPos) {
 				loadElevations(clickedMapPos, function (elevations, status) {
-					var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
-					var location = addLatLonLocation(clickedMapPos.lat(), clickedMapPos.lng(), undefined, elevation, undefined, true);
-					clickedMapPos = null;
+					if (clickedMapPos) {
+						var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
+						var location = addLatLonLocation(clickedMapPos.lat, clickedMapPos.lng, undefined, elevation, undefined, true);
+						clickedMapPos = null;
 
-					var utmLogMsg = approxUtm(location.utm);
-					ga('send', 'event', 'user-click', 'addMapPos', 'addMapPos-' + utmLogMsg);
-					ga('send', 'event', 'debug-click', 'addMapPos', 'addMapPos-' + location.utm.toString());
-					ga('send', 'pageview', {
-						'page': '/geoparse/addMyPos',
-						'title': utmLogMsg
-					});
+						var utmLogMsg = approxUtm(location.utm);
+						ga('send', 'event', 'user-click', 'addMapPos', 'addMapPos-' + utmLogMsg);
+						ga('send', 'event', 'debug-click', 'addMapPos', 'addMapPos-' + location.utm.toString());
+						ga('send', 'pageview', {
+							'page': '/geoparse/addMyPos',
+							'title': utmLogMsg
+						});
+					}
 				});
 			}
 		}
