@@ -30,29 +30,35 @@
 <body>
 	<div id="fb-root"></div>
 	<script>
-		var geoparseVersion = "v2.2.6";
-		var environment;
-		if (document.URL.indexOf("http://localhost") > -1)
-			environment =  'development';
-		else 
-			environment = window.location.pathname.split('/')[1];
-		if (!environment) environment = 'unknown';
+		var geoparseVersion = "v2.2.7";
 
-		Sentry.init({ 
-			dsn: 'https://1b25dc1bde63441abba98172e144b393@sentry.io/1495455',
-			environment: environment,
-			release: geoparseVersion,
-		});
+		var logLocalhostErrors = true;
+		if (window.location.hostname != "localhost" || logLocalhostErrors) {
+			var environment = (window.location.hostname == "localhost") ? 'development' : window.location.pathname.split('/')[1];
+			if (!environment) environment = 'unknown';
+
+			Sentry.init({ 
+				dsn: 'https://1b25dc1bde63441abba98172e144b393@sentry.io/1495455',
+				environment: environment,
+				release: geoparseVersion,
+				// integrations: [
+				// 	new Sentry.Integrations.CaptureConsole({
+				// 		levels: ['log', 'info', 'warn', 'error', 'debug', 'assert']
+				// 	}),
+				// ],
+			});
+		}
 	</script>
-	<script>(function (d, s, id) {
-			var js, fjs = d.getElementsByTagName(s)[0];
-			if (d.getElementById(id)) return;
-			js = d.createElement(s); js.id = id;
-			js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.4&appId=407181112820036";
-			fjs.parentNode.insertBefore(js, fjs);
-		}(document, 'script', 'facebook-jssdk'));
-
-
+	<script>
+		if (environment !== 'development') {
+			(function (d, s, id) {
+				var js, fjs = d.getElementsByTagName(s)[0];
+				if (d.getElementById(id)) return;
+				js = d.createElement(s); js.id = id;
+				js.src = "//connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.4&appId=407181112820036";
+				fjs.parentNode.insertBefore(js, fjs);
+			}(document, 'script', 'facebook-jssdk'));
+		}
 	</script>
 	<div id="divAll" class="panel-container">
 		<div id="divPanel" class="panel-left">
@@ -125,10 +131,7 @@
 					</thead>
 					<tbody>
 						<tr>
-							<td></td>
-							<td colspan='2' align='center'><i>No coordinates added yet</i></td>
-							<td></td>
-							<td></td>
+							<td colspan='99' align='center'><i>No coordinates added yet</i></td>
 						</tr>
 					</tbody>
 					<tfoot>
@@ -168,19 +171,33 @@
 
 			<div id="divUsage">
 				<p class="smallText">
-					Update: 2019-05-11: v2.2.4: Added elevation
+					Enter an address, a GPS koordinate, or clik in the map. Coordinates may be written in various ways.
 				</p>
 				<p class="smallText">
-					Update: 2019-05-08: v2.2.3: Fixed address search
+					Latitidue / longitude, most used at sea, arial navigation, Google maps and most internet sites / mobile apps:
+					<ul class="smallText">
+						<li>44° 31.502'N 110° &nbsp; 50.291'W</li>
+						<li>51° 10' 44.0"N 1° &nbsp; 49' 34.4"W</li>
+						<li>N40 15 9.4 &nbsp; E58 26 22.9</li>
+						<li>24.91573 N &nbsp; 17.76219 E</li>
+					</ul>
 				</p>
-				<!--
-			<p style="margin-bottom:0;">
-			Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
-			Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
-			</p>
-			<p>
-				Cheers, :)
-			</p-->
+				<p class="smallText">
+					Maps on land, however, it is normal to use "rectangular" coordinates, UTM is the internatational standard, using many (byt not all) countries. 
+				</p>
+				<p class="smallText">
+					The earth is sliced into 60 <i>zones</i> (or "bands") running from North to South. Withing one zone, we use coordinates based on number of meters. Normally east, before north.
+					<ul class="smallText">
+						<li>28H 739076E 5894276N</li>
+						<li>28H 738892 5894626</li>
+						<li>N 5894626 E 738892 &nbsp; <i>if the zone is skipped, we assume you are in the same zone as the previous coordinate enetered</i></li>
+						<li>408 895</li>
+					</ul>
+				</p>
+				<p class="smallText">
+					Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
+					Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
+				</p>
 			</div>
 
 
@@ -321,7 +338,7 @@
 				scaleControl: true,
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				mapTypeControlOptions: {
-					mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart', 'Norge i bilder'],
+					mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart', 'ArcGIS'],
 					//style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
 				}
 			};
@@ -340,10 +357,23 @@
 				}
 			});
 
-			var NorgeIBilderType = new google.maps.ImageMapType({
+			// var NorgeIBilderType = new google.maps.ImageMapType({
+			// 	maxZoom: 18,
+			// 	minZoom: 1,
+			// 	name: "Norge i bilder",
+			// 	tileSize: new google.maps.Size(256, 256),
+			// 	// credit: 'norgeskart',
+			// 	getTileUrl: function (coord, zoom) {
+			// 		var urlparam = '/' + zoom + '/' + coord.y + '/' + coord.x;
+			// 		var url = 'https://agsservices.norgeibilder.no/arcgis/rest/services/Nibcache_UTM33_EUREF89_v2/MapServer/tile' + urlparam;
+			// 		return url  + '?token=RakFXMdUizC3HcpmePw7bT9JDE9C2QOUnOFc_mXc1qx32sSjFVxZ7CiOpeu9i5-m';
+			// 	}
+			// });
+
+			var ArcGISType = new google.maps.ImageMapType({
 				maxZoom: 18,
 				minZoom: 1,
-				name: "Norge i bilder",
+				name: "ArcGIS",
 				tileSize: new google.maps.Size(256, 256),
 				// credit: 'norgeskart',
 				getTileUrl: function (coord, zoom) {
@@ -356,7 +386,8 @@
 			// Init the map
 			map = new google.maps.Map(document.getElementById(div), mapOptions);
 			map.mapTypes.set('Norgeskart', NorgeskartType);
-			map.mapTypes.set('Norge i bilder', NorgeIBilderType);
+			//map.mapTypes.set('Norge i bilder', NorgeIBilderType);
+			map.mapTypes.set('ArcGIS', ArcGISType);
 
 			// Init the GeoCoder
 			geocoder = new google.maps.Geocoder();
@@ -468,7 +499,8 @@
 			ga('send', 'event', 'user-click', 'changeDistanceCenter', 'changeDistanceCenter-' + centerLocationIndex + '-' + index);
 			if (index != centerLocationIndex) {
 				centerLocationIndex = index;
-				updateAllDistancesInTable(tb);
+				updateAllDistances();
+				updateAllLocationsInTable(tb);
 				fadeInOutDistanceLines(index);
 			}
 		}
@@ -945,6 +977,8 @@
 					array.push({ lat: location.lat(), lng: location.lng() });
 				} else if (typeof location.lat == 'string') {
 					array.push({ lat: parseFloat(location.lat), lng: parseFloat(location.lng) });
+				} else if (location.lon) {
+					array.push({ lat: location.lat, lng: location.lon });
 				} else {
 					array.push({ lat: location.lat, lng: location.lng });
 				}
@@ -1088,15 +1122,21 @@
 			return location;
 		}
 
-		function updateLatLonLocation(location, newLat, newLon) {
+		function updateLatLonLocation(location, newLat, newLon, newElevation) {
 			//var orgStr = location.coords.latitude + " N " + location.coords.longitude + " E ";
 			var latlon = new geoLatLon(newLat, newLon);
 			var utm = geoconverter.LatLonToUTM(latlon);
 			location.orgStr = "";
 			location.latlon = latlon;
 			location.utm = utm;
+			location.elevation = {absolute: newElevation};
 			setModified(true);
-			updateLocationInTable(tb, location);
+			var index = posArray.indexOf(location);
+			if (index == centerLocationIndex) {
+				updateAllLocationsInTable(tb);
+			} else {
+				updateLocationInTable(tb, location);
+			}
 		}
 		function getLabelLetter() {
 			var labelLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -1158,7 +1198,7 @@
 			return dist;
 		}
 		function getElevation(location, locationBase) {
-			var elevation = { absolute: location.elevation };
+			var elevation = (typeof location.elevation === 'object') ? location.elevation : { absolute: location.elevation };
 			if (locationBase && location !== locationBase && locationBase.hasOwnProperty('elevation'))
 				elevation.relative = location.elevation - locationBase.elevation;
 			return elevation;
@@ -1198,19 +1238,38 @@
 			};
 
 			var index = posArray.length;
-			var dist = undefined;
-			var elevation = getElevation(location, posArray[centerLocationIndex]);
-			if (index != centerLocationIndex) {
-				dist = getDistance(location, posArray[centerLocationIndex]);
+			location.elevation = getElevation(location, posArray[centerLocationIndex]);
+			if (index == centerLocationIndex) {
+				location.dist = undefined;
+			} else {
+				location.dist = getDistance(location, posArray[centerLocationIndex]);
 			}
-			var str = generateTableRowStr(index, location, dist, elevation, columns);
+			var str = generateTableRowStr(index, location, columns);
 			tb.append("<tr>" + str + "</tr>");
 		}
-		function updateAllDistancesInTable(tb, exceptIndex) {
+		function updateAllDistances() {
 			for (var index = 0; index < posArray.length; index++) {
-				if (index != exceptIndex)
-					updateLocationInTable(tb, posArray[index]);
+				var location = posArray[index];
+				if (index == centerLocationIndex)
+					location.dist = undefined;
+				else
+					location.dist = getDistance(location, posArray[centerLocationIndex]);	
 			}
+		}
+		function updateAllLocationsInTable(tb) {
+			var thead = tb.siblings('thead');
+			var tbody = tb.siblings('tbody');
+			var columns = {
+				hiddenUtm: thead.find('th.colUTM').hasClass('hidden'),
+				hiddenLatLon: thead.find('th.colLatLon').hasClass('hidden'),
+			};
+
+			var str =  '';
+			for (var i = 0; i < posArray.length; i++) {
+				var location = posArray[i];
+				str += '<tr>' + generateTableRowStr(i, location, columns) + '</tr>';
+			}
+			tb.html(str);
 		}
 		function updateLocationInTable(tb, location) {
 			var index = posArray.indexOf(location);
@@ -1220,18 +1279,20 @@
 				hiddenUtm: thead.find('th.colUTM').hasClass('hidden'),
 				hiddenLatLon: thead.find('th.colLatLon').hasClass('hidden'),
 			};
-			var dist = undefined;
-			var elevation = elevation = getElevation(location, posArray[centerLocationIndex]);
-			if (index != centerLocationIndex) {
-				dist = getDistance(location, posArray[centerLocationIndex]);
+
+			location.elevation = getElevation(location, posArray[centerLocationIndex]);
+			if (index == centerLocationIndex) {
+				// If the center location is modified, change dist for all other rows 
+				updateAllDistances();
+				location.dist = undefined;
 			} else {
-				updateAllDistancesInTable(tb, index);
+				location.dist = getDistance(location, posArray[centerLocationIndex]);
 			}
 
-			var str = generateTableRowStr(index, location, dist, elevation, columns);
+			var str = generateTableRowStr(index, location, columns);
 			tableRow.innerHTML = str;
 		}
-		function generateTableRowStr(index, location, dist, elevation, columns) {
+		function generateTableRowStr(index, location, columns) {
 			var distPrecision, distStr, distStyle, distTooltip, distFunction;
 			var labelStr = location.label;
 			var format = latlonFormats[config.latlon.format];
@@ -1239,7 +1300,10 @@
 			var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ', 'utmKmText');
 			var elevationStr = "";
 			var accuracy = 5;
-			if (config.elevationRelative) {
+			var elevation = location.elevation;
+			if (elevation.absolute === undefined) {
+				elevationStr = "-"
+			} else if (config.elevationRelative) {
 				if (elevation.hasOwnProperty('relative')) {
 					if (Math.abs(elevation.relative) < accuracy / 2) {
 						elevationStr = '± 0';
@@ -1254,6 +1318,7 @@
 				elevationStr += (Math.round(elevation.absolute / accuracy) * accuracy).toString() + 'm';
 			}
 
+			var dist = location.dist;
 			if (dist == undefined) {
 				distFunction = 'onClickCellDistanceZoom(this)';
 				distStr = '<i class="fa fa-dot-circle-o"></i>';
@@ -1379,10 +1444,17 @@
 				map.fitBounds(boundingbox);
 			}
 		}
-		function markerDragEnd(event) {
-			var posStr = this.position.lat().toFixed(5) + "N " + this.position.lng().toFixed(5) + "E";
-			ga('send', 'event', 'user-click', 'dragTo', 'dragTo-' + posStr); // .replace(/[0-8]/g,'9'));
-			updateLatLonLocation(this.locationObj, this.position.lat(), this.position.lng());
+		function markerDragEnd(event) {			
+			var locationObj = this.locationObj;
+			var position = this.locationObj.latlon;
+			
+			loadElevations(position, function (elevations, status) {
+				var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
+				
+				var posStr = position.lat.toFixed(5) + "N " + position.lon.toFixed(5) + "E";
+				ga('send', 'event', 'user-click', 'dragTo', 'dragTo-' + posStr); // .replace(/[0-8]/g,'9'));
+				updateLatLonLocation(locationObj, position.lat, position.lon, elevation);
+			});
 		}
 		function markerDrag(event) {
 			updateLatLonLocation(this.locationObj, this.position.lat(), this.position.lng());
@@ -1467,6 +1539,8 @@
 			removeLocationFromMap(index);
 			removeLocationFromTable(index);
 			posArray.splice(index, 1); // Remove the element
+			updateAllDistances();
+			updateAllLocationsInTable(tb);
 		}
 
 		function clearLocationsFromMap() {
@@ -1491,24 +1565,20 @@
 		}
 
 		function removeLocationFromTable(index) {
-			if (index < centerLocationIndex)
-				centerLocationIndex--;
-			if (index == centerLocationIndex) {
-				if (centerLocationIndex < posArray.length)
-					centerLocationIndex++;
-				updateAllDistancesInTable(tb, index);
-				centerLocationIndex--;
+			var tr = tb.find("tr").eq(index);
+			tr.remove();
+			
+			if (tb.children().length == 0) {
+				centerLocationIndex = undefined;
+				addToTableNoElelemntsText();
 			}
 
-			if (posArray.length == 1)
-				centerLocationIndex = undefined;
+			if (centerLocationIndex) {
+				if (index <= centerLocationIndex && centerLocationIndex > 0) {
+					centerLocationIndex--; 
+				}
+			}
 
-			var tr = tb.find("tr").eq(index);
-
-			tr.remove();
-
-			if (tb.children().length == 0)
-				addToTableNoElelemntsText();
 		}
 
 		function addToTableNoElelemntsText() {
