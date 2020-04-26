@@ -206,14 +206,6 @@
 	};
 
 
-	// =====================================================
-	// Parse array of tokens 
-	//
-	_self.parseTokens = function (tokens, options, hintLocation) {
-		// Try parsing (tokenizing)
-		var utm = _self.parseTokensUtm(tokens, options);
-		var latlon = _self.parseTokensLatLon(tokens, options);
-	};
 
 	_self.makeHint = function (pos, hintSource) {
 		var hint = {};
@@ -405,7 +397,7 @@
 	//
 	_self.parseTokens = function (tokens, options, hintLocation) {
 		// Try parsing (tokenizing)
-		var utm = _self.parseTokensUtm(tokens, options);
+		var utm = _self.parseTokensUtm(tokens, options, hintLocation);
 		var latlon = _self.parseTokensLatLon(tokens, options);
 
 		// Evaluate
@@ -468,6 +460,9 @@
 			if (tokens[i] && zoneBandRe.exec(tokens[i].value)) {
 				band = tokens[i].value;
 				i++;
+			} else {
+				i--;
+				zone = undefined;
 			}
 		} else {
 			feedback.push("The coordinate looks like a UTM coordinate, but is missing a UTM zone (e.g. 32N), and I have no previous coordinates or your location to base my guess on.");
@@ -518,7 +513,9 @@
 		}
 
 
-
+		
+		
+		
 		// If northing is placed before easting, swap them
 		if (dir1 == _NORTH || dir2 == _EAST) {
 			var tempDir = dir1, dir1 = dir2, dir2 = tempDir;
@@ -531,6 +528,19 @@
 				feedback.push("You did not specify any directions (NSEW). Assuming '" + pos2 + "' that has 6 digits is the Easting, since '" + pos1 + "' doesn't."); // Must be executed before swapping
 				var tempPos = pos1; pos1 = pos2; pos2 = tempPos;
 			}
+		}
+		
+		// If shorthand is being used
+		if (hint && pos1.length == 3 && pos2.length == 3) {
+			feedback = ["3 digit UTM map shorthand is used, using closest to "+ hint.utm.toString()]; // Scrap any other previous feedback
+			//feedback.push("You did not specify any directions (NSEW). Assuming '" + pos2 + "' that has 6 digits is the Easting, since '" + pos1 + "' doesn't."); // Must be executed before swapping
+			zone = hint.utm.zone;
+			band = hint.utm.band;
+			pos1 = _self.fix3digitShorthand(pos1, hint.utm.easting);
+			pos2 = _self.fix3digitShorthand(pos2, hint.utm.northing);
+			// pos1 = hint.utm.easting.toFixed(0).slice(0, -5) + pos1 + '00';
+			// pos2 = hint.utm.northing.toFixed(0).slice(0, -5) + pos2 + '00';
+
 		}
 
 		// Convert to number
@@ -551,6 +561,18 @@
 		return utm;
 	};
 
+	_self.fix3digitShorthand = function (pos, full) {
+		var posNum = parseInt(pos);
+		var fullStr = full.toFixed(0);
+		var fullPrefixNum = parseInt(fullStr.slice(0, -5));
+		var fullRestNum = parseInt(fullStr.slice(-5)) / 100;
+
+		var diff = fullRestNum - posNum;
+		if (diff < -500) fullPrefixNum--;
+		if (diff >= 500) fullPrefixNum++;
+
+		return fullPrefixNum.toString() + pos + '00';
+	};
 	// =====================================================
 	// Parse array of tokens containing latitude and longitude
 	//

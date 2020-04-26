@@ -148,7 +148,7 @@ function geoUtm(zone, band, easting, northing) {
 
 	this.toString = function (useStrictUtm, showEastBeforeNorth, delim, htmlKmStyle) {
 		useStrictUtm = (typeof useStrictUtm === "undefined") ? false : useStrictUtm;
-		showEastBeforeNorth = (typeof showEastBeforeNorth === "undefined") ? false : showEastBeforeNorth;
+		showEastBeforeNorth = (typeof showEastBeforeNorth === "undefined") ? true : showEastBeforeNorth;
 		delim = (typeof delim === "undefined") ? " " : delim;
 
 		var str = this.zone + (useStrictUtm ? this.getHemisphere() : this.band);

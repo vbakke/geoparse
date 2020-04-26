@@ -2,9 +2,7 @@ ToDo
 ====
 
 v2
-- Add altitude
-
-
+- Bug: Center icon disappears when changing coordinate format
 
 - GUI: Add Custom columns 
 
@@ -14,7 +12,6 @@ v2
 
 
 
-- Bug: Center icon disappears when changing coordinate format
 - Put 'Add' inside <input> 
     http://stackoverflow.com/questions/15314407/how-to-add-button-inside-input
 
@@ -31,7 +28,6 @@ Help
 
 Backlog
 =======
-- Bug: "555555, 6666666" failes if utm zone is unavailable
 - Bug: Input box keeps focus
 - Bug: Adding more than 26 points, gives no-name labels
 
@@ -50,8 +46,15 @@ Backlog
 
 Done
 ====
+2020
+v2.3
+- Added support for 3 digiht UTM map shorthand
+- Bug: Remove last marker, when focus
+- Bug: Elevation stays fixed after moving marker
+
 2019
 v2.2
+- Add elevation
 - Bug: Change geocoding to JS methods: https://developers.google.com/maps/documentation/javascript/geocoding
 - GUI: Add layer: Nibcache_UTM33_EUREF89  Norge i bilder
 - Bug: Left pane still shows when hidden
@@ -180,6 +183,7 @@ v1.0
 
 Archive
 =======
+- Bug: "555555, 6666666" failes if utm zone is unavailable
 - Parse Multiple coordinates
 - Make multi-pos HTML
 - MultiPos: If multiple neighbouring Grid zones, display flag for converting them into the same zone

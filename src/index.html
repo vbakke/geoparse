@@ -30,7 +30,7 @@
 <body>
 	<div id="fb-root"></div>
 	<script>
-		var geoparseVersion = "v2.2.7";
+		var geoparseVersion = "v2.3.0";
 
 		var logLocalhostErrors = true;
 		if (window.location.hostname != "localhost" || logLocalhostErrors) {
@@ -663,6 +663,9 @@
 			}
 			var options = { delimiters: ',;|', units: { degrees: '°°ºo^~\*', minutes: "'", seconds: '"' } };
 			var tokens = geoparse.tokenizeString(positionStr, options);
+			if (tokens.length == 1 && tokens[0].value.includes(',')) {
+				tokens = geoparse.tokenizeString(positionStr.replace(',', ' '), options);
+			}
 			var attempts = geoparse.parseTokens(tokens, options, hint);
 
 			var latlon, utm;
