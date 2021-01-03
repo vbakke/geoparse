@@ -36,7 +36,6 @@ Backlog
 - GUI: Remove marker, should reposition map?
 - GUI: Add function for explaining prose text
 - GUI: Add myLocation on page, in writing
-- GUI: Show difference in altitude between positions
 - JS: Load JS asynchronously
 - GUI: Click on row, copies original row text to <input>. (Stores org value on tmpInput. If orgStr==inputStr, use tmpInput.)
 
@@ -46,6 +45,12 @@ Backlog
 
 Done
 ====
+2021
+v2.4
+- Move Usage depending on screen size
+- GUI: Show difference in altitude between positions
+
+
 2020
 v2.3
 - Added support for 3 digiht UTM map shorthand

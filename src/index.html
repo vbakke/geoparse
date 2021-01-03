@@ -29,6 +29,7 @@
 </head>
 
 <body>
+	<header></header>
 	<div id="fb-root"></div>
 	<script>
 		var geoparseVersion = "v2.4.0";
@@ -188,6 +189,22 @@
 				</table>
 			</div>
 
+
+		</div>
+		<div id="divSplitter" class="splitter" title="Drag or click"></div>
+		<div id="divMap" class="panel-right">
+			<div id="divMap2"></div>
+			<div id="divMapHeader">
+				<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)"
+						class="rounded-corners">Allow
+					editing in map</div>
+				<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox"
+						onchange="onClickDisplayLabelsChk(this)" class="rounded-corners">Display
+					labels in map</div>
+
+			</div>
+		</div>
+		<div id="divBottom">
 			<div id="divUsage">
 				<p class="smallText">
 					Latitidue / longitude using degrees, are mostlt used at sea, in arial navigation,
@@ -225,9 +242,10 @@
 				</p>
 				<p class="smallText">
 					<i>* if the zone is skipped, we assume you are in the same zone as the
-						previous coordinate enetered, or optionaly where your device is located</i><br/>
-					** <i>short form with 100m precision, two first digits represent the km-square, and
-							the third the 100m</i>
+						previous coordinate enetered, or optionaly where your device is located</i>
+					<br />
+					<i>** short form with 100m precision, two first digits represent the km-square, and
+						the third the 100m</i>
 				</p>
 				<p class="smallText">
 					Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>.
@@ -238,24 +256,7 @@
 				</p>
 			</div>
 
-
 		</div>
-		<div id="divSplitter" class="splitter" title="Drag or click"></div>
-		<div id="divMap" class="panel-right">
-			<div id="divMap2"></div>
-			<div id="divMapHeader">
-				<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)"
-						class="rounded-corners">Allow
-					editing in map</div>
-				<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox"
-						onchange="onClickDisplayLabelsChk(this)" class="rounded-corners">Display
-					labels in map</div>
-
-			</div>
-		</div>
-		<div id="divBottom">
-		</div>
-
 	</div>
 
 	<script type="text/javascript">
@@ -292,6 +293,7 @@
 		var tb = $("#posTable tbody");
 		var tbSets = $("#setsTable tbody");
 		var txtCoordinate = $("#txtCoordinate");
+		var flagSmallScreen = null;
 		//addToTableNoElelemntsText();
 
 		// Add on load event to initialize the whole shebang
@@ -347,6 +349,31 @@
 				}
 			});
 
+			$(window).resize(function () {
+				placeDivUsage();
+			});
+
+			// Initiate where divUsage is, and should be
+			if (flagSmallScreen === null) {
+				flagSmallScreen = ($('#divBottom').find('#divUsage').length > 0);
+				placeDivUsage();
+			}
+
+			function placeDivUsage() {
+				if ($('header').width() > 500) {
+					if (flagSmallScreen) {
+						$('#divUsage').appendTo($('#divPanel'));
+						flagSmallScreen = false;
+					}
+				} else {
+					if (!flagSmallScreen) {
+						$('#divUsage').appendTo($('#divBottom'));
+						flagSmallScreen = true;
+					}
+				}
+			}
+
+			
 			// Prevents mouseup when input has focus
 			// ....... but why...? (2016-08-19)
 			txtCoordinate.on("focus", function (e) {

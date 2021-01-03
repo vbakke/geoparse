@@ -69,7 +69,14 @@ body {
     flex: 0 1 40px;
 }
 
-@media screen and (max-width:1023px) {
+header {
+    width: 1000px;
+}
+
+@media only screen and (max-width:1023px) {
+    header {
+        width: 300px;
+    }
     #divMap {
         padding-left: 3px;
     }
