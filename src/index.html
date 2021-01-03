@@ -477,7 +477,8 @@
 			if (tmpMapZoom == map.getZoom() && clickedMapPos) {
 				loadElevations(clickedMapPos, function (elevations, status) {
 					if (clickedMapPos) {
-						var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
+						var absElevation = (status == 'OK') ? elevations[0].elevation : undefined;
+						var elevation = {absolute: absElevation};
 						var location = addLatLonLocation(clickedMapPos.lat, clickedMapPos.lng, undefined, elevation, undefined, true);
 						clickedMapPos = null;
 
@@ -637,7 +638,8 @@
 						if (index >= 0)
 							name = name.substring(0, index);
 						loadElevations(location, function (elevations, status) {
-							var elevation = (status == 'OK') ? elevations[0].elevation : 0;
+							var absElevation = (status == 'OK') ? elevations[0].elevation : 0;
+							var elevation = {absolute: absElevation};
 							addLatLonLocation(location.lat(), location.lng(), name, elevation);
 						});
 					} else {
@@ -701,7 +703,9 @@
 			if (latlon && utm) {
 				var location = {lat: latlon.lat, lng: latlon.lon};
 				loadElevations(location, function (elevations, status) {
-					var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
+					var absElevation = (status == 'OK') ? elevations[0].elevation : undefined;
+					var elevation = {absolute: absElevation};
+
 					addLocation(positionStr, latlon, utm, undefined, elevation);
 				});
 			} else {
@@ -947,7 +951,9 @@
 							for (var i = 0; i < data.locations.length; i++) {
 								var location = data.locations[i];
 								var meta = { locationId: location.locationId };
-								var elevation = (status == 'OK' && i < elevations.length) ? elevations[i].elevation : 0;
+								var absElevation = (status == 'OK' && i < elevations.length) ? elevations[i].elevation : 0;
+								var elevation = {absolute: absElevation};
+
 								addLatLonLocation(location.lat, location.lng, location.label, elevation, meta, true);
 							}
 							sharedMap = { groupId: data.groupId, name: data.name, description: data.description }; // Add this AFTER addLatLonLocation
@@ -1096,7 +1102,9 @@
 							var me = $("#btnAddMyPos");
 
 							var label = "Me";
-							var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
+							var absElevation = (status == 'OK') ? elevations[0].elevation : undefined;
+							var elevation = {absolute: absElevation};
+
 							var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label, elevation);
 
 
@@ -1203,7 +1211,7 @@
 		function getElevation(location, locationBase) {
 			var elevation = (typeof location.elevation === 'object') ? location.elevation : { absolute: location.elevation };
 			if (locationBase && location !== locationBase && locationBase.hasOwnProperty('elevation'))
-				elevation.relative = location.elevation - locationBase.elevation;
+				elevation.relative = location.elevation.absolute - locationBase.elevation.absolute;
 			return elevation;
 		}
 
