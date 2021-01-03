@@ -1,28 +1,28 @@
 /// <reference path="../bower_components/jquery/dist/jquery.js" />
 /*
 jquery-resizable
-Version 0.32 - 5/5/2018
-© 2015-2018 Rick Strahl, West Wind Technologies
+Version 0.35 - 11/18/2019
+© 2015-2019 Rick Strahl, West Wind Technologies
 www.west-wind.com
 Licensed under MIT License
 */
-(function (factory, undefined) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD
-        define(['jquery'], factory);
-    } else if (typeof module === 'object' && typeof module.exports === 'object') {
-        // CommonJS
-        module.exports = factory(require('jquery'));
-    } else {
-        // Global jQuery
-        factory(jQuery);
-    }
-}(function ($, undefined) {
-
-    if ($.fn.resizable)
+(function(factory, undefined) {
+	if (typeof define === 'function' && define.amd) {
+		// AMD
+		define(['jquery'], factory);
+	} else if (typeof module === 'object' && typeof module.exports === 'object') {
+		// CommonJS
+		module.exports = factory(require('jquery'));
+	} else {
+		// Global jQuery
+		factory(jQuery);
+	}
+}(function($, undefined) {
+    
+    if ($.fn.resizableSafe)
         return;
 
-    $.fn.resizable = function fnResizable(options) {
+    $.fn.resizableSafe = function fnResizable(options) {
         var defaultOptions = {
             // selector for handle that starts dragging
             handleSelector: null,
@@ -45,46 +45,42 @@ Licensed under MIT License
             touchActionNone: true,
             // instance id
             instanceId: null
-        };
-        if (typeof options == "object") {
+    };
+        if (typeof options == "object")
             defaultOptions = $.extend(defaultOptions, options);
-        }
 
         return this.each(function () {
             var opt = $.extend({}, defaultOptions);
-            if (!opt.instanceId) {
-                opt.instanceId = "rsz_" + new Date().getTime();
-            }
+            if (!opt.instanceId)
+                opt.instanceId = "rsz_" + new Date().getTime();            
 
-            var startPos, startTransition, unhideSize;
+            var startPos, startTransition;
 
             // get the element to resize 
             var $el = $(this);
             var $handle;
 
-            if (options === 'destroy') {
+            if (options === 'destroy') {            
                 opt = $el.data('resizable');
                 if (!opt)
                     return;
 
                 $handle = getHandle(opt.handleSelector, $el);
                 $handle.off("mousedown." + opt.instanceId + " touchstart." + opt.instanceId);
-                if (opt.touchActionNone) {
+                if (opt.touchActionNone)
                     $handle.css("touch-action", "");
-                }
                 $el.removeClass("resizable");
                 return;
             }
-
+          
             $el.data('resizable', opt);
 
             // get the drag handle
 
             $handle = getHandle(opt.handleSelector, $el);
 
-            if (opt.touchActionNone) {
+            if (opt.touchActionNone)
                 $handle.css("touch-action", "none");
-            }
 
             $el.addClass("resizable");
             $handle.on("mousedown." + opt.instanceId + " touchstart." + opt.instanceId, startDragging);
@@ -96,10 +92,10 @@ Licensed under MIT License
 
             function startDragging(e) {
                 // Prevent dragging a ghost image in HTML5 / Firefox and maybe others    
-                if (e.preventDefault) {
-                    e.preventDefault();
+                if ( e.preventDefault ) {
+                  e.preventDefault();
                 }
-
+                
                 startPos = getMousePos(e);
                 startPos.width = parseInt($el.width(), 10);
                 startPos.height = parseInt($el.height(), 10);
@@ -111,7 +107,7 @@ Licensed under MIT License
                     if (opt.onDragStart(e, $el, opt) === false)
                         return;
                 }
-
+                
                 $(document).on('mousemove.' + opt.instanceId, doDrag);
                 $(document).on('mouseup.' + opt.instanceId, stopDragging);
                 if (window.Touch || navigator.maxTouchPoints) {
@@ -119,32 +115,29 @@ Licensed under MIT License
                     $(document).on('touchend.' + opt.instanceId, stopDragging);
                 }
                 $(document).on('selectstart.' + opt.instanceId, noop); // disable selection
-                $("iframe").css("pointer-events", "none");
+                $("iframe").css("pointer-events","none");
             }
 
             function doDrag(e) {
+                
+                var pos = getMousePos(e), newWidth, newHeight;
 
-                var pos = getMousePos(e);
+                if (opt.resizeWidthFrom === 'left')
+                    newWidth = startPos.width - pos.x + startPos.x;
+                else
+                    newWidth = startPos.width + pos.x - startPos.x;
 
-                if (!treatMovementAsClick(startPos, pos)) {
-                    var newSize = calcSize(startPos, pos);
-                    if (!opt.onDrag || opt.onDrag(e, $el, newSize.width, newSize.height, opt) !== false) {
-                    if (opt.resizeHeight) {
-                            $el.height(newSize.height);
-                    }
+                if (opt.resizeHeightFrom === 'top')
+                    newHeight = startPos.height - pos.y + startPos.y;
+                else
+                    newHeight = startPos.height + pos.y - startPos.y;
 
-                    if (opt.resizeWidth) {
-                            if (newSize.width < 5) {
-                                $el.hide();
-                                unhideSize = {width: startPos.width, height: startPos.height};
-                            } else {
-                                if ($el.is(':hidden')) {
-                                    $el.show();
-                                }
-                                $el.width(newSize.width);
-                            }
-                        }
-                    }
+                if (!opt.onDrag || opt.onDrag(e, $el, newWidth, newHeight, opt) !== false) {
+                    if (opt.resizeHeight)
+                        $el.height(newHeight);                    
+
+                    if (opt.resizeWidth)
+                        $el.width(newWidth);                    
                 }
             }
 
@@ -159,35 +152,14 @@ Licensed under MIT License
                     $(document).off('touchmove.' + opt.instanceId);
                     $(document).off('touchend.' + opt.instanceId);
                 }
-                $(document).off('selectstart.' + opt.instanceId, noop);
-
-
+                $(document).off('selectstart.' + opt.instanceId, noop);                
 
                 // reset changed values
                 $el.css("transition", startTransition);
-                $("iframe").css("pointer-events", "auto");
+                $("iframe").css("pointer-events","auto");
 
-                if (opt.onDragEnd) {
+                if (opt.onDragEnd)
                     opt.onDragEnd(e, $el, opt);
-                }
-
-                var pos = getMousePos(e);
-                var newSize = calcSize(startPos, pos);
-                if (treatMovementAsClick(startPos, pos)) {
-                    if ($el.is(':hidden')) {
-                        $el.show();
-                        $el.width(unhideSize.width);
-                        unhideSize = undefined;
-                } else {
-                        unhideSize = {width: startPos.width, height: startPos.height};
-                        $el.width(0);
-                        setTimeout(() => { $el.hide() }, 300);
-                }
-                } else 
-                // if {
-                //     // End of dragging (not click), clear startPos
-                //     startPos = undefined;
-                // }
 
                 return false;
             }
@@ -205,28 +177,6 @@ Licensed under MIT License
 
                 return pos;
             }
-            function calcSize(startPos, pos) {
-                var height, width;
-                if (startPos === undefined) {
-                    console.log('STOP')
-                }
-                if (opt.resizeWidthFrom === 'left') {
-                    width = startPos.width - pos.x + startPos.x;
-                } else {
-                    width = startPos.width + pos.x - startPos.x;
-                }
-                if (opt.resizeHeightFrom === 'top') {
-                    height = startPos.height - pos.y + startPos.y;
-                } else {
-                    height = startPos.height + pos.y - startPos.y;
-                }
-                return { width, height };
-            }
-
-            function treatMovementAsClick(pos1, pos2) {
-                var movementApprox = Math.abs(pos1.x - pos2.x) + Math.abs(pos1.y - pos2.y);
-                return (movementApprox < 5);
-            }
 
             function getHandle(selector, $el) {
                 if (selector && selector.trim()[0] === ">") {
@@ -238,7 +188,10 @@ Licensed under MIT License
                 // This works for multiple objects on a page (using .class syntax most likely)
                 // as long as each has a separate parent container. 
                 return selector ? $el.parent().find(selector) : $el;
-            }
+            } 
         });
     };
+
+    if (!$.fn.resizable)
+        $.fn.resizable = $.fn.resizableSafe;
 }));
