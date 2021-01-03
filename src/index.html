@@ -30,7 +30,7 @@
 <body>
 	<div id="fb-root"></div>
 	<script>
-		var geoparseVersion = "v2.3.0";
+		var geoparseVersion = "v2.4.0";
 
 		var logLocalhostErrors = true;
 		if (window.location.hostname != "localhost" || logLocalhostErrors) {
@@ -338,7 +338,7 @@
 				scaleControl: true,
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				mapTypeControlOptions: {
-					mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart', 'ArcGIS'],
+					mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart', 'ArcGIS', '1881.no', 'Gulesider'],
 					//style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
 				}
 			};
@@ -357,18 +357,32 @@
 				}
 			});
 
-			// var NorgeIBilderType = new google.maps.ImageMapType({
-			// 	maxZoom: 18,
-			// 	minZoom: 1,
-			// 	name: "Norge i bilder",
-			// 	tileSize: new google.maps.Size(256, 256),
-			// 	// credit: 'norgeskart',
-			// 	getTileUrl: function (coord, zoom) {
-			// 		var urlparam = '/' + zoom + '/' + coord.y + '/' + coord.x;
-			// 		var url = 'https://agsservices.norgeibilder.no/arcgis/rest/services/Nibcache_UTM33_EUREF89_v2/MapServer/tile' + urlparam;
-			// 		return url  + '?token=RakFXMdUizC3HcpmePw7bT9JDE9C2QOUnOFc_mXc1qx32sSjFVxZ7CiOpeu9i5-m';
-			// 	}
-			// });
+			var Kart1881Type = new google.maps.ImageMapType({
+				maxZoom: 21,
+				minZoom: 1,
+				name: "1881.no",
+				tileSize: new google.maps.Size(256, 256),
+				credit: '1881.no',
+				getTileUrl: function (coord, zoom) {
+					var urlparam = '/' + zoom + '/' + coord.x + '/' + coord.y + '.jpeg';
+					var url = 'https://waapi.webatlas.no/maptiles/tiles/webatlas-orto-newup/wa_grid' + urlparam;
+					return url  + '?APITOKEN=9da664c7-e5b9-4dc7-a093-7ef0f90563c0';
+				}
+			});
+
+			var GulesiderType = new google.maps.ImageMapType({
+				maxZoom: 21,
+				minZoom: 1,
+				name: "Gulesider",
+				tileSize: new google.maps.Size(256, 256),
+				credit: 'Gulesider',
+				getTileUrl: function (coord, zoom) {
+					var yBase = Math.pow(2, zoom)-1;
+					var urlparam = '/' + zoom + '/' + coord.x + '/' + (yBase - coord.y) + '.jpeg';
+					var url = 'https://map02.eniro.no/geowebcache/service/tms1.0.0/aerial' + urlparam;
+					return url  + '?c=3495396621&v=20200417';
+				}
+			});
 
 			var ArcGISType = new google.maps.ImageMapType({
 				maxZoom: 18,
@@ -386,6 +400,8 @@
 			// Init the map
 			map = new google.maps.Map(document.getElementById(div), mapOptions);
 			map.mapTypes.set('Norgeskart', NorgeskartType);
+			map.mapTypes.set('1881.no', Kart1881Type);
+			map.mapTypes.set('Gulesider', GulesiderType);
 			//map.mapTypes.set('Norge i bilder', NorgeIBilderType);
 			map.mapTypes.set('ArcGIS', ArcGISType);
 
