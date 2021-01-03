@@ -5,13 +5,14 @@
 	<!-- <META HTTP-EQUIV="Pragma" CONTENT="no-cache"> -->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="description" content="Convert and view your UTM coordinates">
-	<meta name="keywords" content="online,convert,conversion,UTM,Latitude/Longitude,latlon,lat,long,long,gps,map,location,coordinate,map coordinate">
+	<meta name="keywords"
+		content="online,convert,conversion,UTM,Latitude/Longitude,latlon,lat,long,long,gps,map,location,coordinate,map coordinate">
 
 	<link rel="shortcut icon" href="./img/favicon.png">
 	<meta property="og:type" content="website" />
 	<meta property="og:title" content="Convert and view your UTM coordinates" />
-	<meta property="og:description" content="Enter UTM or latitude/lonigitude coordinates, in the format you like. View them formatted in the writing style you prefer, as well as on the map. Easily convert between UTM zones if you need to."
-	/>
+	<meta property="og:description"
+		content="Enter UTM or latitude/lonigitude coordinates, in the format you like. View them formatted in the writing style you prefer, as well as on the map. Easily convert between UTM zones if you need to." />
 	<meta property="og:url" content="https://www.vafe.net/geo/" />
 	<meta property="og:image" content="https://www.vafe.net/geo/img/site-sample-2.jpg" />
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
@@ -37,7 +38,7 @@
 			var environment = (window.location.hostname == "localhost") ? 'development' : window.location.pathname.split('/')[1];
 			if (!environment) environment = 'unknown';
 
-			Sentry.init({ 
+			Sentry.init({
 				dsn: 'https://1b25dc1bde63441abba98172e144b393@sentry.io/1495455',
 				environment: environment,
 				release: geoparseVersion,
@@ -62,26 +63,28 @@
 	</script>
 	<div id="divAll" class="panel-container">
 		<div id="divPanel" class="panel-left">
-			<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://www.vafe.net/geo/" data-layout="button" data-action="like"
-			 data-show-faces="false" data-share="true"></div>
-			<div id="divHeader"><span class="header" id="spanMapName">MapShare</span><br/>
+			<div id="divFacebook" style="float:right;" class="fb-like" data-href="http://www.vafe.net/geo/"
+				data-layout="button" data-action="like" data-show-faces="false" data-share="true"></div>
+			<div id="divHeader"><span class="header" id="spanMapName">MapShare</span><br />
 				<p class="smallText" style="margin-top:0;" id="spanMapDescription">Share your locations</p>
 			</div>
 			<div id="divInput">
 				<div>
 					Enter coordinate / address:
 				</div>
-				<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe> <!-- you'll want this hidden -->
+				<iframe id="dummy_iframe" name="dummy_iframe" src="javascript:false" style="display: none;"></iframe>
+				<!-- you'll want this hidden -->
 				<form id="convertPos" name="convertPos" target="dummy_iframe">
 					<div id="divEnterPos" style="float:left;margin-right:5px;">
 						<input id="txtCoordinate" autofocus class="inputText" tabindex="1" accesskey="c">
-						<button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()" tabindex="2" title="Add coordinate to the map">Add</button>
-						<button id="btnAddMyPos" class="rounded-corners" onclick="onClickAddMyPos()" tabindex="3" title="Add my device location"><img
-							 src="./img/my_location-16.png" height="16"></button>
+						<button id="btnConvertPos" type="submit" class="rounded-corners" onclick="onClickAdd()"
+							tabindex="2" title="Add coordinate to the map">Add</button>
+						<button id="btnAddMyPos" class="rounded-corners" onclick="onClickAddMyPos()" tabindex="3"
+							title="Add my device location"><img src="./img/my_location-16.png" height="16"></button>
 					</div>
 					<div id="divMyLocation" style="float:right">
-						<button id="btnShareMenu" class="rounded-corners" onclick="onClickShareMenu()" tabindex="3" title="Share this map"><img
-							 src="./img/share.png" height="16"></button>
+						<button id="btnShareMenu" class="rounded-corners" onclick="onClickShareMenu()" tabindex="3"
+							title="Share this map"><img src="./img/share.png" height="16"></button>
 					</div>
 				</form>
 				<div style="clear: both"></div>
@@ -89,15 +92,18 @@
 			</div>
 			<div id="divShare" hidden>
 				<span>Share your map with others</span>
-				<input id="txtMapNameInput" placeholder="Name of map" class="rounded-corners largeText" style="width:100%">
-				<textarea id="txtMapDescriptionInput" placeholder="Description" rows="5" class="rounded-corners" style="width:100%"></textarea>
+				<input id="txtMapNameInput" placeholder="Name of map" class="rounded-corners largeText"
+					style="width:100%">
+				<textarea id="txtMapDescriptionInput" placeholder="Description" rows="5" class="rounded-corners"
+					style="width:100%"></textarea>
 
-				<input id="txtMapShareCodeInput" class="rounded-corners" disabled placeholder="Share code" style="width:25%">
+				<input id="txtMapShareCodeInput" class="rounded-corners" disabled placeholder="Share code"
+					style="width:25%">
 				<span class="smallText">
 					<input type="checkbox" id="chkShareUseShareCode">Use easy name
 				</span>
 				<button id="btnShareMap" class="rounded-corners" disabled onclick="onClickShareMap()">Share map</button>
-				<button id="btnLoad" class="rounded-corners" onclick="onClickShareCancel()">Cancel</button><br/>
+				<button id="btnLoad" class="rounded-corners" onclick="onClickShareCancel()">Cancel</button><br />
 
 				<input id="txtShareUrl" class="rounded-corners" readonly hidden style="width:100%">
 
@@ -115,6 +121,10 @@
 				</tbody>
 			</table>
 		</div -->
+			<p class="smallText">
+				Enter an address, a GPS coordinate, or clik in the map. Coordinates may be written as lat-long, UTM or
+				an address.
+			</p>
 
 			<div id="divTable">
 				<table id="posTable">
@@ -126,7 +136,8 @@
 							<th class="colUTM">UTM</th>
 							<th class="colElevation">Elevation</th>
 							<th class="colDist">km</th>
-							<th class="colMenu"><span class="context-menu-one btn btn-neutral"><img id="hiddenImgRemoveRow"></span></th>
+							<th class="colMenu"><span class="context-menu-one btn btn-neutral"><img
+										id="hiddenImgRemoveRow"></span></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -138,31 +149,39 @@
 						<tr>
 							<td class="colName"></td>
 							<td class="colLatLon">
-								<select id="optDegrees" class="rounded-corners" onchange="onClickFormatChange(this, 'degrees')">
+								<select id="optDegrees" class="rounded-corners"
+									onchange="onClickFormatChange(this, 'degrees')">
 									<option value="d">d°</option>
 									<option value="dm">d°m'</option>
 									<option value="dms">d°m's"</option>
 								</select>
 								<!-- ToDo: Ala http://proto.io/freebies/onoff/ -->
-								<div><input id="chkLatlonOrderNE" type="checkbox" onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners"
-									 value="posNE">N&nbsp;before&nbsp;E</div>
-								<div><input id="chkLatlonNeg" type="checkbox" onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners"
-									 value="posNE">Use negative for S and W</div>
+								<div><input id="chkLatlonOrderNE" type="checkbox"
+										onchange="onClickFormatChange(this, 'degOrder')" class="rounded-corners"
+										value="posNE">N&nbsp;before&nbsp;E</div>
+								<div><input id="chkLatlonNeg" type="checkbox"
+										onchange="onClickFormatChange(this, 'degNeg')" class="rounded-corners"
+										value="posNE">Use negative for S and W</div>
 							</td>
 							<td class="colUTM">
-								<div>Fixed zone: <input id="txtUtmZone" size="2" onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
-								<div><input id="chkUtmOrderEN" type="checkbox" onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners"
-									 value="posEN">E&nbsp;before&nbsp;N</div>
-								<div><input id="chkUtmStrict" type="checkbox" onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners"
-									 value="strict">Strict UTM</div>
+								<div>Fixed zone: <input id="txtUtmZone" size="2"
+										onchange="onClickFormatChange(this, 'utmZone')" class="rounded-corners"></div>
+								<div><input id="chkUtmOrderEN" type="checkbox"
+										onchange="onClickFormatChange(this, 'utmOrder')" class="rounded-corners"
+										value="posEN">E&nbsp;before&nbsp;N</div>
+								<div><input id="chkUtmStrict" type="checkbox"
+										onchange="onClickFormatChange(this, 'utmStrict')" class="rounded-corners"
+										value="strict">Strict UTM</div>
 							</td>
 							<td class="colElevation" style="text-align:center;">
-								<div><input id="chkRelativeElevation" type="checkbox" onchange="onClickFormatChange(this, 'elevation')" class="rounded-corners"
-									 value="elevation">Relative</div>
+								<div><input id="chkRelativeElevation" type="checkbox"
+										onchange="onClickFormatChange(this, 'elevation')" class="rounded-corners"
+										value="elevation">Relative</div>
 
 							</td>
 							<td colspan="2" style="text-align:center;">
-								<button id="btnClear" class="rounded-corners" onclick="onClickClearLocations()">Clear</button>
+								<button id="btnClear" class="rounded-corners"
+									onclick="onClickClearLocations()">Clear</button>
 							</td>
 						</tr>
 					</tfoot>
@@ -171,32 +190,51 @@
 
 			<div id="divUsage">
 				<p class="smallText">
-					Enter an address, a GPS koordinate, or clik in the map. Coordinates may be written in various ways.
+					Latitidue / longitude using degrees, are mostlt used at sea, in arial navigation,
+					in Google maps and by most internet sites / mobile apps.
+
+					Possible formats that MapShare will understand:
+				<ul class="smallText">
+					<li>44° 31.502'N 110° &nbsp; 50.291'W</li>
+					<li>51° 10' 44.0"N 1° &nbsp; 49' 34.4"W</li>
+					<li>N40 15 9.4 &nbsp; E58 26 22.9</li>
+					<li>24.91573 N &nbsp; 17.76219 E</li>
+				</ul>
 				</p>
 				<p class="smallText">
-					Latitidue / longitude, most used at sea, arial navigation, Google maps and most internet sites / mobile apps:
-					<ul class="smallText">
-						<li>44° 31.502'N 110° &nbsp; 50.291'W</li>
-						<li>51° 10' 44.0"N 1° &nbsp; 49' 34.4"W</li>
-						<li>N40 15 9.4 &nbsp; E58 26 22.9</li>
-						<li>24.91573 N &nbsp; 17.76219 E</li>
-					</ul>
+					For landbased <a target="_blank" href="https://en.wikipedia.org/wiki/Topographic_map">topo-maps</a>,
+					however,
+					it is normal to use "rectangular" coordinates, more like X and Y.
 				</p>
 				<p class="smallText">
-					Maps on land, however, it is normal to use "rectangular" coordinates, UTM is the internatational standard, using many (byt not all) countries. 
+					UTM is the international standard, used by many (but not all) countries.
 				</p>
 				<p class="smallText">
-					The earth is sliced into 60 <i>zones</i> (or "bands") running from North to South. Withing one zone, we use coordinates based on number of meters. Normally east, before north.
-					<ul class="smallText">
-						<li>28H 739076E 5894276N</li>
-						<li>28H 738892 5894626</li>
-						<li>N 5894626 E 738892 &nbsp; <i>if the zone is skipped, we assume you are in the same zone as the previous coordinate enetered</i></li>
-						<li>408 895</li>
-					</ul>
+					For UTM, the earth is sliced into 60 <i>zones</i> (or "bands") running from North to South. Within
+					each zone,
+					we use coordinates based on number of meters. Normally east, before north, in an X,Y fashion.
 				</p>
 				<p class="smallText">
-					Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>. 
-					Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo list</a>.
+					Possible formats that MapShare will understand:
+				<ul class="smallText">
+					<li>28H 739076E 5894276N</li>
+					<li>28H 738892 5894626</li>
+					<li>N 5894626 E 738892 &nbsp; <i> * no zone specified</i></li>
+					<li>409 896 &nbsp; <i>** short form, 100m precision</i></li>
+				</ul>
+				</p>
+				<p class="smallText">
+					<i>* if the zone is skipped, we assume you are in the same zone as the
+						previous coordinate enetered, or optionaly where your device is located</i><br/>
+					** <i>short form with 100m precision, two first digits represent the km-square, and
+							the third the 100m</i>
+				</p>
+				<p class="smallText">
+					Available on <a href="https://github.com/vbakke/geoparse">https://github.com/vbakke/geoparse</a>.
+					Please report bugs to: <a href="https://github.com/vbakke/geoparse/issues">GitHub Issues</a>, or
+					send me an <a href="mailto:geoparse@vafe.net?subject=Geoparse%20bug">email</a> if you have comments
+					on the <a href="https://github.com/vbakke/geoparse/blob/master/ToDo%20-%20GeoParse.txt">ToDo
+						list</a>.
 				</p>
 			</div>
 
@@ -206,14 +244,17 @@
 		<div id="divMap" class="panel-right">
 			<div id="divMap2"></div>
 			<div id="divMapHeader">
-				<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)" class="rounded-corners">Allow
+				<div class="mapOptions"><input id="chkMapEdit" type="checkbox" onchange="onClickMapEditChk(this)"
+						class="rounded-corners">Allow
 					editing in map</div>
-				<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox" onchange="onClickDisplayLabelsChk(this)" class="rounded-corners">Display
+				<div class="mapOptions"><input id="chkDisplayLabels" type="checkbox"
+						onchange="onClickDisplayLabelsChk(this)" class="rounded-corners">Display
 					labels in map</div>
 
 			</div>
 		</div>
-
+		<div id="divBottom">
+		</div>
 
 	</div>
 
@@ -366,7 +407,7 @@
 				getTileUrl: function (coord, zoom) {
 					var urlparam = '/' + zoom + '/' + coord.x + '/' + coord.y + '.jpeg';
 					var url = 'https://waapi.webatlas.no/maptiles/tiles/webatlas-orto-newup/wa_grid' + urlparam;
-					return url  + '?APITOKEN=9da664c7-e5b9-4dc7-a093-7ef0f90563c0';
+					return url + '?APITOKEN=9da664c7-e5b9-4dc7-a093-7ef0f90563c0';
 				}
 			});
 
@@ -377,10 +418,10 @@
 				tileSize: new google.maps.Size(256, 256),
 				credit: 'Gulesider',
 				getTileUrl: function (coord, zoom) {
-					var yBase = Math.pow(2, zoom)-1;
+					var yBase = Math.pow(2, zoom) - 1;
 					var urlparam = '/' + zoom + '/' + coord.x + '/' + (yBase - coord.y) + '.jpeg';
 					var url = 'https://map02.eniro.no/geowebcache/service/tms1.0.0/aerial' + urlparam;
-					return url  + '?c=3495396621&v=20200417';
+					return url + '?c=3495396621&v=20200417';
 				}
 			});
 
@@ -416,7 +457,7 @@
 			google.maps.event.addListener(map, 'click', function (event) {
 				if (config.map.editInMap) {
 					tmpMapZoom = map.getZoom();
-					clickedMapPos = {lat: event.latLng.lat(), lng: event.latLng.lng()};
+					clickedMapPos = { lat: event.latLng.lat(), lng: event.latLng.lng() };
 					onClickInMap(clickedMapPos);
 				}
 			});
@@ -494,7 +535,7 @@
 				loadElevations(clickedMapPos, function (elevations, status) {
 					if (clickedMapPos) {
 						var absElevation = (status == 'OK') ? elevations[0].elevation : undefined;
-						var elevation = {absolute: absElevation};
+						var elevation = { absolute: absElevation };
 						var location = addLatLonLocation(clickedMapPos.lat, clickedMapPos.lng, undefined, elevation, undefined, true);
 						clickedMapPos = null;
 
@@ -655,7 +696,7 @@
 							name = name.substring(0, index);
 						loadElevations(location, function (elevations, status) {
 							var absElevation = (status == 'OK') ? elevations[0].elevation : 0;
-							var elevation = {absolute: absElevation};
+							var elevation = { absolute: absElevation };
 							addLatLonLocation(location.lat(), location.lng(), name, elevation);
 						});
 					} else {
@@ -717,10 +758,10 @@
 			}
 
 			if (latlon && utm) {
-				var location = {lat: latlon.lat, lng: latlon.lon};
+				var location = { lat: latlon.lat, lng: latlon.lon };
 				loadElevations(location, function (elevations, status) {
 					var absElevation = (status == 'OK') ? elevations[0].elevation : undefined;
-					var elevation = {absolute: absElevation};
+					var elevation = { absolute: absElevation };
 
 					addLocation(positionStr, latlon, utm, undefined, elevation);
 				});
@@ -968,7 +1009,7 @@
 								var location = data.locations[i];
 								var meta = { locationId: location.locationId };
 								var absElevation = (status == 'OK' && i < elevations.length) ? elevations[i].elevation : 0;
-								var elevation = {absolute: absElevation};
+								var elevation = { absolute: absElevation };
 
 								addLatLonLocation(location.lat, location.lng, location.label, elevation, meta, true);
 							}
@@ -1119,7 +1160,7 @@
 
 							var label = "Me";
 							var absElevation = (status == 'OK') ? elevations[0].elevation : undefined;
-							var elevation = {absolute: absElevation};
+							var elevation = { absolute: absElevation };
 
 							var location = addLatLonLocation(pos.coords.latitude, pos.coords.longitude, label, elevation);
 
@@ -1156,7 +1197,7 @@
 			location.orgStr = "";
 			location.latlon = latlon;
 			location.utm = utm;
-			location.elevation = {absolute: newElevation};
+			location.elevation = { absolute: newElevation };
 			setModified(true);
 			var index = posArray.indexOf(location);
 			if (index == centerLocationIndex) {
@@ -1280,7 +1321,7 @@
 				if (index == centerLocationIndex)
 					location.dist = undefined;
 				else
-					location.dist = getDistance(location, posArray[centerLocationIndex]);	
+					location.dist = getDistance(location, posArray[centerLocationIndex]);
 			}
 		}
 		function updateAllLocationsInTable(tb) {
@@ -1291,7 +1332,7 @@
 				hiddenLatLon: thead.find('th.colLatLon').hasClass('hidden'),
 			};
 
-			var str =  '';
+			var str = '';
 			for (var i = 0; i < posArray.length; i++) {
 				var location = posArray[i];
 				str += '<tr>' + generateTableRowStr(i, location, columns) + '</tr>';
@@ -1471,13 +1512,13 @@
 				map.fitBounds(boundingbox);
 			}
 		}
-		function markerDragEnd(event) {			
+		function markerDragEnd(event) {
 			var locationObj = this.locationObj;
 			var position = this.locationObj.latlon;
-			
+
 			loadElevations(position, function (elevations, status) {
 				var elevation = (status == 'OK') ? elevations[0].elevation : undefined;
-				
+
 				var posStr = position.lat.toFixed(5) + "N " + position.lon.toFixed(5) + "E";
 				ga('send', 'event', 'user-click', 'dragTo', 'dragTo-' + posStr); // .replace(/[0-8]/g,'9'));
 				updateLatLonLocation(locationObj, position.lat, position.lon, elevation);
@@ -1594,7 +1635,7 @@
 		function removeLocationFromTable(index) {
 			var tr = tb.find("tr").eq(index);
 			tr.remove();
-			
+
 			if (tb.children().length == 0) {
 				centerLocationIndex = undefined;
 				addToTableNoElelemntsText();
@@ -1602,7 +1643,7 @@
 
 			if (centerLocationIndex) {
 				if (index <= centerLocationIndex && centerLocationIndex > 0) {
-					centerLocationIndex--; 
+					centerLocationIndex--;
 				}
 			}
 
