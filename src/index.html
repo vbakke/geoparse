@@ -205,7 +205,7 @@
 			</div>
 		</div>
 		<div id="divBottom">
-			<div id="divUsage">
+			<div id="divUsage" class="hidden">
 				<p class="smallText">
 					Latitidue / longitude using degrees, are mostlt used at sea, in arial navigation,
 					in Google maps and by most internet sites / mobile apps.
@@ -357,6 +357,7 @@
 			if (flagSmallScreen === null) {
 				flagSmallScreen = ($('#divBottom').find('#divUsage').length > 0);
 				placeDivUsage();
+				$('#divUsage').removeClass('hidden');
 			}
 
 			function placeDivUsage() {
@@ -373,7 +374,7 @@
 				}
 			}
 
-			
+
 			// Prevents mouseup when input has focus
 			// ....... but why...? (2016-08-19)
 			txtCoordinate.on("focus", function (e) {
