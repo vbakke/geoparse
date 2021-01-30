@@ -407,7 +407,7 @@
 				scaleControl: true,
 				mapTypeId: google.maps.MapTypeId.ROADMAP,
 				mapTypeControlOptions: {
-					mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart', 'ArcGIS', '1881.no', 'Gulesider'],
+					mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.TERRAIN, google.maps.MapTypeId.SATELLITE, 'Norgeskart', 'SarTopo', 'ArcGIS', '1881.no', 'Gulesider'],
 					//style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR
 				}
 			};
@@ -458,10 +458,23 @@
 				minZoom: 1,
 				name: "ArcGIS",
 				tileSize: new google.maps.Size(256, 256),
-				// credit: 'norgeskart',
+				// credit: 'ArcGIS',
 				getTileUrl: function (coord, zoom) {
 					var urlparam = '/' + zoom + '/' + coord.y + '/' + coord.x;
 					var url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile' + urlparam;
+					return url;
+				}
+			});
+
+			var SarTopoType = new google.maps.ImageMapType({
+				maxZoom: 18,
+				minZoom: 1,
+				name: "SARTpo",
+				tileSize: new google.maps.Size(256, 256),
+				// credit: 'SarTopo',
+				getTileUrl: function (coord, zoom) {
+					var urlparam = '/' + zoom + '/' + coord.x + '/' + coord.y + '.png';
+					var url = 'https://img.caltopo.com/tile/mbt' + urlparam;
 					return url;
 				}
 			});
@@ -473,6 +486,7 @@
 			map.mapTypes.set('Gulesider', GulesiderType);
 			//map.mapTypes.set('Norge i bilder', NorgeIBilderType);
 			map.mapTypes.set('ArcGIS', ArcGISType);
+			map.mapTypes.set('SARTopo', SarTopoType);
 
 			// Init the GeoCoder
 			geocoder = new google.maps.Geocoder();
