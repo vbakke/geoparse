@@ -32,7 +32,7 @@
 	<header></header>
 	<div id="fb-root"></div>
 	<script>
-		var geoparseVersion = "v2.4.1";
+		var geoparseVersion = "v2.5";
 
 		var logLocalhostErrors = true;
 		if (window.location.hostname != "localhost" || logLocalhostErrors) {
@@ -137,6 +137,7 @@
 							<th class="colUTM">UTM</th>
 							<th class="colElevation">Elevation</th>
 							<th class="colDist">km</th>
+							<th class="colHeading">Dir</th>
 							<th class="colMenu"><span class="context-menu-one btn btn-neutral"><img
 										id="hiddenImgRemoveRow"></span></th>
 						</tr>
@@ -180,7 +181,7 @@
 										value="elevation">Relative</div>
 
 							</td>
-							<td colspan="2" style="text-align:center;">
+							<td colspan="3" style="text-align:center;">
 								<button id="btnClear" class="rounded-corners"
 									onclick="onClickClearLocations()">Clear</button>
 							</td>
@@ -469,7 +470,7 @@
 			var SarTopoType = new google.maps.ImageMapType({
 				maxZoom: 18,
 				minZoom: 1,
-				name: "SARTpo",
+				name: "SARTopo",
 				tileSize: new google.maps.Size(256, 256),
 				// credit: 'SarTopo',
 				getTileUrl: function (coord, zoom) {
@@ -486,7 +487,7 @@
 			map.mapTypes.set('Gulesider', GulesiderType);
 			//map.mapTypes.set('Norge i bilder', NorgeIBilderType);
 			map.mapTypes.set('ArcGIS', ArcGISType);
-			map.mapTypes.set('SARTopo', SarTopoType);
+			map.mapTypes.set('SarTopo', SarTopoType);
 
 			// Init the GeoCoder
 			geocoder = new google.maps.Geocoder();
@@ -599,7 +600,7 @@
 			ga('send', 'event', 'user-click', 'changeDistanceCenter', 'changeDistanceCenter-' + centerLocationIndex + '-' + index);
 			if (index != centerLocationIndex) {
 				centerLocationIndex = index;
-				updateAllDistances();
+				updateAllTableCalculations();
 				updateAllLocationsInTable(tb);
 				fadeInOutDistanceLines(index);
 			}
@@ -1301,11 +1302,13 @@
 
 			return location;
 		}
-		function getDistance(locationA, locationB) {
+		function getFlight(locationA, locationB) {
 			var latLngA = new google.maps.LatLng(locationA.latlon.lat, locationA.latlon.lon);
 			var latLngB = new google.maps.LatLng(locationB.latlon.lat, locationB.latlon.lon);
 			var dist = google.maps.geometry.spherical.computeDistanceBetween(latLngA, latLngB);
-			return dist;
+			var heading = google.maps.geometry.spherical.computeHeading(latLngA, latLngB);
+			heading = (360 + heading) % 360;
+			return {dist, heading};
 		}
 		function getElevation(location, locationBase) {
 			var elevation = (typeof location.elevation === 'object') ? location.elevation : { absolute: location.elevation };
@@ -1354,19 +1357,30 @@
 			if (index == centerLocationIndex) {
 				location.dist = undefined;
 			} else {
-				location.dist = getDistance(location, posArray[centerLocationIndex]);
+				let dir = getFlight(posArray[centerLocationIndex], location);
+				location.dist = dir.dist;
+				location.heading = dir.heading;
 			}
 			var str = generateTableRowStr(index, location, columns);
 			tb.append("<tr>" + str + "</tr>");
 		}
 
+		function updateAllTableCalculations() {
+			updateAllDistances();
+			updateAllElevations();
+		}
+
 		function updateAllDistances() {
 			for (var index = 0; index < posArray.length; index++) {
 				var location = posArray[index];
-				if (index == centerLocationIndex)
+				if (index == centerLocationIndex) {
 					location.dist = undefined;
-				else
-					location.dist = getDistance(location, posArray[centerLocationIndex]);
+					location.heading = undefined;
+				} else {
+					let dir = getFlight(posArray[centerLocationIndex], location);
+					location.dist = dir.dist;
+					location.heading = dir.heading;
+				}					
 			}
 		}
 
@@ -1377,6 +1391,7 @@
 			}
 		}
 
+
 		function updateAllLocationsInTable(tb) {
 			var thead = tb.siblings('thead');
 			var tbody = tb.siblings('tbody');
@@ -1385,8 +1400,7 @@
 				hiddenLatLon: thead.find('th.colLatLon').hasClass('hidden'),
 			};
 
-			updateAllDistances();
-			updateAllElevations();
+			updateAllTableCalculations();
 
 			var str = '';
 			for (var i = 0; i < posArray.length; i++) {
@@ -1407,11 +1421,12 @@
 			location.elevation = getElevation(location, posArray[centerLocationIndex]);
 			if (index == centerLocationIndex) {
 				// If the center location is modified, change dist for all other rows 
-				updateAllDistances();
-				updateAllElevations();
+				updateAllTableCalculations();
 				location.dist = undefined;
 			} else {
-				location.dist = getDistance(location, posArray[centerLocationIndex]);
+				let dir = getFlight(posArray[centerLocationIndex], location);
+				location.dist = dir.dist;
+				location.heading = dir.heading;
 			}
 
 			var str = generateTableRowStr(index, location, columns);
@@ -1423,6 +1438,7 @@
 			var format = latlonFormats[config.latlon.format];
 			var latlonStr = location.latlon.toString(format, ' ', config.latlon.useNeg, config.latlon.orderNE);
 			var utmStr = location.utm.toString(config.utm.strict, config.utm.orderEN, ' ', 'utmKmText');
+			var headingStr = (location.heading === undefined) ? '-' : location.heading.toFixed(0)+'°';
 			var elevationStr = "";
 			var accuracy = 5;
 			var elevation = location.elevation;
@@ -1456,7 +1472,7 @@
 				distPrecision = (dist < 1000) ? 2 : 1;
 				distStr = (dist / 1000).toFixed(distPrecision);
 				distStyle = 'class="hand dotted"';
-				distTooltip = "Measure all distances from point '" + labelStr + "'";
+				distTooltip = "Click to measure distances from '" + labelStr + "'";
 			}
 
 			var utmClass = (columns && columns.hiddenUtm) ? 'hidden' : '';
@@ -1467,6 +1483,7 @@
 			str += '<td class="colUTM ' + utmClass + '" onclick="onClickTableCell(this)"><span class="hand dotted">' + utmStr + '</span></td>';
 			str += '<td class="colElevation"><span>' + elevationStr + '</span></td>';
 			str += '<td class="colDist" onclick="' + distFunction + '"><span ' + distStyle + ' title="' + distTooltip + '">' + distStr + '</span></td>';
+			str += '<td class="colHeading" onclick=""><span ' + distStyle + '>' + headingStr + '</span></td>';
 			str += '<td class="colMenu" style="text-align:center;"><img class="hand"  src="' + imgRemoveRow + '" hover-src="' + imgRemoveRowHover + '" onmouseover="imgSwap(this)" onmouseout="imgSwap(this)"   onclick="onClickRemoveRow(this)"></td>';
 			return str;
 		}
@@ -1685,7 +1702,7 @@
 			removeLocationFromMap(index);
 			removeLocationFromTable(index);
 			posArray.splice(index, 1); // Remove the element
-			updateAllDistances();
+			updateAllTableCalculations();
 			updateAllLocationsInTable(tb);
 		}
 

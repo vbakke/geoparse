@@ -1,10 +1,10 @@
 ToDo
 ====
 
-v2
-- Bug: Center icon disappears when changing coordinate format
+v2.5
+ - Edit heading
 
-- GUI: Add Custom columns 
+- GUI: Add show/hide columns 
 
 - GUI: Draw 1km UTM grid (optionally)
    - Draw optionaly 100m, or 10m according to scale
@@ -46,6 +46,11 @@ Backlog
 Done
 ====
 2021
+v2.4.1
+- Add column for heading, from base
+- Bug: Relative elevation is not updated whan dragging base marker
+- Bug: Center icon disappears when changing coordinate format
+
 v2.4
 - Move Usage depending on screen size
 - GUI: Show difference in altitude between positions

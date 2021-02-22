@@ -259,7 +259,8 @@ td {
 td.colDist {
     text-align: center;
 }
-td.colElevation {
+td.colElevation,
+td.colHeading  {
     text-align: right;
 }
 input {
