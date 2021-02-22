@@ -32,7 +32,7 @@
 	<header></header>
 	<div id="fb-root"></div>
 	<script>
-		var geoparseVersion = "v2.4.0";
+		var geoparseVersion = "v2.4.1";
 
 		var logLocalhostErrors = true;
 		if (window.location.hostname != "localhost" || logLocalhostErrors) {
@@ -952,7 +952,7 @@
 			ga('send', 'event', 'user-click', 'changeFormat-' + type, 'changeFormat-' + type + "-" + vDbg);
 
 			// Regenerate table
-			generateTable();
+			updateAllLocationsInTable(tb);
 		}
 
 		// ToDo: Distinguish Clear all points, from Stop connect to the database share
@@ -1738,14 +1738,6 @@
 			}
 		}
 
-		function generateTable() {
-			if (posArray.length > 0) {
-				tb.empty();
-				for (var i = 0; i < posArray.length; i++) {
-					addLocationToTable(tb, posArray[i]);
-				}
-			}
-		}
 
 		function updateTableOptions() {
 			var s = '#optDegrees option[value=' + config.latlon.format + ']';
