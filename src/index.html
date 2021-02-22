@@ -1311,6 +1311,8 @@
 			var elevation = (typeof location.elevation === 'object') ? location.elevation : { absolute: location.elevation };
 			if (locationBase && location !== locationBase && locationBase.hasOwnProperty('elevation'))
 				elevation.relative = location.elevation.absolute - locationBase.elevation.absolute;
+			else
+				elevation.relative = undefined;
 			return elevation;
 		}
 
@@ -1371,8 +1373,7 @@
 		function updateAllElevations() {
 			for (var index = 0; index < posArray.length; index++) {
 				var location = posArray[index];
-				if (index != centerLocationIndex)
-					location.elevation = getElevation(location, posArray[centerLocationIndex]);
+				location.elevation = getElevation(location, posArray[centerLocationIndex]);
 			}
 		}
 
