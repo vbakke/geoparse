@@ -1357,6 +1357,7 @@
 			var str = generateTableRowStr(index, location, columns);
 			tb.append("<tr>" + str + "</tr>");
 		}
+
 		function updateAllDistances() {
 			for (var index = 0; index < posArray.length; index++) {
 				var location = posArray[index];
@@ -1366,6 +1367,15 @@
 					location.dist = getDistance(location, posArray[centerLocationIndex]);
 			}
 		}
+
+		function updateAllElevations() {
+			for (var index = 0; index < posArray.length; index++) {
+				var location = posArray[index];
+				if (index != centerLocationIndex)
+					location.elevation = getElevation(location, posArray[centerLocationIndex]);
+			}
+		}
+
 		function updateAllLocationsInTable(tb) {
 			var thead = tb.siblings('thead');
 			var tbody = tb.siblings('tbody');
@@ -1373,6 +1383,9 @@
 				hiddenUtm: thead.find('th.colUTM').hasClass('hidden'),
 				hiddenLatLon: thead.find('th.colLatLon').hasClass('hidden'),
 			};
+
+			updateAllDistances();
+			updateAllElevations();
 
 			var str = '';
 			for (var i = 0; i < posArray.length; i++) {
@@ -1394,6 +1407,7 @@
 			if (index == centerLocationIndex) {
 				// If the center location is modified, change dist for all other rows 
 				updateAllDistances();
+				updateAllElevations();
 				location.dist = undefined;
 			} else {
 				location.dist = getDistance(location, posArray[centerLocationIndex]);
@@ -1415,7 +1429,9 @@
 				elevationStr = "-"
 			} else if (config.elevationRelative) {
 				if (elevation.hasOwnProperty('relative')) {
-					if (Math.abs(elevation.relative) < accuracy / 2) {
+					if (elevation.relative === undefined || isNaN(elevation.relative)) {
+						elevationStr = "-"
+					} else if (Math.abs(elevation.relative) < accuracy / 2) {
 						elevationStr = '± 0';
 					} else {
 						elevationStr += (elevation.relative > 0) ? elevationStr += '+ ' : '- ';
@@ -1492,6 +1508,7 @@
 				labelVisible: labelVisible
 			};
 			var marker = new MarkerWithLabel(markerOptions);
+			google.maps.event.addListener(marker, 'dragstart', markerDragStart);
 			google.maps.event.addListener(marker, 'drag', markerDrag);
 			google.maps.event.addListener(marker, 'dragend', markerDragEnd);
 			location.marker = marker;
@@ -1554,6 +1571,26 @@
 				map.fitBounds(boundingbox);
 			}
 		}
+
+		function markerDragStart(event) {
+			if (config.elevationRelative) {
+				var location = this.locationObj;
+				var index = posArray.indexOf(location);
+				// Clear relative altitude is moving base				
+				if (index == centerLocationIndex) {
+					for (let i=0; i<posArray.length; i++) {
+						let location = posArray[i];
+						if (location.elevation && location.elevation.relative) location.elevation.relative = undefined;
+					}
+				}
+
+			}
+		}
+
+		function markerDrag(event) {
+			updateLatLonLocation(this.locationObj, this.position.lat(), this.position.lng());
+		}
+
 		function markerDragEnd(event) {
 			var locationObj = this.locationObj;
 			var position = this.locationObj.latlon;
@@ -1563,11 +1600,9 @@
 
 				var posStr = position.lat.toFixed(5) + "N " + position.lon.toFixed(5) + "E";
 				ga('send', 'event', 'user-click', 'dragTo', 'dragTo-' + posStr); // .replace(/[0-8]/g,'9'));
+
 				updateLatLonLocation(locationObj, position.lat, position.lon, elevation);
 			});
-		}
-		function markerDrag(event) {
-			updateLatLonLocation(this.locationObj, this.position.lat(), this.position.lng());
 		}
 
 		function clearLocations() {
